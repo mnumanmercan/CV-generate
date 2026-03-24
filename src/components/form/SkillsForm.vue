@@ -1,0 +1,148 @@
+<script setup lang="ts">
+  import { ref, computed } from 'vue'
+  import { storeToRefs } from 'pinia'
+  import { useCVStore } from '@/stores/cvStore'
+  import { useDragSort } from '@/composables/useDragSort'
+  import FormField from './FormField.vue'
+  import { createSkill } from '@/types/cv.types'
+
+  const cvStore = useCVStore()
+  const { cvData } = storeToRefs(cvStore)
+
+  const drag = useDragSort(computed(() => cvData.value.skills))
+
+  // New tag input per skill category
+  const tagInputs = ref<Record<string, string>>({})
+
+  function addSkill(): void {
+    const skill = createSkill()
+    cvData.value.skills.push(skill)
+    tagInputs.value[skill.id] = ''
+  }
+
+  function removeSkill(index: number): void {
+    cvData.value.skills.splice(index, 1)
+  }
+
+  function addTag(skillId: string, index: number): void {
+    const input = (tagInputs.value[skillId] ?? '').trim()
+    if (!input) return
+    const skill = cvData.value.skills[index]
+    if (skill && !skill.items.includes(input)) {
+      skill.items.push(input)
+    }
+    tagInputs.value[skillId] = ''
+  }
+
+  function removeTag(skillIndex: number, tagIndex: number): void {
+    cvData.value.skills[skillIndex]?.items.splice(tagIndex, 1)
+  }
+
+  function onTagKeydown(
+    event: KeyboardEvent,
+    skillId: string,
+    index: number,
+  ): void {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault()
+      addTag(skillId, index)
+    }
+  }
+</script>
+
+<template>
+  <div class="flex flex-col gap-4">
+    <div
+      v-for="(skill, index) in cvData.skills"
+      :key="skill.id"
+      :class="[
+        'rounded-xl border p-4 transition-all',
+        drag.isDragging(skill.id) ? 'dragging border-white/5' : '',
+        drag.isDragOver(skill.id) ? 'drag-over' : 'border-white/5',
+      ]"
+      draggable="true"
+      :aria-label="`Skill category ${index + 1}`"
+      @dragstart="drag.onDragStart(skill.id)"
+      @dragover.prevent="drag.onDragOver(skill.id)"
+      @drop="drag.onDrop(skill.id)"
+      @dragend="drag.onDragEnd"
+    >
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-secondary cursor-grab" aria-hidden="true">⠿</span>
+          <span class="text-sm font-semibold text-primary">
+            {{ skill.category || `Category ${index + 1}` }}
+          </span>
+        </div>
+        <button
+          type="button"
+          class="text-secondary hover:text-red-400 transition-colors text-xs px-2 py-1 rounded hover:bg-red-500/10"
+          :aria-label="`Remove skill category ${index + 1}`"
+          @click="removeSkill(index)"
+        >
+          Remove
+        </button>
+      </div>
+
+      <FormField
+        :id="`skill-category-${skill.id}`"
+        v-model="skill.category"
+        label="Category"
+        placeholder="Frontend, Backend, DevOps..."
+        required
+      />
+
+      <!-- Tag chips -->
+      <div class="mt-3">
+        <p class="text-xs font-medium text-secondary font-mono uppercase tracking-wider mb-2">
+          Skills <span class="normal-case font-sans">(press Enter or comma to add)</span>
+        </p>
+
+        <div class="flex flex-wrap gap-1.5 mb-2" :aria-label="`Skills in ${skill.category}`">
+          <span
+            v-for="(tag, tIdx) in skill.items"
+            :key="tIdx"
+            class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/20 text-accent text-xs font-medium animate-chip-in"
+          >
+            {{ tag }}
+            <button
+              type="button"
+              class="hover:text-white transition-colors ml-0.5"
+              :aria-label="`Remove skill ${tag}`"
+              @click="removeTag(index, tIdx)"
+            >
+              ×
+            </button>
+          </span>
+        </div>
+
+        <div class="flex gap-2">
+          <input
+            :id="`skill-tag-input-${skill.id}`"
+            v-model="tagInputs[skill.id]"
+            type="text"
+            placeholder="Add skill..."
+            class="flex-1 px-3 py-2 text-sm rounded-lg"
+            :aria-label="`Add skill to ${skill.category || 'category'}`"
+            @keydown="onTagKeydown($event, skill.id, index)"
+          />
+          <button
+            type="button"
+            class="px-3 py-2 rounded-lg bg-accent/20 text-accent text-sm hover:bg-accent/30 transition-colors"
+            @click="addTag(skill.id, index)"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="w-full py-3 rounded-xl border-2 border-dashed border-white/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
+      @click="addSkill"
+    >
+      <span aria-hidden="true">+</span> Add Skill Category
+    </button>
+  </div>
+</template>
