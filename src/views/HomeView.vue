@@ -4,35 +4,70 @@
 
   const features = [
     {
-      icon: '⚡',
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>`,
       title: 'Real-Time Preview',
-      description: 'See your CV update live as you type — no refresh needed.',
+      description: 'Watch your CV update live on the right panel as you fill in the form — no page refresh needed.',
     },
     {
-      icon: '✓',
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
       title: 'ATS Compliant',
-      description: 'Single-column, semantic format optimised for Applicant Tracking Systems.',
+      description: 'Single-column layout, standard section headings, and machine-readable text — passes all major ATS parsers.',
     },
     {
-      icon: '📄',
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>`,
       title: 'Pixel-Perfect PDF',
-      description: 'Download a PDF that is identical to your on-screen preview.',
+      description: 'The downloaded PDF is identical to the on-screen preview — same fonts, same spacing, same layout.',
     },
     {
-      icon: '💾',
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>`,
       title: 'Auto-Save',
-      description: 'Your progress is saved to localStorage automatically as you type.',
+      description: 'Every keystroke is debounced and saved to your browser\'s localStorage — your work is never lost.',
     },
     {
-      icon: '🔑',
-      title: 'ATS Keyword Hints',
-      description: 'Real-time writing tips to boost your CV\'s keyword relevance.',
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>`,
+      title: 'ATS Writing Hints',
+      description: 'Real-time warnings for weak phrases, short summaries, over-long bullets, and invalid date formats.',
     },
     {
-      icon: '🖱',
-      title: 'Drag & Reorder',
-      description: 'Drag sections and entries to reorder them instantly.',
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>`,
+      title: 'Drag to Reorder',
+      description: 'Rearrange experience entries, education, skills, and projects by dragging — no cut and paste.',
     },
+    {
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>`,
+      title: 'Skill Tag System',
+      description: 'Add skills and technologies as animated chip tags — press Enter or comma to insert instantly.',
+    },
+    {
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>`,
+      title: 'Privacy First',
+      description: 'No account. No server. Your data never leaves your browser — stored locally, owned by you.',
+    },
+  ]
+
+  const steps = [
+    {
+      number: '01',
+      title: 'Fill in your details',
+      description: 'Use the accordion form on the left to enter personal info, experience, education, skills, projects, and certifications.',
+    },
+    {
+      number: '02',
+      title: 'Watch it come to life',
+      description: 'The A4 preview on the right updates in real-time as you type. Sections pulse to confirm your changes.',
+    },
+    {
+      number: '03',
+      title: 'Download your PDF',
+      description: 'Hit "Download PDF" — the file is pixel-identical to the preview, ATS-ready, and names itself after you.',
+    },
+  ]
+
+  const stats = [
+    { value: '7', label: 'CV Sections' },
+    { value: 'A4', label: 'Exact Format' },
+    { value: '0', label: 'Accounts Needed' },
+    { value: '100%', label: 'Free to Start' },
   ]
 </script>
 
@@ -41,27 +76,39 @@
     <AppHeader />
 
     <main class="flex-1 flex flex-col">
-      <!-- Hero -->
+
+      <!-- ── Hero ──────────────────────────────────────────────── -->
       <section
-        class="flex flex-col items-center justify-center text-center px-6 py-24 md:py-32"
+        class="relative flex flex-col items-center text-center px-6 pt-20 pb-16 md:pt-28 md:pb-20 overflow-hidden"
         aria-labelledby="hero-heading"
       >
+        <!-- Background glow -->
+        <div
+          class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-10 pointer-events-none"
+          style="background: radial-gradient(ellipse, #6366f1 0%, transparent 70%)"
+          aria-hidden="true"
+        />
+
         <!-- Badge -->
         <div
-          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-semibold mb-6 stagger-item"
+          class="relative inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-semibold mb-6 stagger-item"
         >
-          <span aria-hidden="true">✦</span> ATS-Friendly · Free · No Sign-Up Required
+          <span
+            class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"
+            aria-hidden="true"
+          />
+          ATS-Friendly · Free · No Sign-Up Required
         </div>
 
         <h1
           id="hero-heading"
-          class="text-4xl md:text-6xl font-bold text-primary leading-tight max-w-3xl stagger-item"
+          class="relative text-4xl md:text-6xl font-bold text-primary leading-tight max-w-3xl stagger-item"
           style="animation-delay: 60ms"
         >
           Build a
           <span
             class="text-transparent bg-clip-text"
-            style="background-image: linear-gradient(135deg, #6366f1, #818cf8)"
+            style="background-image: linear-gradient(135deg, #6366f1 0%, #818cf8 50%, #a5b4fc 100%)"
           >
             Professional CV
           </span>
@@ -69,7 +116,7 @@
         </h1>
 
         <p
-          class="mt-5 text-secondary text-lg max-w-xl leading-relaxed stagger-item"
+          class="relative mt-5 text-secondary text-lg max-w-xl leading-relaxed stagger-item"
           style="animation-delay: 120ms"
         >
           Create an ATS-compliant resume with a live preview and instant PDF download.
@@ -77,12 +124,12 @@
         </p>
 
         <div
-          class="flex flex-col sm:flex-row gap-3 mt-8 stagger-item"
+          class="relative flex flex-col sm:flex-row gap-3 mt-8 stagger-item"
           style="animation-delay: 180ms"
         >
           <RouterLink
             to="/builder"
-            class="shimmer-btn px-7 py-3.5 rounded-xl text-white font-semibold text-base transition-all shadow-lg shadow-accent/20"
+            class="shimmer-btn px-7 py-3.5 rounded-xl text-white font-semibold text-base shadow-lg shadow-accent/20"
           >
             Get Started — It's Free
           </RouterLink>
@@ -93,9 +140,143 @@
             View Plans
           </RouterLink>
         </div>
+
+        <!-- Stats row -->
+        <div
+          class="relative flex flex-wrap justify-center gap-8 mt-14 stagger-item"
+          style="animation-delay: 240ms"
+          aria-label="Key statistics"
+        >
+          <div
+            v-for="stat in stats"
+            :key="stat.label"
+            class="flex flex-col items-center"
+          >
+            <span class="text-2xl font-bold text-primary">{{ stat.value }}</span>
+            <span class="text-xs text-secondary mt-0.5">{{ stat.label }}</span>
+          </div>
+        </div>
       </section>
 
-      <!-- Feature grid -->
+      <!-- ── CV preview mockup ──────────────────────────────────── -->
+      <section class="px-6 pb-20 max-w-5xl mx-auto w-full" aria-label="CV preview mockup">
+        <div
+          class="rounded-2xl border border-white/5 overflow-hidden shadow-2xl stagger-item"
+          style="background: #111118"
+        >
+          <!-- Fake browser chrome -->
+          <div
+            class="flex items-center gap-2 px-4 py-3 border-b border-white/5"
+            style="background: #0d0d12"
+            aria-hidden="true"
+          >
+            <span class="w-3 h-3 rounded-full bg-red-500/60" />
+            <span class="w-3 h-3 rounded-full bg-yellow-500/60" />
+            <span class="w-3 h-3 rounded-full bg-green-500/60" />
+            <div
+              class="flex-1 mx-4 h-5 rounded bg-white/5 flex items-center px-3"
+            >
+              <span class="text-secondary text-xs opacity-50">cv-generate.app/builder</span>
+            </div>
+          </div>
+
+          <!-- Split-screen mockup -->
+          <div class="flex h-72 md:h-80">
+            <!-- Left: form panel -->
+            <div
+              class="w-[45%] border-r border-white/5 p-4 flex flex-col gap-2"
+              style="background: var(--bg-surface)"
+              aria-hidden="true"
+            >
+              <p class="text-xs text-secondary font-semibold mb-1">CV Information</p>
+              <!-- Simulated form sections -->
+              <div
+                v-for="label in ['👤  Personal Info', '📝  Professional Summary', '💼  Work Experience', '🎓  Education', '⚙️  Skills', '🚀  Projects']"
+                :key="label"
+                class="flex items-center justify-between px-3 py-2 rounded-lg border border-white/5 hover:border-accent/20 transition-colors cursor-default"
+              >
+                <span class="text-xs text-secondary">{{ label }}</span>
+                <svg class="w-3 h-3 text-secondary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Right: CV preview -->
+            <div class="flex-1 flex justify-center items-start overflow-hidden p-4" style="background: #18181f">
+              <div
+                class="bg-white rounded shadow-xl w-full max-w-xs p-4 text-[#1a1a1a]"
+                style="font-family: 'Inter', sans-serif; font-size: 7px; line-height: 1.5;"
+                aria-hidden="true"
+              >
+                <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; margin-bottom: 6px;">
+                  <div style="font-size: 13px; font-weight: 700; color: #111;">Your Full Name</div>
+                  <div style="font-size: 8px; font-weight: 600; color: #4f46e5; margin: 1px 0 3px;">Senior Software Engineer</div>
+                  <div style="font-size: 6.5px; color: #6b7280;">
+                    email@example.com · +1 555 000 0000 · New York, NY · linkedin.com/in/you
+                  </div>
+                </div>
+                <div style="margin-bottom: 5px;">
+                  <div style="font-size: 5.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px;">Professional Summary</div>
+                  <div style="color: #374151;">Results-driven software engineer with 5+ years building scalable web applications. Led teams to deliver critical features...</div>
+                </div>
+                <div style="margin-bottom: 5px;">
+                  <div style="font-size: 5.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px;">Work Experience</div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <div>
+                      <div style="font-weight: 700; font-size: 7.5px;">Senior Software Engineer</div>
+                      <div style="color: #6b7280;">TechCorp Inc. · San Francisco, CA</div>
+                    </div>
+                    <div style="color: #9ca3af; font-size: 6px;">01/2022 – Present</div>
+                  </div>
+                  <ul style="padding-left: 8px; margin-top: 2px; color: #374151;">
+                    <li style="list-style: disc; margin-bottom: 1px;">Led migration of monolith to microservices, reducing latency by 40%.</li>
+                    <li style="list-style: disc;">Built real-time dashboard serving 50k+ daily active users.</li>
+                  </ul>
+                </div>
+                <div>
+                  <div style="font-size: 5.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px;">Skills</div>
+                  <div><span style="font-weight: 700;">Frontend:</span> Vue, React, TypeScript, TailwindCSS</div>
+                  <div><span style="font-weight: 700;">Backend:</span> Node.js, Go, PostgreSQL, MongoDB</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── How it works ───────────────────────────────────────── -->
+      <section class="px-6 pb-20 max-w-4xl mx-auto w-full" aria-labelledby="how-heading">
+        <h2
+          id="how-heading"
+          class="text-center text-2xl font-bold text-primary mb-12 stagger-item"
+        >
+          How it works
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div
+            v-for="(step, index) in steps"
+            :key="step.number"
+            class="flex flex-col gap-3 stagger-item"
+            :style="{ animationDelay: `${index * 60}ms` }"
+          >
+            <div class="flex items-center gap-3">
+              <span
+                class="text-3xl font-black font-mono leading-none"
+                style="color: rgba(99,102,241,0.25)"
+                aria-hidden="true"
+              >
+                {{ step.number }}
+              </span>
+              <div class="flex-1 h-px bg-white/5" aria-hidden="true" />
+            </div>
+            <h3 class="text-base font-semibold text-primary">{{ step.title }}</h3>
+            <p class="text-sm text-secondary leading-relaxed">{{ step.description }}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Feature grid ───────────────────────────────────────── -->
       <section
         class="px-6 pb-24 max-w-5xl mx-auto w-full"
         aria-labelledby="features-heading"
@@ -107,30 +288,77 @@
           Everything you need to land the interview
         </h2>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div
             v-for="(feature, index) in features"
             :key="feature.title"
-            class="p-5 rounded-2xl border border-white/5 hover:border-accent/30 transition-all stagger-item group"
+            class="p-5 rounded-2xl border border-white/5 hover:border-accent/30 transition-all stagger-item group cursor-default"
             style="background: var(--bg-surface)"
-            :style="{ animationDelay: `${(index + 1) * 60}ms` }"
+            :style="{ animationDelay: `${(index + 1) * 40}ms` }"
           >
             <div
-              class="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform"
+              class="w-9 h-9 rounded-xl bg-accent/15 flex items-center justify-center mb-3 group-hover:bg-accent/25 transition-colors text-accent"
               aria-hidden="true"
-            >
-              {{ feature.icon }}
-            </div>
+              v-html="feature.icon"
+              style="padding: 8px;"
+            />
             <h3 class="text-sm font-semibold text-primary mb-1">{{ feature.title }}</h3>
             <p class="text-xs text-secondary leading-relaxed">{{ feature.description }}</p>
           </div>
         </div>
       </section>
+
+      <!-- ── CTA banner ─────────────────────────────────────────── -->
+      <section class="px-6 pb-24 max-w-3xl mx-auto w-full">
+        <div
+          class="rounded-2xl p-10 text-center border border-accent/20 stagger-item"
+          style="background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(129,140,248,0.04) 100%)"
+        >
+          <h2 class="text-2xl font-bold text-primary mb-2">
+            Ready to build your CV?
+          </h2>
+          <p class="text-secondary text-sm mb-6 max-w-xs mx-auto">
+            It takes less than 5 minutes. No account needed.
+          </p>
+          <RouterLink
+            to="/builder"
+            class="shimmer-btn inline-block px-8 py-3.5 rounded-xl text-white font-semibold shadow-lg shadow-accent/20"
+          >
+            Start Building for Free
+          </RouterLink>
+        </div>
+      </section>
+
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-white/5 py-6 px-6 text-center text-xs text-secondary">
-      © {{ new Date().getFullYear() }} CV Generate · Free ATS CV Builder
+    <footer
+      class="border-t border-white/5 py-8 px-6"
+      style="background: var(--bg-surface)"
+    >
+      <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded bg-accent flex items-center justify-center text-white text-xs font-bold">
+            CV
+          </div>
+          <span class="text-sm font-semibold text-secondary">CV Generate</span>
+        </div>
+        <div class="flex items-center gap-5 text-xs text-secondary">
+          <RouterLink to="/builder" class="hover:text-primary transition-colors">Builder</RouterLink>
+          <RouterLink to="/pricing" class="hover:text-primary transition-colors">Pricing</RouterLink>
+          <a
+            href="https://github.com/mnumanmercan/CV-generate"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-primary transition-colors"
+          >
+            GitHub
+          </a>
+        </div>
+        <p class="text-xs text-secondary">
+          © {{ new Date().getFullYear() }} CV Generate
+        </p>
+      </div>
     </footer>
   </div>
 </template>
