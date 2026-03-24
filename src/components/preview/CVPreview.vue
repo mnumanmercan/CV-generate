@@ -9,7 +9,6 @@
 
   const pulsedSections = ref<Set<SectionKey>>(new Set())
 
-  // Trigger section pulse animation when highlighted section changes
   watch(highlightedSection, (section) => {
     if (section) {
       pulsedSections.value.add(section)
@@ -23,7 +22,6 @@
     return pulsedSections.value.has(section)
   }
 
-  // Helpers
   const hasExperience = computed(() => cvData.value.experience.length > 0)
   const hasEducation = computed(() => cvData.value.education.length > 0)
   const hasSkills = computed(() => cvData.value.skills.length > 0)
@@ -32,55 +30,77 @@
 
   const socialLinks = computed(() => {
     const p = cvData.value.personal
-    const links: Array<{ label: string; value: string; href: string }> = []
-    if (p.linkedin) links.push({ label: 'LinkedIn', value: p.linkedin.replace('https://', ''), href: p.linkedin })
-    if (p.github) links.push({ label: 'GitHub', value: p.github.replace('https://', ''), href: p.github })
-    if (p.website) links.push({ label: 'Website', value: p.website.replace('https://', ''), href: p.website })
+    const links: Array<{ label: string; value: string }> = []
+    if (p.linkedin) links.push({ label: 'LinkedIn', value: p.linkedin.replace('https://', '') })
+    if (p.github) links.push({ label: 'GitHub', value: p.github.replace('https://', '') })
+    if (p.website) links.push({ label: 'Website', value: p.website.replace('https://', '') })
     return links
   })
 </script>
 
 <template>
   <!--
-    cv-a4 is the element exported to PDF.
-    Dimensions: 794px × 1123px (A4 at 96dpi).
-    ATS-compliant: single column, no tables, semantic headings only.
+    #cv-preview is the EXACT element captured by html2pdf.js.
+
+    Rules that ensure PDF === preview:
+    - Width is fixed at 794px (A4 at 96 dpi). NO overflow-hidden — clipping
+      causes silent content loss in both preview and PDF.
+    - min-height: 1123px so an empty CV shows as A4 proportions.
+    - No CSS transform on this element or any ancestor at export time
+      (usePDFExport neutralizes parent transforms before capture).
+    - PDF margin is 0 — internal p-[28px] provides all spacing.
+    - Fonts: Inter loaded from Google Fonts; document.fonts.ready is awaited
+      in usePDFExport before capture.
   -->
   <article
     id="cv-preview"
-    class="cv-a4 p-10 text-[#1a1a2e] overflow-hidden"
-    style="font-family: 'Inter', sans-serif"
     aria-label="CV Preview"
+    style="
+      width: 794px;
+      min-height: 1123px;
+      background: #ffffff;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #1a1a1a;
+      padding: 40px 44px;
+      box-sizing: border-box;
+    "
   >
     <!-- ── Personal Info ─────────────────────────────────────────── -->
     <header
-      :class="['mb-5 pb-4 border-b-2 border-gray-200 transition-colors rounded', isPulsed('personal') ? 'section-pulse' : '']"
+      :class="['cv-header', isPulsed('personal') ? 'section-pulse' : '']"
+      style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb;"
     >
-      <h1 class="text-2xl font-bold text-gray-900 leading-tight">
+      <h1 style="font-size: 26px; font-weight: 700; color: #111827; margin: 0 0 2px 0; line-height: 1.2;">
         {{ cvData.personal.fullName || 'Your Name' }}
       </h1>
-      <p class="text-sm font-semibold text-indigo-600 mt-0.5">
+      <p style="font-size: 12px; font-weight: 600; color: #4f46e5; margin: 0 0 6px 0;">
         {{ cvData.personal.jobTitle || 'Job Title' }}
       </p>
 
-      <!-- Contact row -->
-      <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-600">
+      <!-- Contact row — matches reference: email · phone · location · links -->
+      <div style="display: flex; flex-wrap: wrap; gap: 0; font-size: 10px; color: #4b5563;">
         <span v-if="cvData.personal.email">{{ cvData.personal.email }}</span>
+        <span v-if="cvData.personal.email && (cvData.personal.phone || cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">·</span>
         <span v-if="cvData.personal.phone">{{ cvData.personal.phone }}</span>
+        <span v-if="cvData.personal.phone && (cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">·</span>
         <span v-if="cvData.personal.location">{{ cvData.personal.location }}</span>
-        <span v-for="link in socialLinks" :key="link.label">
-          {{ link.value }}
-        </span>
+        <template v-for="(link, i) in socialLinks" :key="link.label">
+          <span v-if="cvData.personal.location || i > 0" style="margin: 0 8px;">·</span>
+          <span>{{ link.value }}</span>
+        </template>
       </div>
     </header>
 
     <!-- ── Professional Summary ──────────────────────────────────── -->
     <section
       v-if="cvData.summary"
-      :class="['mb-4 rounded transition-colors', isPulsed('summary') ? 'section-pulse' : '']"
+      :class="isPulsed('summary') ? 'section-pulse' : ''"
+      style="margin-bottom: 12px;"
     >
       <h2 class="cv-section-heading">Professional Summary</h2>
-      <p class="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">
+      <p style="font-size: 10.5px; color: #374151; line-height: 1.6; white-space: pre-wrap; margin: 0;">
         {{ cvData.summary }}
       </p>
     </section>
@@ -88,30 +108,31 @@
     <!-- ── Work Experience ───────────────────────────────────────── -->
     <section
       v-if="hasExperience"
-      :class="['mb-4 rounded transition-colors', isPulsed('experience') ? 'section-pulse' : '']"
+      :class="isPulsed('experience') ? 'section-pulse' : ''"
+      style="margin-bottom: 12px;"
     >
       <h2 class="cv-section-heading">Work Experience</h2>
       <div
         v-for="(exp, index) in cvData.experience"
         :key="exp.id"
-        :class="index > 0 ? 'mt-3' : ''"
+        :style="index > 0 ? 'margin-top: 10px;' : ''"
       >
-        <div class="flex items-start justify-between">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
-            <p class="text-sm font-semibold text-gray-900">{{ exp.position }}</p>
-            <p class="text-xs text-gray-600">
+            <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ exp.position }}</p>
+            <p style="font-size: 10.5px; color: #4b5563; margin: 1px 0 0 0;">
               {{ exp.company }}<span v-if="exp.location"> · {{ exp.location }}</span>
             </p>
           </div>
-          <p class="text-xs text-gray-500 shrink-0 ml-2">
+          <p style="font-size: 10px; color: #6b7280; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
             {{ exp.startDate }} – {{ exp.endDate || 'Present' }}
           </p>
         </div>
-        <ul class="mt-1.5 pl-3 space-y-0.5" aria-label="Responsibilities">
+        <ul style="margin: 4px 0 0 0; padding-left: 14px;" aria-label="Responsibilities">
           <li
             v-for="(bullet, bIdx) in exp.bullets.filter((b) => b.trim())"
             :key="bIdx"
-            class="text-xs text-gray-700 leading-relaxed list-disc list-outside"
+            style="font-size: 10.5px; color: #374151; line-height: 1.55; margin-bottom: 1px;"
           >
             {{ bullet }}
           </li>
@@ -122,23 +143,23 @@
     <!-- ── Education ─────────────────────────────────────────────── -->
     <section
       v-if="hasEducation"
-      :class="['mb-4 rounded transition-colors', isPulsed('education') ? 'section-pulse' : '']"
+      :class="isPulsed('education') ? 'section-pulse' : ''"
+      style="margin-bottom: 12px;"
     >
       <h2 class="cv-section-heading">Education</h2>
       <div
         v-for="(edu, index) in cvData.education"
         :key="edu.id"
-        :class="index > 0 ? 'mt-2' : ''"
+        :style="index > 0 ? 'margin-top: 8px;' : ''"
       >
-        <div class="flex items-start justify-between">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
-            <p class="text-sm font-semibold text-gray-900">{{ edu.institution }}</p>
-            <p class="text-xs text-gray-600">
-              {{ edu.degree }} in {{ edu.field }}
-              <span v-if="edu.gpa"> · GPA: {{ edu.gpa }}</span>
+            <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ edu.institution }}</p>
+            <p style="font-size: 10.5px; color: #4b5563; margin: 1px 0 0 0;">
+              {{ edu.degree }} in {{ edu.field }}<span v-if="edu.gpa"> · GPA: {{ edu.gpa }}</span>
             </p>
           </div>
-          <p class="text-xs text-gray-500 shrink-0 ml-2">
+          <p style="font-size: 10px; color: #6b7280; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
             {{ edu.startDate }} – {{ edu.endDate }}
           </p>
         </div>
@@ -148,40 +169,42 @@
     <!-- ── Skills ────────────────────────────────────────────────── -->
     <section
       v-if="hasSkills"
-      :class="['mb-4 rounded transition-colors', isPulsed('skills') ? 'section-pulse' : '']"
+      :class="isPulsed('skills') ? 'section-pulse' : ''"
+      style="margin-bottom: 12px;"
     >
       <h2 class="cv-section-heading">Skills</h2>
       <div
         v-for="(skill, index) in cvData.skills"
         :key="skill.id"
-        :class="['text-xs', index > 0 ? 'mt-1' : '']"
+        :style="index > 0 ? 'margin-top: 3px;' : ''"
+        style="font-size: 10.5px;"
       >
-        <span class="font-semibold text-gray-800">{{ skill.category }}: </span>
-        <span class="text-gray-700">{{ skill.items.join(', ') }}</span>
+        <span style="font-weight: 700; color: #111827;">{{ skill.category }}: </span>
+        <span style="color: #374151;">{{ skill.items.join(', ') }}</span>
       </div>
     </section>
 
     <!-- ── Projects ──────────────────────────────────────────────── -->
     <section
       v-if="hasProjects"
-      :class="['mb-4 rounded transition-colors', isPulsed('projects') ? 'section-pulse' : '']"
+      :class="isPulsed('projects') ? 'section-pulse' : ''"
+      style="margin-bottom: 12px;"
     >
       <h2 class="cv-section-heading">Projects</h2>
       <div
         v-for="(project, index) in cvData.projects"
         :key="project.id"
-        :class="index > 0 ? 'mt-3' : ''"
+        :style="index > 0 ? 'margin-top: 10px;' : ''"
       >
-        <div class="flex items-start justify-between">
-          <p class="text-sm font-semibold text-gray-900">{{ project.name }}</p>
-          <p v-if="project.link" class="text-xs text-indigo-600 ml-2 shrink-0">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ project.name }}</p>
+          <p v-if="project.link" style="font-size: 10px; color: #4f46e5; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
             {{ project.link.replace('https://', '') }}
           </p>
         </div>
-        <p class="text-xs text-gray-700 mt-0.5 leading-relaxed">{{ project.description }}</p>
-        <p v-if="project.techStack.length" class="text-xs text-gray-500 mt-0.5">
-          <span class="font-medium text-gray-600">Stack:</span>
-          {{ project.techStack.join(', ') }}
+        <p style="font-size: 10.5px; color: #374151; margin: 3px 0 2px 0; line-height: 1.55;">{{ project.description }}</p>
+        <p v-if="project.techStack.length" style="font-size: 10px; color: #4b5563; margin: 0;">
+          <span style="font-weight: 600; color: #111827;">Stack: </span>{{ project.techStack.join(', ') }}
         </p>
       </div>
     </section>
@@ -189,22 +212,23 @@
     <!-- ── Certifications ────────────────────────────────────────── -->
     <section
       v-if="hasCertifications"
-      :class="['mb-4 rounded transition-colors', isPulsed('certifications') ? 'section-pulse' : '']"
+      :class="isPulsed('certifications') ? 'section-pulse' : ''"
     >
       <h2 class="cv-section-heading">Certifications</h2>
       <div
         v-for="(cert, index) in cvData.certifications"
         :key="cert.id"
-        :class="['text-xs', index > 0 ? 'mt-1.5' : '']"
+        :style="index > 0 ? 'margin-top: 5px;' : ''"
+        style="display: flex; justify-content: space-between; align-items: baseline; font-size: 10.5px;"
       >
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="font-semibold text-gray-900">{{ cert.name }}</span>
-            <span class="text-gray-600"> · {{ cert.issuer }}</span>
-            <span v-if="cert.credentialId" class="text-gray-500"> · ID: {{ cert.credentialId }}</span>
-          </div>
-          <span class="text-gray-500 ml-2 shrink-0">{{ cert.date }}</span>
+        <div>
+          <span style="font-weight: 700; color: #111827;">{{ cert.name }}</span>
+          <span style="color: #4b5563;"> · {{ cert.issuer }}</span>
+          <span v-if="cert.credentialId" style="color: #6b7280;"> · ID: {{ cert.credentialId }}</span>
         </div>
+        <span style="font-size: 10px; color: #6b7280; white-space: nowrap; margin-left: 12px; flex-shrink: 0;">
+          {{ cert.date }}
+        </span>
       </div>
     </section>
   </article>
@@ -212,13 +236,13 @@
 
 <style scoped>
   .cv-section-heading {
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: 8.5px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #1a1a2e;
-    border-bottom: 1.5px solid #e5e7eb;
+    letter-spacing: 0.12em;
+    color: #111827;
+    border-bottom: 1.5px solid #d1d5db;
     padding-bottom: 3px;
-    margin-bottom: 6px;
+    margin: 0 0 6px 0;
   }
 </style>

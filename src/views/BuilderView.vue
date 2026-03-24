@@ -172,18 +172,25 @@
               </button>
             </div>
 
-            <!-- A4 preview with scale transform to fit panel -->
+            <!-- A4 preview with scale transform to fit panel.
+                 overflow-hidden is intentionally ABSENT from the inner wrapper:
+                 the CV element must not be clipped in either the preview or PDF. -->
             <div
               class="flex-1 overflow-auto flex justify-center py-6 px-4"
               style="background: #18181f"
             >
               <div
-                class="origin-top"
-                :style="{ transform: `scale(${previewScale})`, transformOrigin: 'top center' }"
+                :style="{
+                  transform: `scale(${previewScale})`,
+                  transformOrigin: 'top center',
+                  // Preserve the layout space so the scroll container size
+                  // reflects the scaled-down visual height, not the native 1123px.
+                  height: `${1123 * previewScale}px`,
+                  width: `${794 * previewScale}px`,
+                  flexShrink: '0',
+                }"
               >
-                <div class="shadow-2xl rounded-sm overflow-hidden">
-                  <CVPreview />
-                </div>
+                <CVPreview />
               </div>
             </div>
           </div>
