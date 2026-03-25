@@ -168,7 +168,7 @@ select:focus {
   to   { opacity: 1; transform: translateY(0);    }
 }
 
-/* ─── Aurora glow (homepage) ─────────────────────────────────────────────── */
+/* ─── Aurora glow (homepage — mouse-tracking layers) ────────────────────── */
 .aurora-glow {
   pointer-events: none;
   position: absolute;
@@ -176,8 +176,55 @@ select:focus {
   transition: opacity 0.6s ease;
 }
 
+/* ─── Aurora ambient layer (autonomous CSS animation) ────────────────────── */
+.aurora-ambient {
+  pointer-events: none;
+  position: absolute;
+  inset: -20%;         /* wider than the container so gradients bleed freely */
+  background:
+    radial-gradient(900px circle at 25% 45%, rgba(8, 145, 178, 0.10) 0%, transparent 68%),
+    radial-gradient(700px circle at 78% 55%, rgba(13, 148, 136, 0.08) 0%, transparent 60%),
+    radial-gradient(500px circle at 55% 80%, rgba(5, 150, 105, 0.06) 0%, transparent 55%);
+  animation: auroraFloat 14s ease-in-out infinite;
+}
+
+@keyframes auroraFloat {
+  0%,  100% { opacity: 0.75; transform: scale(1)    translate(0%,   0%);   }
+  25%        { opacity: 1;    transform: scale(1.04) translate(1.5%, -1%);  }
+  50%        { opacity: 0.85; transform: scale(1.07) translate(-1%,  1.5%); }
+  75%        { opacity: 1;    transform: scale(1.03) translate(0.5%, 1%);   }
+}
+
 /* ─── Grid dot pattern (homepage) ───────────────────────────────────────── */
 .dot-grid {
   background-image: radial-gradient(circle, #1e3a5230 1px, transparent 1px);
   background-size: 28px 28px;
+}
+
+/* ─── Feature card (gradient bg + animated border hover) ────────────────── */
+.feature-card {
+  background: linear-gradient(
+    140deg,
+    rgba(8,  145, 178, 0.07) 0%,
+    rgba(12,  21,  35, 0.92) 55%,
+    rgba(13, 148, 136, 0.04) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition:
+    border-color  0.35s ease,
+    box-shadow    0.35s ease,
+    background    0.35s ease;
+}
+
+.feature-card:hover {
+  border-color: rgba(8, 145, 178, 0.38);
+  box-shadow:
+    0 0 28px rgba(8, 145, 178, 0.09),
+    inset 0 0 28px rgba(8, 145, 178, 0.04);
+  background: linear-gradient(
+    140deg,
+    rgba(8,  145, 178, 0.11) 0%,
+    rgba(12,  21,  35, 0.95) 55%,
+    rgba(13, 148, 136, 0.07) 100%
+  );
 }

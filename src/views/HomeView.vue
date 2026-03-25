@@ -106,26 +106,22 @@
         aria-labelledby="hero-heading"
         @mousemove="onMouseMove"
       >
-        <!-- Aurora layer 1: cyan — follows cursor -->
+        <!-- Autonomous animated ambient aurora (CSS keyframes) -->
+        <div class="aurora-ambient" aria-hidden="true" />
+        <!-- Mouse-tracking layer 1: cyan — follows cursor -->
         <div
           class="aurora-glow"
           :style="{
-            background: `radial-gradient(600px circle at ${cursorX}% ${cursorY}%, rgba(8,145,178,0.13) 0%, transparent 70%)`,
+            background: `radial-gradient(820px circle at ${cursorX}% ${cursorY}%, rgba(8,145,178,0.14) 0%, transparent 70%)`,
           }"
           aria-hidden="true"
         />
-        <!-- Aurora layer 2: teal/emerald — moves counter to cursor -->
+        <!-- Mouse-tracking layer 2: teal — counter-moves -->
         <div
           class="aurora-glow"
           :style="{
-            background: `radial-gradient(500px circle at ${100 - cursorX}% ${100 - cursorY}%, rgba(13,148,136,0.10) 0%, transparent 65%)`,
+            background: `radial-gradient(680px circle at ${100 - cursorX}% ${100 - cursorY}%, rgba(13,148,136,0.11) 0%, transparent 65%)`,
           }"
-          aria-hidden="true"
-        />
-        <!-- Static ambient glow -->
-        <div
-          class="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] rounded-full opacity-8 pointer-events-none"
-          style="background: radial-gradient(ellipse, rgba(8,145,178,0.18) 0%, transparent 70%)"
           aria-hidden="true"
         />
 
@@ -373,7 +369,7 @@
           <div
             v-for="(step, index) in steps"
             :key="step.number"
-            class="flex flex-col gap-3 stagger-item"
+            class="feature-card flex flex-col gap-3 p-5 rounded-2xl stagger-item"
             :style="{ animationDelay: `${index * 60}ms` }"
           >
             <div class="flex items-center gap-3">
@@ -408,8 +404,7 @@
           <div
             v-for="(feature, index) in features"
             :key="feature.title"
-            class="p-5 rounded-2xl border border-white/5 hover:border-accent/30 transition-all stagger-item group cursor-default"
-            style="background: var(--bg-surface)"
+            class="feature-card p-5 rounded-2xl stagger-item group cursor-default"
             :style="{ animationDelay: `${(index + 1) * 40}ms` }"
           >
             <div
