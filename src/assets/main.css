@@ -4,16 +4,24 @@
 
 /* ─── CSS custom properties ─────────────────────────────────────────────── */
 :root {
-  --bg-shell: #0f0f13;
-  --bg-surface: #1a1a24;
-  --accent: #6366f1;
+  --bg-shell: #070D16;
+  --bg-surface: #0C1523;
+  --accent: #0891B2;          /* Cyan-600  */
+  --accent-light: #06B6D4;    /* Cyan-500  */
+  --accent-teal: #0D9488;     /* Teal-600  */
+  --accent-emerald: #059669;  /* Emerald-600 */
   --cv-bg: #ffffff;
-  --text-primary: #e2e8f0;
-  --text-secondary: #94a3b8;
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
 
   /* A4 dimensions at 96dpi */
   --a4-width: 794px;
   --a4-height: 1123px;
+
+  /* Shimmer gradient – updated to cyan→teal */
+  --shimmer-from: #0891B2;
+  --shimmer-mid: #06B6D4;
+  --shimmer-to: #0D9488;
 }
 
 /* ─── Base reset ──────────────────────────────────────────────────────────── */
@@ -42,7 +50,7 @@ body {
   min-height: 100vh;
 }
 
-/* ─── Scrollbar styling ──────────────────────────────────────────────────── */
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -53,7 +61,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2d2d3d;
+  background: #1a2a3d;
   border-radius: 3px;
 }
 
@@ -67,7 +75,7 @@ body {
   outline-offset: 2px;
 }
 
-/* ─── Form input global styles (overrides @tailwindcss/forms) ─────────────── */
+/* ─── Form inputs ────────────────────────────────────────────────────────── */
 [type='text'],
 [type='email'],
 [type='tel'],
@@ -76,7 +84,7 @@ body {
 textarea,
 select {
   background-color: var(--bg-surface) !important;
-  border-color: #2d2d3d !important;
+  border-color: #1a2a3d !important;
   color: var(--text-primary) !important;
   border-radius: 8px !important;
   transition:
@@ -92,42 +100,30 @@ select {
 textarea:focus,
 select:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.18) !important;
   outline: none !important;
 }
 
-/* ─── A4 CV preview container ────────────────────────────────────────────── */
-.cv-a4 {
-  width: var(--a4-width);
-  min-height: var(--a4-height);
-  background: var(--cv-bg);
-  font-family: 'Inter', sans-serif;
-}
-
-/* ─── Shimmer animation for buttons ─────────────────────────────────────── */
+/* ─── Shimmer button  ───────────────────────────────────────── */
 .shimmer-btn {
   background: linear-gradient(
     90deg,
-    #6366f1 0%,
-    #818cf8 40%,
-    #6366f1 60%,
-    #6366f1 100%
+    var(--shimmer-from) 0%,
+    var(--shimmer-mid) 35%,
+    var(--shimmer-to) 55%,
+    var(--shimmer-from) 100%
   );
   background-size: 200% auto;
+  transition: background-position 0.4s ease;
 }
 
 .shimmer-btn:hover {
-  animation: shimmer 1.5s infinite;
-  background-position: right center;
+  animation: shimmer 1.6s linear infinite;
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
 }
 
 /* ─── Section highlight pulse ────────────────────────────────────────────── */
@@ -136,18 +132,12 @@ select:focus {
 }
 
 @keyframes pulseBg {
-  0% {
-    background-color: transparent;
-  }
-  40% {
-    background-color: rgba(99, 102, 241, 0.12);
-  }
-  100% {
-    background-color: transparent;
-  }
+  0%   { background-color: transparent; }
+  40%  { background-color: rgba(8, 145, 178, 0.12); }
+  100% { background-color: transparent; }
 }
 
-/* ─── Drag ghost placeholder ─────────────────────────────────────────────── */
+/* ─── Drag placeholder ───────────────────────────────────────────────────── */
 .drag-over {
   border: 2px dashed var(--accent) !important;
   opacity: 0.6;
@@ -158,27 +148,36 @@ select:focus {
   transform: scale(0.98);
 }
 
-/* ─── Stagger animation utility ──────────────────────────────────────────── */
+/* ─── Stagger reveal ─────────────────────────────────────────────────────── */
 .stagger-item {
   opacity: 0;
-  animation: slideUp 0.4s ease forwards;
+  animation: slideUp 0.45s ease forwards;
 }
 
-.stagger-item:nth-child(1) { animation-delay: 0ms; }
-.stagger-item:nth-child(2) { animation-delay: 60ms; }
-.stagger-item:nth-child(3) { animation-delay: 120ms; }
-.stagger-item:nth-child(4) { animation-delay: 180ms; }
-.stagger-item:nth-child(5) { animation-delay: 240ms; }
-.stagger-item:nth-child(6) { animation-delay: 300ms; }
-.stagger-item:nth-child(7) { animation-delay: 360ms; }
+.stagger-item:nth-child(1)  { animation-delay:   0ms; }
+.stagger-item:nth-child(2)  { animation-delay:  55ms; }
+.stagger-item:nth-child(3)  { animation-delay: 110ms; }
+.stagger-item:nth-child(4)  { animation-delay: 165ms; }
+.stagger-item:nth-child(5)  { animation-delay: 220ms; }
+.stagger-item:nth-child(6)  { animation-delay: 275ms; }
+.stagger-item:nth-child(7)  { animation-delay: 330ms; }
+.stagger-item:nth-child(8)  { animation-delay: 385ms; }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ─── Aurora glow (homepage) ─────────────────────────────────────────────── */
+.aurora-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* ─── Grid dot pattern (homepage) ───────────────────────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(circle, #1e3a5230 1px, transparent 1px);
+  background-size: 28px 28px;
 }

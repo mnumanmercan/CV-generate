@@ -9,12 +9,16 @@ export default {
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
-        shell: '#0F0F13',
-        surface: '#1A1A24',
+        shell: '#070D16',
+        surface: '#0C1523',
         accent: {
-          DEFAULT: '#6366F1',
-          hover: '#818CF8',
-          muted: '#6366F120',
+          DEFAULT: '#0891B2',   // Cyan-600
+          hover: '#0E7490',     // Cyan-700
+          light: '#06B6D4',     // Cyan-500
+          muted: '#0891B215',
+        },
+        teal: {
+          accent: '#0D9488',
         },
         cv: '#FFFFFF',
         primary: '#E2E8F0',
@@ -27,7 +31,7 @@ export default {
         shimmer: 'shimmer 1.5s infinite',
         'chip-in': 'chipIn 0.25s ease forwards',
         'panel-reveal': 'panelReveal 0.5s ease forwards',
-        'progress-line': 'progressLine 0.3s ease forwards',
+        'float': 'float 6s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -40,7 +44,7 @@ export default {
         },
         pulseBg: {
           '0%': { backgroundColor: 'transparent' },
-          '40%': { backgroundColor: '#6366F120' },
+          '40%': { backgroundColor: '#0891B218' },
           '100%': { backgroundColor: 'transparent' },
         },
         shimmer: {
@@ -55,9 +59,9 @@ export default {
           from: { opacity: '0', transform: 'translateX(-16px)' },
           to: { opacity: '1', transform: 'translateX(0)' },
         },
-        progressLine: {
-          from: { width: '0%' },
-          to: { width: '100%' },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
         },
       },
     },

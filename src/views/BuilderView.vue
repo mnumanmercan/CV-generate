@@ -67,8 +67,19 @@
     { deep: true },
   )
 
-  // A4 preview scale — fits preview panel
-  const previewScale = ref(0.72)
+  // A4 preview scale — CSS-only zoom, does NOT resize the element
+  const previewScale = ref(0.80)
+  const ZOOM_MIN = 0.55
+  const ZOOM_MAX = 1.0
+  const ZOOM_STEP = 0.10
+
+  function zoomIn(): void {
+    previewScale.value = Math.min(ZOOM_MAX, Math.round((previewScale.value + ZOOM_STEP) * 100) / 100)
+  }
+
+  function zoomOut(): void {
+    previewScale.value = Math.max(ZOOM_MIN, Math.round((previewScale.value - ZOOM_STEP) * 100) / 100)
+  }
 
   // PDF download
   async function handleDownload(): Promise<void> {
@@ -153,24 +164,55 @@
                 <span class="text-xs text-secondary font-mono">ATS</span>
               </div>
 
-              <!-- PDF Download button -->
-              <button
-                type="button"
-                :disabled="pdfStatus === 'generating'"
-                :class="[
-                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all',
-                  pdfStatus === 'generating'
-                    ? 'bg-accent/50 text-white/70 cursor-not-allowed'
-                    : 'shimmer-btn text-white',
-                ]"
-                aria-label="Download CV as PDF"
-                @click="handleDownload"
-              >
-                <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
-                <span v-else aria-hidden="true">↓</span>
-                {{ pdfStatus === 'generating' ? 'Generating...' : 'Download PDF' }}
-              </button>
-            </div>
+              <!-- Zoom controls + PDF Download -->
+              <div class="flex items-center gap-2">
+                <!-- Zoom out -->
+                <button
+                  type="button"
+                  :disabled="previewScale <= ZOOM_MIN"
+                  class="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-secondary hover:text-primary hover:border-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Zoom out"
+                  @click="zoomOut"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+                  </svg>
+                </button>
+                <span class="text-xs text-secondary font-mono w-10 text-center select-none">
+                  {{ Math.round(previewScale * 100) }}%
+                </span>
+                <!-- Zoom in -->
+                <button
+                  type="button"
+                  :disabled="previewScale >= ZOOM_MAX"
+                  class="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-secondary hover:text-primary hover:border-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Zoom in"
+                  @click="zoomIn"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+                <span class="w-px h-4 bg-white/10 mx-1" aria-hidden="true" />
+                <!-- PDF Download -->
+                <button
+                  type="button"
+                  :disabled="pdfStatus === 'generating'"
+                  :class="[
+                    'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all',
+                    pdfStatus === 'generating'
+                      ? 'bg-accent/50 text-white/70 cursor-not-allowed'
+                      : 'shimmer-btn text-white',
+                  ]"
+                  aria-label="Download CV as PDF"
+                  @click="handleDownload"
+                >
+                  <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
+                  <span v-else aria-hidden="true">↓</span>
+                  {{ pdfStatus === 'generating' ? 'Generating...' : 'Download PDF' }}
+                </button>
+              </div>
+            </div><!-- end toolbar -->
 
             <!-- A4 preview with scale transform to fit panel.
                  overflow-hidden is intentionally ABSENT from the inner wrapper:

@@ -1,7 +1,30 @@
 <script setup lang="ts">
+  import { ref, onUnmounted } from 'vue'
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
 
+  /* ── Mouse-tracking aurora ────────────────────────────────────────────── */
+  const cursorX = ref(50)
+  const cursorY = ref(50)
+  let rafPending = false
+
+  function onMouseMove(e: MouseEvent): void {
+    if (rafPending) return
+    rafPending = true
+    requestAnimationFrame(() => {
+      const target = e.currentTarget as HTMLElement
+      const rect = target.getBoundingClientRect()
+      cursorX.value = ((e.clientX - rect.left) / rect.width) * 100
+      cursorY.value = ((e.clientY - rect.top) / rect.height) * 100
+      rafPending = false
+    })
+  }
+
+  onUnmounted(() => {
+    rafPending = false
+  })
+
+  /* ── Page data ────────────────────────────────────────────────────────── */
   const features = [
     {
       icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>`,
@@ -21,7 +44,7 @@
     {
       icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>`,
       title: 'Auto-Save',
-      description: 'Every keystroke is debounced and saved to your browser\'s localStorage — your work is never lost.',
+      description: "Every keystroke is debounced and saved to your browser's localStorage — your work is never lost.",
     },
     {
       icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>`,
@@ -77,15 +100,32 @@
 
     <main class="flex-1 flex flex-col">
 
-      <!-- ── Hero ──────────────────────────────────────────────── -->
+      <!-- ── Hero ──────────────────────────────────────────────────────── -->
       <section
-        class="relative flex flex-col items-center text-center px-6 pt-20 pb-16 md:pt-28 md:pb-20 overflow-hidden"
+        class="relative flex flex-col items-center text-center px-6 pt-20 pb-16 md:pt-28 md:pb-20 overflow-hidden dot-grid"
         aria-labelledby="hero-heading"
+        @mousemove="onMouseMove"
       >
-        <!-- Background glow -->
+        <!-- Aurora layer 1: cyan — follows cursor -->
         <div
-          class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-10 pointer-events-none"
-          style="background: radial-gradient(ellipse, #6366f1 0%, transparent 70%)"
+          class="aurora-glow"
+          :style="{
+            background: `radial-gradient(600px circle at ${cursorX}% ${cursorY}%, rgba(8,145,178,0.13) 0%, transparent 70%)`,
+          }"
+          aria-hidden="true"
+        />
+        <!-- Aurora layer 2: teal/emerald — moves counter to cursor -->
+        <div
+          class="aurora-glow"
+          :style="{
+            background: `radial-gradient(500px circle at ${100 - cursorX}% ${100 - cursorY}%, rgba(13,148,136,0.10) 0%, transparent 65%)`,
+          }"
+          aria-hidden="true"
+        />
+        <!-- Static ambient glow -->
+        <div
+          class="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] rounded-full opacity-8 pointer-events-none"
+          style="background: radial-gradient(ellipse, rgba(8,145,178,0.18) 0%, transparent 70%)"
           aria-hidden="true"
         />
 
@@ -108,7 +148,7 @@
           Build a
           <span
             class="text-transparent bg-clip-text"
-            style="background-image: linear-gradient(135deg, #6366f1 0%, #818cf8 50%, #a5b4fc 100%)"
+            style="background-image: linear-gradient(135deg, #0891B2 0%, #06B6D4 50%, #0D9488 100%)"
           >
             Professional CV
           </span>
@@ -158,40 +198,77 @@
         </div>
       </section>
 
-      <!-- ── CV preview mockup ──────────────────────────────────── -->
-      <section class="px-6 pb-20 max-w-5xl mx-auto w-full" aria-label="CV preview mockup">
+      <!-- ── CV preview mockup ──────────────────────────────────────────── -->
+      <section class="px-6 pb-20 max-w-6xl mx-auto w-full" aria-label="CV builder preview mockup">
         <div
-          class="rounded-2xl border border-white/5 overflow-hidden shadow-2xl stagger-item"
-          style="background: #111118"
+          class="rounded-2xl border border-white/5 overflow-hidden shadow-2xl shadow-black/40 stagger-item"
+          style="background: #0d1117"
         >
           <!-- Fake browser chrome -->
           <div
             class="flex items-center gap-2 px-4 py-3 border-b border-white/5"
-            style="background: #0d0d12"
+            style="background: #0a0e14"
             aria-hidden="true"
           >
             <span class="w-3 h-3 rounded-full bg-red-500/60" />
             <span class="w-3 h-3 rounded-full bg-yellow-500/60" />
             <span class="w-3 h-3 rounded-full bg-green-500/60" />
-            <div
-              class="flex-1 mx-4 h-5 rounded bg-white/5 flex items-center px-3"
-            >
+            <div class="flex-1 mx-4 h-5 rounded-md bg-white/5 flex items-center px-3">
               <span class="text-secondary text-xs opacity-50">cv-generate.app/builder</span>
+            </div>
+            <!-- Fake toolbar buttons -->
+            <div class="flex items-center gap-2 ml-2">
+              <div class="h-5 w-16 rounded bg-accent/20 flex items-center justify-center">
+                <span class="text-accent text-[9px] font-semibold">↓ PDF</span>
+              </div>
             </div>
           </div>
 
-          <!-- Split-screen mockup -->
-          <div class="flex h-72 md:h-80">
+          <!-- Split-screen mockup — made taller -->
+          <div class="flex h-[420px] md:h-[520px]">
             <!-- Left: form panel -->
             <div
-              class="w-[45%] border-r border-white/5 p-4 flex flex-col gap-2"
+              class="w-[42%] border-r border-white/5 p-5 flex flex-col gap-2.5 overflow-hidden"
               style="background: var(--bg-surface)"
               aria-hidden="true"
             >
-              <p class="text-xs text-secondary font-semibold mb-1">CV Information</p>
-              <!-- Simulated form sections -->
+              <div class="flex items-center justify-between mb-1">
+                <p class="text-xs text-secondary font-semibold">CV Information</p>
+                <span class="text-[9px] text-emerald-400 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Saved
+                </span>
+              </div>
+
+              <!-- Simulated form sections (taller, more detail) -->
               <div
-                v-for="label in ['👤  Personal Info', '📝  Professional Summary', '💼  Work Experience', '🎓  Education', '⚙️  Skills', '🚀  Projects']"
+                class="px-3 py-2.5 rounded-lg border border-accent/30 bg-accent/5"
+                aria-hidden="true"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs text-primary font-semibold">👤 Personal Info</span>
+                  <svg class="w-3 h-3 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                  </svg>
+                </div>
+                <!-- Fake input fields -->
+                <div class="flex flex-col gap-1.5">
+                  <div class="h-5 rounded bg-white/8 flex items-center px-2">
+                    <span class="text-[8px] text-secondary/70">M. Numan MERCAN</span>
+                  </div>
+                  <div class="flex gap-1.5">
+                    <div class="flex-1 h-5 rounded bg-white/8 flex items-center px-2">
+                      <span class="text-[8px] text-secondary/70">Software Engineer</span>
+                    </div>
+                    <div class="flex-1 h-5 rounded bg-white/8 flex items-center px-2">
+                      <span class="text-[8px] text-secondary/70">Istanbul, TR</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-for="label in ['📝  Summary', '💼  Work Experience', '🎓  Education', '⚙️  Skills', '🚀  Projects', '🏆  Certifications']"
                 :key="label"
                 class="flex items-center justify-between px-3 py-2 rounded-lg border border-white/5 hover:border-accent/20 transition-colors cursor-default"
               >
@@ -202,42 +279,81 @@
               </div>
             </div>
 
-            <!-- Right: CV preview -->
-            <div class="flex-1 flex justify-center items-start overflow-hidden p-4" style="background: #18181f">
+            <!-- Right: CV preview — larger and more detailed -->
+            <div
+              class="flex-1 flex justify-center items-start overflow-hidden p-5"
+              style="background: #18181f"
+            >
+              <!-- Subtle glow behind paper -->
               <div
-                class="bg-white rounded shadow-xl w-full max-w-xs p-4 text-[#1a1a1a]"
-                style="font-family: 'Inter', sans-serif; font-size: 7px; line-height: 1.5;"
+                class="absolute w-48 h-64 rounded-full pointer-events-none"
+                style="background: radial-gradient(ellipse, rgba(8,145,178,0.06) 0%, transparent 70%)"
+                aria-hidden="true"
+              />
+              <div
+                class="bg-white rounded shadow-2xl shadow-black/50 w-full max-w-sm p-5 text-[#1a1a1a] relative"
+                style="font-family: 'Inter', sans-serif; font-size: 8px; line-height: 1.55;"
                 aria-hidden="true"
               >
-                <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; margin-bottom: 6px;">
-                  <div style="font-size: 13px; font-weight: 700; color: #111;">Your Full Name</div>
-                  <div style="font-size: 8px; font-weight: 600; color: #4f46e5; margin: 1px 0 3px;">Senior Software Engineer</div>
-                  <div style="font-size: 6.5px; color: #6b7280;">
-                    email@example.com · +1 555 000 0000 · New York, NY · linkedin.com/in/you
+                <!-- CV Header -->
+                <div style="border-bottom: 1.5px solid #e5e7eb; padding-bottom: 7px; margin-bottom: 8px;">
+                  <div style="font-size: 17px; font-weight: 800; color: #111; letter-spacing: -0.3px;">M. Numan MERCAN</div>
+                  <div style="font-size: 10px; font-weight: 600; color: #0891B2; margin: 2px 0 4px;">Full-Stack Software Engineer</div>
+                  <div style="font-size: 7.5px; color: #6b7280; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span>numan@example.com</span>
+                    <span>·</span>
+                    <span>+90 555 000 00 00</span>
+                    <span>·</span>
+                    <span>Istanbul, Türkiye</span>
+                    <span>·</span>
+                    <span>linkedin.com/in/mnumanmercan</span>
                   </div>
                 </div>
-                <div style="margin-bottom: 5px;">
-                  <div style="font-size: 5.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px;">Professional Summary</div>
-                  <div style="color: #374151;">Results-driven software engineer with 5+ years building scalable web applications. Led teams to deliver critical features...</div>
+
+                <!-- Summary -->
+                <div style="margin-bottom: 7px;">
+                  <div style="font-size: 6.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px; color: #111;">Professional Summary</div>
+                  <div style="color: #374151; line-height: 1.55;">Full-stack engineer with 4+ years delivering Vue/TypeScript SPAs and Node.js microservices at scale. Passionate about clean code, ATS-optimised content, and developer experience.</div>
                 </div>
-                <div style="margin-bottom: 5px;">
-                  <div style="font-size: 5.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px;">Work Experience</div>
-                  <div style="display: flex; justify-content: space-between;">
-                    <div>
-                      <div style="font-weight: 700; font-size: 7.5px;">Senior Software Engineer</div>
-                      <div style="color: #6b7280;">TechCorp Inc. · San Francisco, CA</div>
+
+                <!-- Experience -->
+                <div style="margin-bottom: 7px;">
+                  <div style="font-size: 6.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 4px; color: #111;">Work Experience</div>
+                  <div style="margin-bottom: 5px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                      <div>
+                        <div style="font-weight: 700; font-size: 9px; color: #111;">Senior Software Engineer</div>
+                        <div style="color: #6b7280; font-size: 7.5px;">TechCorp Inc. · Istanbul, TR</div>
+                      </div>
+                      <div style="color: #9ca3af; font-size: 7px; white-space: nowrap; margin-left: 8px;">03/2022 – Present</div>
                     </div>
-                    <div style="color: #9ca3af; font-size: 6px;">01/2022 – Present</div>
+                    <ul style="padding-left: 10px; margin-top: 3px; color: #374151;">
+                      <li style="list-style: disc; margin-bottom: 1.5px;">Architected Vue 3 + TypeScript SPA reducing bundle size by 35%.</li>
+                      <li style="list-style: disc; margin-bottom: 1.5px;">Led team of 4 to migrate monolith → microservices cutting latency 40%.</li>
+                      <li style="list-style: disc;">Built real-time dashboard serving 50 k+ daily active users.</li>
+                    </ul>
                   </div>
-                  <ul style="padding-left: 8px; margin-top: 2px; color: #374151;">
-                    <li style="list-style: disc; margin-bottom: 1px;">Led migration of monolith to microservices, reducing latency by 40%.</li>
-                    <li style="list-style: disc;">Built real-time dashboard serving 50k+ daily active users.</li>
-                  </ul>
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                      <div>
+                        <div style="font-weight: 700; font-size: 9px; color: #111;">Frontend Developer</div>
+                        <div style="color: #6b7280; font-size: 7.5px;">Startup Labs · Remote</div>
+                      </div>
+                      <div style="color: #9ca3af; font-size: 7px; white-space: nowrap; margin-left: 8px;">06/2020 – 02/2022</div>
+                    </div>
+                    <ul style="padding-left: 10px; margin-top: 3px; color: #374151;">
+                      <li style="list-style: disc; margin-bottom: 1.5px;">Delivered 12+ feature releases across 3 product lines on schedule.</li>
+                      <li style="list-style: disc;">Introduced component library that cut dev time by 25%.</li>
+                    </ul>
+                  </div>
                 </div>
+
+                <!-- Skills -->
                 <div>
-                  <div style="font-size: 5.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px;">Skills</div>
-                  <div><span style="font-weight: 700;">Frontend:</span> Vue, React, TypeScript, TailwindCSS</div>
-                  <div><span style="font-weight: 700;">Backend:</span> Node.js, Go, PostgreSQL, MongoDB</div>
+                  <div style="font-size: 6.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px; color: #111;">Skills</div>
+                  <div style="color: #374151; margin-bottom: 2px;"><span style="font-weight: 700;">Frontend:</span> Vue 3, React, TypeScript, TailwindCSS, Vite</div>
+                  <div style="color: #374151; margin-bottom: 2px;"><span style="font-weight: 700;">Backend:</span> Node.js, Express, PostgreSQL, MongoDB, Redis</div>
+                  <div style="color: #374151;"><span style="font-weight: 700;">DevOps:</span> Docker, GitHub Actions, AWS EC2, Vercel</div>
                 </div>
               </div>
             </div>
@@ -245,7 +361,7 @@
         </div>
       </section>
 
-      <!-- ── How it works ───────────────────────────────────────── -->
+      <!-- ── How it works ───────────────────────────────────────────────── -->
       <section class="px-6 pb-20 max-w-4xl mx-auto w-full" aria-labelledby="how-heading">
         <h2
           id="how-heading"
@@ -263,7 +379,7 @@
             <div class="flex items-center gap-3">
               <span
                 class="text-3xl font-black font-mono leading-none"
-                style="color: rgba(99,102,241,0.25)"
+                style="color: rgba(8,145,178,0.30)"
                 aria-hidden="true"
               >
                 {{ step.number }}
@@ -276,7 +392,7 @@
         </div>
       </section>
 
-      <!-- ── Feature grid ───────────────────────────────────────── -->
+      <!-- ── Feature grid ───────────────────────────────────────────────── -->
       <section
         class="px-6 pb-24 max-w-5xl mx-auto w-full"
         aria-labelledby="features-heading"
@@ -308,21 +424,32 @@
         </div>
       </section>
 
-      <!-- ── CTA banner ─────────────────────────────────────────── -->
+      <!-- ── CTA banner ─────────────────────────────────────────────────── -->
       <section class="px-6 pb-24 max-w-3xl mx-auto w-full">
         <div
-          class="rounded-2xl p-10 text-center border border-accent/20 stagger-item"
-          style="background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(129,140,248,0.04) 100%)"
+          class="rounded-2xl p-10 text-center border border-accent/20 stagger-item relative overflow-hidden"
+          style="background: linear-gradient(135deg, rgba(8,145,178,0.10) 0%, rgba(13,148,136,0.05) 100%)"
         >
-          <h2 class="text-2xl font-bold text-primary mb-2">
+          <!-- Subtle corner glows -->
+          <div
+            class="absolute -top-10 -left-10 w-40 h-40 rounded-full pointer-events-none"
+            style="background: radial-gradient(circle, rgba(8,145,178,0.15) 0%, transparent 70%)"
+            aria-hidden="true"
+          />
+          <div
+            class="absolute -bottom-10 -right-10 w-40 h-40 rounded-full pointer-events-none"
+            style="background: radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)"
+            aria-hidden="true"
+          />
+          <h2 class="relative text-2xl font-bold text-primary mb-2">
             Ready to build your CV?
           </h2>
-          <p class="text-secondary text-sm mb-6 max-w-xs mx-auto">
+          <p class="relative text-secondary text-sm mb-6 max-w-xs mx-auto">
             It takes less than 5 minutes. No account needed.
           </p>
           <RouterLink
             to="/builder"
-            class="shimmer-btn inline-block px-8 py-3.5 rounded-xl text-white font-semibold shadow-lg shadow-accent/20"
+            class="relative shimmer-btn inline-block px-8 py-3.5 rounded-xl text-white font-semibold shadow-lg shadow-accent/20"
           >
             Start Building for Free
           </RouterLink>
