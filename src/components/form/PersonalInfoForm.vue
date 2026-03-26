@@ -91,6 +91,7 @@
         v-model="cvData.personal.fullName"
         label="Full Name"
         placeholder="Jane Doe"
+        autocomplete="name"
         required
         :error="errors.fullName"
         @blur="validateField('fullName')"
@@ -100,6 +101,7 @@
         v-model="cvData.personal.jobTitle"
         label="Job Title"
         placeholder="Senior Software Engineer"
+        autocomplete="organization-title"
         required
         :error="errors.jobTitle"
         @blur="validateField('jobTitle')"
@@ -113,6 +115,7 @@
         label="Email"
         type="email"
         placeholder="jane@example.com"
+        autocomplete="email"
         required
         :error="errors.email"
         @blur="validateField('email')"
@@ -123,6 +126,7 @@
         label="Phone"
         type="tel"
         placeholder="+1 555 000 0000"
+        autocomplete="tel"
         required
         :error="errors.phone"
         @blur="validateField('phone')"
@@ -134,6 +138,7 @@
       v-model="cvData.personal.location"
       label="Location"
       placeholder="New York, NY"
+      autocomplete="address-level2"
       required
       :error="errors.location"
       @blur="validateField('location')"
@@ -149,6 +154,7 @@
           label="LinkedIn"
           type="url"
           placeholder="https://linkedin.com/in/janedoe"
+          autocomplete="url"
           :error="errors.linkedin"
           @blur="validateField('linkedin')"
         />
@@ -158,6 +164,7 @@
           label="GitHub"
           type="url"
           placeholder="https://github.com/janedoe"
+          autocomplete="url"
           :error="errors.github"
           @blur="validateField('github')"
         />
@@ -167,6 +174,7 @@
           label="Website"
           type="url"
           placeholder="https://janedoe.dev"
+          autocomplete="url"
           :error="errors.website"
           @blur="validateField('website')"
         />

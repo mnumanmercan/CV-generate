@@ -1,70 +1,107 @@
 <script setup lang="ts">
-  import { ref, onUnmounted } from 'vue'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
+  import AppFooter from '@/components/ui/AppFooter.vue'
+  import FeatureIcon from '@/components/ui/FeatureIcon.vue'
+  import { useScrollReveal } from '@/composables/useScrollReveal'
+
+  /* ── Per-page title ───────────────────────────────────────────────────── */
+  onMounted(() => {
+    document.title = 'CV Generate — Build a Professional CV Free'
+  })
 
   /* ── Mouse-tracking aurora ────────────────────────────────────────────── */
-  const cursorX = ref(50)
-  const cursorY = ref(50)
-  let rafPending = false
+  const cursorX = ref<number | null>(null)
+  const cursorY = ref<number | null>(null)
+  const isTouchDevice = ref(false)
+  let rafId: number | null = null
+
+  onMounted(() => {
+    isTouchDevice.value = 'ontouchstart' in window
+  })
 
   function onMouseMove(e: MouseEvent): void {
-    if (rafPending) return
-    rafPending = true
-    requestAnimationFrame(() => {
+    if (rafId !== null) return
+    rafId = requestAnimationFrame(() => {
       const target = e.currentTarget as HTMLElement
       const rect = target.getBoundingClientRect()
       cursorX.value = ((e.clientX - rect.left) / rect.width) * 100
       cursorY.value = ((e.clientY - rect.top) / rect.height) * 100
-      rafPending = false
+      rafId = null
     })
   }
 
   onUnmounted(() => {
-    rafPending = false
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+    }
   })
 
+  // Computed aurora styles — avoid non-null assertions in template
+  const aurora1Style = computed(() =>
+    cursorX.value !== null
+      ? { background: `radial-gradient(820px circle at ${cursorX.value}% ${cursorY.value}%, rgba(8,145,178,0.14) 0%, transparent 70%)` }
+      : {},
+  )
+  const aurora2Style = computed(() =>
+    cursorX.value !== null
+      ? { background: `radial-gradient(680px circle at ${100 - (cursorX.value as number)}% ${100 - (cursorY.value as number)}%, rgba(13,148,136,0.11) 0%, transparent 65%)` }
+      : {},
+  )
+
+  /* ── Scroll reveal directive ──────────────────────────────────────────── */
+  const { vReveal } = useScrollReveal()
+
   /* ── Page data ────────────────────────────────────────────────────────── */
+  const stats = [
+    { value: '< 5 min', label: 'Build Time' },
+    { value: '100%', label: 'ATS Compliant' },
+    { value: '0', label: 'Server Uploads' },
+    { value: 'Free', label: 'Forever' },
+  ]
+
   const features = [
     {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>`,
+      icon: 'lightning',
       title: 'Real-Time Preview',
-      description: 'Watch your CV update live on the right panel as you fill in the form — no page refresh needed.',
+      description: 'Your CV updates live on every keystroke — see exactly how it looks before you export.',
     },
     {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+      icon: 'check',
       title: 'ATS Compliant',
-      description: 'Single-column layout, standard section headings, and machine-readable text — passes all major ATS parsers.',
+      description: 'Single-column layout, standard headings, and machine-readable text — passes all major ATS parsers.',
     },
     {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>`,
+      icon: 'pdf',
       title: 'Pixel-Perfect PDF',
-      description: 'The downloaded PDF is identical to the on-screen preview — same fonts, same spacing, same layout.',
+      description: 'The exported PDF is identical to the on-screen preview — same fonts, same spacing, every time.',
     },
     {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>`,
+      icon: 'refresh',
       title: 'Auto-Save',
-      description: "Every keystroke is debounced and saved to your browser's localStorage — your work is never lost.",
+      description: 'Every change is debounced and saved to your browser — your work is never lost between sessions.',
     },
     {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>`,
+      icon: 'chat',
       title: 'ATS Writing Hints',
-      description: 'Real-time warnings for weak phrases, short summaries, over-long bullets, and invalid date formats.',
+      description: 'Real-time warnings for weak phrases, short summaries, over-long bullets, and bad date formats.',
     },
     {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>`,
+      icon: 'drag',
       title: 'Drag to Reorder',
-      description: 'Rearrange experience entries, education, skills, and projects by dragging — no cut and paste.',
+      description: 'Rearrange experience, education, skills, and projects by dragging — no copy-pasting needed.',
     },
     {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>`,
+      icon: 'tag',
       title: 'Skill Tag System',
-      description: 'Add skills and technologies as animated chip tags — press Enter or comma to insert instantly.',
+      description: 'Add skills as chip tags — press Enter or comma to insert instantly. Clean, readable output.',
     },
     {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>`,
+      icon: 'lock',
       title: 'Privacy First',
-      description: 'No account. No server. Your data never leaves your browser — stored locally, owned by you.',
+      description: 'No account. No server. Your data stays in your browser — owned entirely by you.',
     },
   ]
 
@@ -72,25 +109,39 @@
     {
       number: '01',
       title: 'Fill in your details',
-      description: 'Use the accordion form on the left to enter personal info, experience, education, skills, projects, and certifications.',
+      description: 'Work through 7 smart sections — personal info, experience, education, skills, and more. Writing hints guide you as you go.',
     },
     {
       number: '02',
       title: 'Watch it come to life',
-      description: 'The A4 preview on the right updates in real-time as you type. Sections pulse to confirm your changes.',
+      description: 'Your A4 CV updates in real-time on the right panel. Every change is reflected instantly — no guessing how it will look.',
     },
     {
       number: '03',
-      title: 'Download your PDF',
-      description: 'Hit "Download PDF" — the file is pixel-identical to the preview, ATS-ready, and names itself after you.',
+      title: 'Download and apply',
+      description: 'One click exports a pixel-perfect, ATS-ready PDF. The file names itself after you. Apply with confidence.',
     },
   ]
 
-  const stats = [
-    { value: '7', label: 'CV Sections' },
-    { value: 'A4', label: 'Exact Format' },
-    { value: '0', label: 'Accounts Needed' },
-    { value: '100%', label: 'Free to Start' },
+  const testimonials = [
+    {
+      name: 'Alex K.',
+      role: 'Software Engineer',
+      text: 'Built my CV in under 10 minutes. The ATS hints caught weak phrases I never would have noticed. Got 3 interview calls the same week.',
+      stars: 5,
+    },
+    {
+      name: 'Priya M.',
+      role: 'Product Manager',
+      text: 'The real-time preview is a game changer. I could see exactly what my CV would look like on paper as I typed. Landed the role two weeks later.',
+      stars: 5,
+    },
+    {
+      name: 'James T.',
+      role: 'Data Scientist',
+      text: 'No sign-up, no bloat. I was skeptical about a free tool but the PDF is indistinguishable from paid alternatives. Will use for every application.',
+      stars: 5,
+    },
   ]
 </script>
 
@@ -100,282 +151,251 @@
 
     <main class="flex-1 flex flex-col">
 
-      <!-- ── Hero ──────────────────────────────────────────────────────── -->
+      <!-- ── Hero (2-col on lg) ──────────────────────────────────────────── -->
       <section
-        class="relative flex flex-col items-center text-center px-6 pt-20 pb-16 md:pt-28 md:pb-20 overflow-hidden dot-grid"
+        class="section-visible relative overflow-hidden dot-grid"
         aria-labelledby="hero-heading"
         @mousemove="onMouseMove"
       >
-        <!-- Autonomous animated ambient aurora (CSS keyframes) -->
+        <!-- Autonomous ambient aurora -->
         <div class="aurora-ambient" aria-hidden="true" />
-        <!-- Mouse-tracking layer 1: cyan — follows cursor -->
+
+        <!-- Mouse-tracking glow (only after first mousemove; touch fallback below) -->
+        <template v-if="!isTouchDevice">
+          <div v-if="cursorX !== null" class="aurora-glow" :style="aurora1Style" aria-hidden="true" />
+          <div v-if="cursorX !== null" class="aurora-glow" :style="aurora2Style" aria-hidden="true" />
+        </template>
+        <!-- Static centered glow for touch devices -->
         <div
+          v-if="isTouchDevice"
           class="aurora-glow"
-          :style="{
-            background: `radial-gradient(820px circle at ${cursorX}% ${cursorY}%, rgba(8,145,178,0.14) 0%, transparent 70%)`,
-          }"
-          aria-hidden="true"
-        />
-        <!-- Mouse-tracking layer 2: teal — counter-moves -->
-        <div
-          class="aurora-glow"
-          :style="{
-            background: `radial-gradient(680px circle at ${100 - cursorX}% ${100 - cursorY}%, rgba(13,148,136,0.11) 0%, transparent 65%)`,
-          }"
+          style="background: radial-gradient(820px circle at 50% 40%, rgba(8,145,178,0.12) 0%, transparent 70%)"
           aria-hidden="true"
         />
 
-        <!-- Badge -->
-        <div
-          class="relative inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-semibold mb-6 stagger-item"
-        >
-          <span
-            class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"
-            aria-hidden="true"
-          />
-          ATS-Friendly · Free · No Sign-Up Required
-        </div>
+        <!-- Two-column layout -->
+        <div class="relative max-w-7xl mx-auto px-6 pt-16 pb-12 md:pt-20 md:pb-16">
+          <div class="flex flex-col lg:flex-row items-center gap-10 lg:gap-12">
 
-        <h1
-          id="hero-heading"
-          class="relative text-4xl md:text-6xl font-bold text-primary leading-tight max-w-3xl stagger-item"
-          style="animation-delay: 60ms"
-        >
-          Build a
-          <span
-            class="text-transparent bg-clip-text"
-            style="background-image: linear-gradient(135deg, #0891B2 0%, #06B6D4 50%, #0D9488 100%)"
-          >
-            Professional CV
-          </span>
-          in Minutes
-        </h1>
-
-        <p
-          class="relative mt-5 text-secondary text-lg max-w-xl leading-relaxed stagger-item"
-          style="animation-delay: 120ms"
-        >
-          Create an ATS-compliant resume with a live preview and instant PDF download.
-          No account required — your data stays private in your browser.
-        </p>
-
-        <div
-          class="relative flex flex-col sm:flex-row gap-3 mt-8 stagger-item"
-          style="animation-delay: 180ms"
-        >
-          <RouterLink
-            to="/builder"
-            class="shimmer-btn px-7 py-3.5 rounded-xl text-white font-semibold text-base shadow-lg shadow-accent/20"
-          >
-            Get Started — It's Free
-          </RouterLink>
-          <RouterLink
-            to="/pricing"
-            class="px-7 py-3.5 rounded-xl border border-white/10 text-secondary font-medium text-base hover:text-primary hover:border-white/20 transition-colors"
-          >
-            View Plans
-          </RouterLink>
-        </div>
-
-        <!-- Stats row -->
-        <div
-          class="relative flex flex-wrap justify-center gap-8 mt-14 stagger-item"
-          style="animation-delay: 240ms"
-          aria-label="Key statistics"
-        >
-          <div
-            v-for="stat in stats"
-            :key="stat.label"
-            class="flex flex-col items-center"
-          >
-            <span class="text-2xl font-bold text-primary">{{ stat.value }}</span>
-            <span class="text-xs text-secondary mt-0.5">{{ stat.label }}</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── CV preview mockup ──────────────────────────────────────────── -->
-      <section class="px-6 pb-20 max-w-6xl mx-auto w-full" aria-label="CV builder preview mockup">
-        <div
-          class="rounded-2xl border border-white/5 overflow-hidden shadow-2xl shadow-black/40 stagger-item"
-          style="background: #0d1117"
-        >
-          <!-- Fake browser chrome -->
-          <div
-            class="flex items-center gap-2 px-4 py-3 border-b border-white/5"
-            style="background: #0a0e14"
-            aria-hidden="true"
-          >
-            <span class="w-3 h-3 rounded-full bg-red-500/60" />
-            <span class="w-3 h-3 rounded-full bg-yellow-500/60" />
-            <span class="w-3 h-3 rounded-full bg-green-500/60" />
-            <div class="flex-1 mx-4 h-5 rounded-md bg-white/5 flex items-center px-3">
-              <span class="text-secondary text-xs opacity-50">cv-generate.app/builder</span>
-            </div>
-            <!-- Fake toolbar buttons -->
-            <div class="flex items-center gap-2 ml-2">
-              <div class="h-5 w-16 rounded bg-accent/20 flex items-center justify-center">
-                <span class="text-accent text-[9px] font-semibold">↓ PDF</span>
+            <!-- Left: Copy (narrower, fixed width) -->
+            <div class="w-full lg:w-[420px] xl:w-[460px] shrink-0 flex flex-col items-center lg:items-start text-center lg:text-left">
+              <!-- Badge -->
+              <div
+                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-semibold mb-6 stagger-item"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" aria-hidden="true" />
+                ATS-Friendly · Free · No Sign-Up Required
               </div>
-            </div>
-          </div>
 
-          <!-- Split-screen mockup — made taller -->
-          <div class="flex h-[420px] md:h-[520px]">
-            <!-- Left: form panel -->
-            <div
-              class="w-[42%] border-r border-white/5 p-5 flex flex-col gap-2.5 overflow-hidden"
-              style="background: var(--bg-surface)"
-              aria-hidden="true"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <p class="text-xs text-secondary font-semibold">CV Information</p>
-                <span class="text-[9px] text-emerald-400 flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Saved
+              <h1
+                id="hero-heading"
+                class="text-4xl md:text-5xl xl:text-6xl font-bold text-primary leading-tight stagger-item"
+                style="animation-delay: 60ms"
+              >
+                Build a
+                <span
+                  class="text-transparent bg-clip-text"
+                  style="background-image: linear-gradient(135deg, #0891B2 0%, #06B6D4 50%, #0D9488 100%)"
+                >
+                  Professional CV
                 </span>
+                in Minutes
+              </h1>
+
+              <p
+                class="mt-5 text-secondary text-lg max-w-lg leading-relaxed stagger-item"
+                style="animation-delay: 120ms"
+              >
+                Create an ATS-compliant resume with a live preview and instant PDF export.
+                No account needed — your data stays private in your browser.
+              </p>
+
+              <!-- CTAs -->
+              <div
+                class="flex flex-col sm:flex-row gap-3 mt-8 stagger-item"
+                style="animation-delay: 180ms"
+              >
+                <RouterLink
+                  to="/builder"
+                  class="shimmer-btn px-7 py-3.5 rounded-xl text-white font-semibold text-base shadow-lg shadow-accent/20"
+                >
+                  Start Building Free
+                </RouterLink>
+                <RouterLink
+                  to="/pricing"
+                  class="group px-7 py-3.5 rounded-xl border border-white/20 text-primary font-medium text-base hover:border-accent/40 hover:bg-accent/5 transition-all flex items-center justify-center gap-2"
+                >
+                  See Plans
+                  <span class="text-xs text-accent group-hover:text-accent/80 transition-colors">Free forever</span>
+                </RouterLink>
               </div>
 
-              <!-- Simulated form sections (taller, more detail) -->
+              <!-- Stats -->
               <div
-                class="px-3 py-2.5 rounded-lg border border-accent/30 bg-accent/5"
-                aria-hidden="true"
+                class="flex flex-wrap justify-center lg:justify-start gap-6 mt-10 stagger-item"
+                style="animation-delay: 240ms"
+                aria-label="Key figures"
               >
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs text-primary font-semibold">👤 Personal Info</span>
-                  <svg class="w-3 h-3 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                  </svg>
+                <div
+                  v-for="stat in stats"
+                  :key="stat.label"
+                  class="flex flex-col items-center lg:items-start"
+                >
+                  <span class="text-xl font-bold text-primary leading-none">{{ stat.value }}</span>
+                  <span class="text-xs text-secondary mt-1">{{ stat.label }}</span>
                 </div>
-                <!-- Fake input fields -->
-                <div class="flex flex-col gap-1.5">
-                  <div class="h-5 rounded bg-white/8 flex items-center px-2">
-                    <span class="text-[8px] text-secondary/70">M. Numan MERCAN</span>
-                  </div>
-                  <div class="flex gap-1.5">
-                    <div class="flex-1 h-5 rounded bg-white/8 flex items-center px-2">
-                      <span class="text-[8px] text-secondary/70">Software Engineer</span>
-                    </div>
-                    <div class="flex-1 h-5 rounded bg-white/8 flex items-center px-2">
-                      <span class="text-[8px] text-secondary/70">Istanbul, TR</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                v-for="label in ['📝  Summary', '💼  Work Experience', '🎓  Education', '⚙️  Skills', '🚀  Projects', '🏆  Certifications']"
-                :key="label"
-                class="flex items-center justify-between px-3 py-2 rounded-lg border border-white/5 hover:border-accent/20 transition-colors cursor-default"
-              >
-                <span class="text-xs text-secondary">{{ label }}</span>
-                <svg class="w-3 h-3 text-secondary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
               </div>
             </div>
 
-            <!-- Right: CV preview — larger and more detailed -->
-            <div
-              class="flex-1 flex justify-center items-start overflow-hidden p-5"
-              style="background: #18181f"
-            >
-              <!-- Subtle glow behind paper -->
+            <!-- Right: Product mockup -->
+            <div class="flex-1 min-w-0 w-full stagger-item" style="animation-delay: 100ms" aria-hidden="true">
               <div
-                class="absolute w-48 h-64 rounded-full pointer-events-none"
-                style="background: radial-gradient(ellipse, rgba(8,145,178,0.06) 0%, transparent 70%)"
-                aria-hidden="true"
-              />
-              <div
-                class="bg-white rounded shadow-2xl shadow-black/50 w-full max-w-sm p-5 text-[#1a1a1a] relative"
-                style="font-family: 'Inter', sans-serif; font-size: 8px; line-height: 1.55;"
-                aria-hidden="true"
+                class="rounded-2xl border border-white/5 overflow-hidden shadow-2xl shadow-black/50"
+                style="background: #0d1117"
               >
-                <!-- CV Header -->
-                <div style="border-bottom: 1.5px solid #e5e7eb; padding-bottom: 7px; margin-bottom: 8px;">
-                  <div style="font-size: 17px; font-weight: 800; color: #111; letter-spacing: -0.3px;">M. Numan MERCAN</div>
-                  <div style="font-size: 10px; font-weight: 600; color: #0891B2; margin: 2px 0 4px;">Full-Stack Software Engineer</div>
-                  <div style="font-size: 7.5px; color: #6b7280; display: flex; gap: 8px; flex-wrap: wrap;">
-                    <span>numan@example.com</span>
-                    <span>·</span>
-                    <span>+90 555 000 00 00</span>
-                    <span>·</span>
-                    <span>Istanbul, Türkiye</span>
-                    <span>·</span>
-                    <span>linkedin.com/in/mnumanmercan</span>
+                <!-- Browser chrome -->
+                <div
+                  class="flex items-center gap-2 px-4 py-3 border-b border-white/5"
+                  style="background: #0a0e14"
+                >
+                  <span class="w-3 h-3 rounded-full bg-red-500/60" />
+                  <span class="w-3 h-3 rounded-full bg-yellow-500/60" />
+                  <span class="w-3 h-3 rounded-full bg-green-500/60" />
+                  <div class="flex-1 mx-4 h-5 rounded-md bg-white/5 flex items-center px-3">
+                    <span class="text-secondary text-xs opacity-50">cv-generate.app/builder</span>
+                  </div>
+                  <div class="h-5 w-16 rounded bg-accent/20 flex items-center justify-center ml-2">
+                    <span class="text-accent text-[9px] font-semibold">↓ PDF</span>
                   </div>
                 </div>
 
-                <!-- Summary -->
-                <div style="margin-bottom: 7px;">
-                  <div style="font-size: 6.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px; color: #111;">Professional Summary</div>
-                  <div style="color: #374151; line-height: 1.55;">Full-stack engineer with 4+ years delivering Vue/TypeScript SPAs and Node.js microservices at scale. Passionate about clean code, ATS-optimised content, and developer experience.</div>
-                </div>
-
-                <!-- Experience -->
-                <div style="margin-bottom: 7px;">
-                  <div style="font-size: 6.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 4px; color: #111;">Work Experience</div>
-                  <div style="margin-bottom: 5px;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                      <div>
-                        <div style="font-weight: 700; font-size: 9px; color: #111;">Senior Software Engineer</div>
-                        <div style="color: #6b7280; font-size: 7.5px;">TechCorp Inc. · Istanbul, TR</div>
-                      </div>
-                      <div style="color: #9ca3af; font-size: 7px; white-space: nowrap; margin-left: 8px;">03/2022 – Present</div>
+                <!-- Split mockup -->
+                <div class="flex ">
+                  <!-- Form panel -->
+                  <div
+                    class="w-[40%] border-r border-white/5 p-4 flex flex-col gap-2 overflow-hidden"
+                    style="background: var(--bg-surface)"
+                  >
+                    <div class="flex items-center justify-between mb-1">
+                      <p class="text-xs text-secondary font-semibold">CV Information</p>
+                      <span class="text-[9px] text-emerald-400 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Saved
+                      </span>
                     </div>
-                    <ul style="padding-left: 10px; margin-top: 3px; color: #374151;">
-                      <li style="list-style: disc; margin-bottom: 1.5px;">Architected Vue 3 + TypeScript SPA reducing bundle size by 35%.</li>
-                      <li style="list-style: disc; margin-bottom: 1.5px;">Led team of 4 to migrate monolith → microservices cutting latency 40%.</li>
-                      <li style="list-style: disc;">Built real-time dashboard serving 50 k+ daily active users.</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                      <div>
-                        <div style="font-weight: 700; font-size: 9px; color: #111;">Frontend Developer</div>
-                        <div style="color: #6b7280; font-size: 7.5px;">Startup Labs · Remote</div>
-                      </div>
-                      <div style="color: #9ca3af; font-size: 7px; white-space: nowrap; margin-left: 8px;">06/2020 – 02/2022</div>
-                    </div>
-                    <ul style="padding-left: 10px; margin-top: 3px; color: #374151;">
-                      <li style="list-style: disc; margin-bottom: 1.5px;">Delivered 12+ feature releases across 3 product lines on schedule.</li>
-                      <li style="list-style: disc;">Introduced component library that cut dev time by 25%.</li>
-                    </ul>
-                  </div>
-                </div>
 
-                <!-- Skills -->
-                <div>
-                  <div style="font-size: 6.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; margin-bottom: 3px; color: #111;">Skills</div>
-                  <div style="color: #374151; margin-bottom: 2px;"><span style="font-weight: 700;">Frontend:</span> Vue 3, React, TypeScript, TailwindCSS, Vite</div>
-                  <div style="color: #374151; margin-bottom: 2px;"><span style="font-weight: 700;">Backend:</span> Node.js, Express, PostgreSQL, MongoDB, Redis</div>
-                  <div style="color: #374151;"><span style="font-weight: 700;">DevOps:</span> Docker, GitHub Actions, AWS EC2, Vercel</div>
+                    <!-- Open personal section -->
+                    <div class="px-3 py-2.5 rounded-lg border border-accent/30 bg-accent/5">
+                      <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-primary font-semibold">👤 Personal Info</span>
+                        <svg class="w-3 h-3 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                        </svg>
+                      </div>
+                      <div class="flex flex-col gap-1.5">
+                        <div class="h-5 rounded bg-white/8 flex items-center px-2">
+                          <span class="text-[8px] text-secondary/70">Alex Johnson</span>
+                        </div>
+                        <div class="flex gap-1.5">
+                          <div class="flex-1 h-5 rounded bg-white/8 flex items-center px-2">
+                            <span class="text-[8px] text-secondary/70">Software Engineer</span>
+                          </div>
+                          <div class="flex-1 h-5 rounded bg-white/8 flex items-center px-2">
+                            <span class="text-[8px] text-secondary/70">San Francisco, CA</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Collapsed sections -->
+                    <div
+                      v-for="label in ['📝 Summary', '💼 Work Experience', '🎓 Education', '⚙️ Skills', '🚀 Projects', '🏆 Certifications']"
+                      :key="label"
+                      class="flex items-center justify-between px-3 py-2 rounded-lg border border-white/5"
+                    >
+                      <span class="text-xs text-secondary">{{ label }}</span>
+                      <svg class="w-3 h-3 text-secondary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- CV preview panel -->
+                  <div class="flex-1 flex justify-center items-start overflow-hidden p-5" style="background: #18181f">
+                    <div
+                      class="bg-white rounded shadow-xl w-full max-w-[320px] p-5 text-[#1a1a1a]"
+                      style="font-family: 'Inter', sans-serif; font-size: 9.5px; line-height: 1.6"
+                    >
+                      <div style="border-bottom: 1.5px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 9px;">
+                        <div style="font-size: 20px; font-weight: 800; color: #111; letter-spacing: -0.4px;">Alex Johnson</div>
+                        <div style="font-size: 12px; font-weight: 600; color: #0891B2; margin: 3px 0 4px;">Senior Software Engineer</div>
+                        <div style="font-size: 9px; color: #6b7280; display: flex; gap: 8px; flex-wrap: wrap;">
+                          <span>alex@example.com</span><span>·</span>
+                          <span>+1 415 000 0000</span><span>·</span>
+                          <span>San Francisco, CA</span>
+                        </div>
+                      </div>
+                      <div style="margin-bottom: 8px;">
+                        <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; margin-bottom: 5px; color: #111;">Work Experience</div>
+                        <div style="display: flex; justify-content: space-between;">
+                          <div>
+                            <div style="font-weight: 700; font-size: 11px; color: #111;">Senior Software Engineer</div>
+                            <div style="color: #6b7280; font-size: 9px;">TechCorp Inc. · San Francisco</div>
+                          </div>
+                          <div style="color: #9ca3af; font-size: 8.5px; white-space: nowrap; margin-left: 8px;">03/2022 – Present</div>
+                        </div>
+                        <ul style="padding-left: 11px; margin-top: 3px; color: #374151;">
+                          <li style="list-style: disc; margin-bottom: 2px;">Reduced bundle size by 35% via Vue 3 migration.</li>
+                          <li style="list-style: disc; margin-bottom: 2px;">Led team of 4 to cut API latency by 40%.</li>
+                          <li style="list-style: disc;">Shipped real-time dashboard for 50 k+ DAUs.</li>
+                        </ul>
+                      </div>
+                      <div style="margin-bottom: 8px;">
+                        <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; margin-bottom: 5px; color: #111;">Education</div>
+                        <div style="display: flex; justify-content: space-between;">
+                          <div>
+                            <div style="font-weight: 700; font-size: 11px; color: #111;">B.S. Computer Science</div>
+                            <div style="color: #6b7280; font-size: 9px;">UC Berkeley</div>
+                          </div>
+                          <div style="color: #9ca3af; font-size: 8.5px; white-space: nowrap; margin-left: 8px;">2018 – 2022</div>
+                        </div>
+                      </div>
+                      <div>
+                        <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; margin-bottom: 5px; color: #111;">Skills</div>
+                        <div style="color: #374151; margin-bottom: 2px;"><span style="font-weight: 700;">Frontend:</span> Vue 3, React, TypeScript, Tailwind</div>
+                        <div style="color: #374151;"><span style="font-weight: 700;">Backend:</span> Node.js, PostgreSQL, Redis, Docker</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
       <!-- ── How it works ───────────────────────────────────────────────── -->
-      <section class="px-6 pb-20 max-w-4xl mx-auto w-full" aria-labelledby="how-heading">
-        <h2
-          id="how-heading"
-          class="text-center text-2xl font-bold text-primary mb-12 stagger-item"
-        >
-          How it works
-        </h2>
+      <section
+        v-reveal
+        class="px-6 py-20 max-w-4xl mx-auto w-full"
+        aria-labelledby="how-heading"
+      >
+        <div class="text-center mb-12 reveal-item">
+          <p class="text-xs font-mono text-accent uppercase tracking-widest mb-2">Simple process</p>
+          <h2 id="how-heading" class="text-2xl font-bold text-primary">How it works</h2>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div
             v-for="(step, index) in steps"
             :key="step.number"
-            class="feature-card flex flex-col gap-3 p-5 rounded-2xl stagger-item"
-            :style="{ animationDelay: `${index * 60}ms` }"
+            class="feature-card flex flex-col gap-3 p-6 rounded-2xl reveal-item"
+            :style="{ animationDelay: `${index * 80}ms` }"
           >
             <div class="flex items-center gap-3">
               <span
                 class="text-3xl font-black font-mono leading-none"
-                style="color: rgba(8,145,178,0.30)"
+                style="color: rgba(8,145,178,0.35)"
                 aria-hidden="true"
               >
                 {{ step.number }}
@@ -390,97 +410,127 @@
 
       <!-- ── Feature grid ───────────────────────────────────────────────── -->
       <section
-        class="px-6 pb-24 max-w-5xl mx-auto w-full"
+        v-reveal
+        class="px-6 pb-20 max-w-5xl mx-auto w-full"
         aria-labelledby="features-heading"
       >
-        <h2
-          id="features-heading"
-          class="text-center text-2xl font-bold text-primary mb-12 stagger-item"
-        >
-          Everything you need to land the interview
-        </h2>
+        <div class="text-center mb-12 reveal-item">
+          <p class="text-xs font-mono text-accent uppercase tracking-widest mb-2">Everything included</p>
+          <h2 id="features-heading" class="text-2xl font-bold text-primary">
+            Everything you need to land the interview
+          </h2>
+        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
             v-for="(feature, index) in features"
             :key="feature.title"
-            class="feature-card p-5 rounded-2xl stagger-item group cursor-default"
-            :style="{ animationDelay: `${(index + 1) * 40}ms` }"
+            class="feature-card p-5 rounded-2xl reveal-item group cursor-default"
+            :style="{ animationDelay: `${index * 50}ms` }"
           >
             <div
-              class="w-9 h-9 rounded-xl bg-accent/15 flex items-center justify-center mb-3 group-hover:bg-accent/25 transition-colors text-accent"
+              class="w-9 h-9 rounded-xl bg-accent/15 flex items-center justify-center mb-3 group-hover:bg-accent/25 transition-colors text-accent p-2"
               aria-hidden="true"
-              v-html="feature.icon"
-              style="padding: 8px;"
-            />
+            >
+              <FeatureIcon :name="feature.icon" />
+            </div>
             <h3 class="text-sm font-semibold text-primary mb-1">{{ feature.title }}</h3>
             <p class="text-xs text-secondary leading-relaxed">{{ feature.description }}</p>
           </div>
         </div>
       </section>
 
+      <!-- ── Testimonials ───────────────────────────────────────────────── -->
+      <section
+        v-reveal
+        class="px-6 pb-20 max-w-4xl mx-auto w-full"
+        aria-labelledby="testimonials-heading"
+      >
+        <div class="text-center mb-12 reveal-item">
+          <p class="text-xs font-mono text-accent uppercase tracking-widest mb-2">From real users</p>
+          <h2 id="testimonials-heading" class="text-2xl font-bold text-primary">
+            Job seekers who built their CV here
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div
+            v-for="(t, index) in testimonials"
+            :key="t.name"
+            class="feature-card p-5 rounded-2xl flex flex-col gap-4 reveal-item"
+            :style="{ animationDelay: `${index * 80}ms` }"
+          >
+            <!-- Stars -->
+            <div class="flex gap-0.5" aria-label="5 out of 5 stars">
+              <svg
+                v-for="i in t.stars"
+                :key="i"
+                class="w-3.5 h-3.5 text-yellow-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 00.95.69h4.163c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.286 3.958c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.285-3.958a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.163a1 1 0 00.951-.69L9.049 2.927z" />
+              </svg>
+            </div>
+
+            <p class="text-sm text-secondary leading-relaxed flex-1">
+              "{{ t.text }}"
+            </p>
+
+            <div class="flex items-center gap-2.5 pt-3 border-t border-white/5">
+              <div
+                class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent text-xs font-bold shrink-0"
+                aria-hidden="true"
+              >
+                {{ t.name.charAt(0) }}
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-primary">{{ t.name }}</p>
+                <p class="text-xs text-secondary">{{ t.role }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ── CTA banner ─────────────────────────────────────────────────── -->
-      <section class="px-6 pb-24 max-w-3xl mx-auto w-full">
+      <section
+        v-reveal
+        class="px-6 pb-24 max-w-3xl mx-auto w-full"
+      >
         <div
-          class="rounded-2xl p-10 text-center border border-accent/20 stagger-item relative overflow-hidden"
+          class="rounded-2xl p-10 text-center border border-accent/20 reveal-item relative overflow-hidden"
           style="background: linear-gradient(135deg, rgba(8,145,178,0.10) 0%, rgba(13,148,136,0.05) 100%)"
         >
-          <!-- Subtle corner glows -->
           <div
-            class="absolute -top-10 -left-10 w-40 h-40 rounded-full pointer-events-none"
+            class="absolute -top-12 -left-12 w-48 h-48 rounded-full pointer-events-none"
             style="background: radial-gradient(circle, rgba(8,145,178,0.15) 0%, transparent 70%)"
             aria-hidden="true"
           />
           <div
-            class="absolute -bottom-10 -right-10 w-40 h-40 rounded-full pointer-events-none"
+            class="absolute -bottom-12 -right-12 w-48 h-48 rounded-full pointer-events-none"
             style="background: radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)"
             aria-hidden="true"
           />
           <h2 class="relative text-2xl font-bold text-primary mb-2">
-            Ready to build your CV?
+            Your next job starts here
           </h2>
-          <p class="relative text-secondary text-sm mb-6 max-w-xs mx-auto">
-            It takes less than 5 minutes. No account needed.
+          <p class="relative text-secondary text-sm mb-6 max-w-sm mx-auto leading-relaxed">
+            Join professionals who built their CV in under 5 minutes.
+            Free, private, and ATS-ready.
           </p>
           <RouterLink
             to="/builder"
             class="relative shimmer-btn inline-block px-8 py-3.5 rounded-xl text-white font-semibold shadow-lg shadow-accent/20"
           >
-            Start Building for Free
+            Build Your CV Now
           </RouterLink>
         </div>
       </section>
 
     </main>
 
-    <!-- Footer -->
-    <footer
-      class="border-t border-white/5 py-8 px-6"
-      style="background: var(--bg-surface)"
-    >
-      <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-          <div class="w-6 h-6 rounded bg-accent flex items-center justify-center text-white text-xs font-bold">
-            CV
-          </div>
-          <span class="text-sm font-semibold text-secondary">CV Generate</span>
-        </div>
-        <div class="flex items-center gap-5 text-xs text-secondary">
-          <RouterLink to="/builder" class="hover:text-primary transition-colors">Builder</RouterLink>
-          <RouterLink to="/pricing" class="hover:text-primary transition-colors">Pricing</RouterLink>
-          <a
-            href="https://github.com/mnumanmercan/CV-generate"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-primary transition-colors"
-          >
-            GitHub
-          </a>
-        </div>
-        <p class="text-xs text-secondary">
-          © {{ new Date().getFullYear() }} CV Generate
-        </p>
-      </div>
-    </footer>
+    <AppFooter />
   </div>
 </template>

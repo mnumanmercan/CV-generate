@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, watch, ref } from 'vue'
+  import { onMounted, watch, ref, computed } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
   import { useAutoSave } from '@/composables/useAutoSave'
@@ -21,7 +21,17 @@
   import type { SectionKey } from '@/types/cv.types'
 
   const cvStore = useCVStore()
-  const { cvData, saveIndicatorVisible } = storeToRefs(cvStore)
+  const {
+    cvData,
+    saveIndicatorVisible,
+    isPersonalComplete,
+    isSummaryComplete,
+    isExperienceComplete,
+    isEducationComplete,
+    isSkillsComplete,
+    isProjectsComplete,
+    isCertificationsComplete,
+  } = storeToRefs(cvStore)
   const { status: pdfStatus, errorMessage: pdfError, exportPDF } = usePDFExport()
 
   // Start auto-save watcher
@@ -72,6 +82,7 @@
   const ZOOM_MIN = 0.55
   const ZOOM_MAX = 1.0
   const ZOOM_STEP = 0.10
+  const previewScrollEl = ref<HTMLElement | null>(null)
 
   function zoomIn(): void {
     previewScale.value = Math.min(ZOOM_MAX, Math.round((previewScale.value + ZOOM_STEP) * 100) / 100)
@@ -81,21 +92,34 @@
     previewScale.value = Math.max(ZOOM_MIN, Math.round((previewScale.value - ZOOM_STEP) * 100) / 100)
   }
 
+  function fitToPanel(): void {
+    if (!previewScrollEl.value) return
+    const containerWidth = previewScrollEl.value.clientWidth - 32 // account for px-4 on each side
+    const scale = Math.floor((containerWidth / 794) * 10) / 10
+    previewScale.value = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, scale))
+  }
+
   // PDF download
   async function handleDownload(): Promise<void> {
     await exportPDF('cv-preview')
   }
 
-  // Sections config
-  const sections = [
-    { key: 'personal' as SectionKey, title: 'Personal Info', icon: '👤', defaultOpen: true },
-    { key: 'summary' as SectionKey, title: 'Professional Summary', icon: '📝', defaultOpen: false },
-    { key: 'experience' as SectionKey, title: 'Work Experience', icon: '💼', defaultOpen: false },
-    { key: 'education' as SectionKey, title: 'Education', icon: '🎓', defaultOpen: false },
-    { key: 'skills' as SectionKey, title: 'Skills', icon: '⚙️', defaultOpen: false },
-    { key: 'projects' as SectionKey, title: 'Projects', icon: '🚀', defaultOpen: false },
-    { key: 'certifications' as SectionKey, title: 'Certifications', icon: '🏆', defaultOpen: false },
-  ]
+  // Sections config with reactive completion state
+  const sections = computed(() => [
+    { key: 'personal' as SectionKey, title: 'Personal Info', icon: '👤', defaultOpen: true, completed: isPersonalComplete.value },
+    { key: 'summary' as SectionKey, title: 'Professional Summary', icon: '📝', defaultOpen: false, completed: isSummaryComplete.value },
+    { key: 'experience' as SectionKey, title: 'Work Experience', icon: '💼', defaultOpen: false, completed: isExperienceComplete.value },
+    { key: 'education' as SectionKey, title: 'Education', icon: '🎓', defaultOpen: false, completed: isEducationComplete.value },
+    { key: 'skills' as SectionKey, title: 'Skills', icon: '⚙️', defaultOpen: false, completed: isSkillsComplete.value },
+    { key: 'projects' as SectionKey, title: 'Projects', icon: '🚀', defaultOpen: false, completed: isProjectsComplete.value },
+    { key: 'certifications' as SectionKey, title: 'Certifications', icon: '🏆', defaultOpen: false, completed: isCertificationsComplete.value },
+  ])
+
+  async function confirmClearData(): Promise<void> {
+    if (window.confirm('Clear all CV data? This cannot be undone.')) {
+      await cvStore.clearData()
+    }
+  }
 </script>
 
 <template>
@@ -129,6 +153,7 @@
               :icon="section.icon"
               :default-open="section.defaultOpen"
               :step-index="idx"
+              :completed="section.completed"
             >
               <PersonalInfoForm v-if="section.key === 'personal'" />
               <SummaryForm v-else-if="section.key === 'summary'" />
@@ -143,7 +168,7 @@
             <button
               type="button"
               class="w-full mt-2 py-2 text-xs text-secondary hover:text-red-400 transition-colors"
-              @click="cvStore.clearData"
+              @click="confirmClearData"
             >
               Clear all data
             </button>
@@ -193,6 +218,18 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                   </svg>
                 </button>
+                <!-- Fit to panel -->
+                <button
+                  type="button"
+                  class="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-secondary hover:text-primary hover:border-white/20 transition-colors"
+                  aria-label="Fit to panel width"
+                  title="Fit to panel"
+                  @click="fitToPanel"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
+                  </svg>
+                </button>
                 <span class="w-px h-4 bg-white/10 mx-1" aria-hidden="true" />
                 <!-- PDF Download -->
                 <button
@@ -218,6 +255,7 @@
                  overflow-hidden is intentionally ABSENT from the inner wrapper:
                  the CV element must not be clipped in either the preview or PDF. -->
             <div
+              ref="previewScrollEl"
               class="flex-1 overflow-auto flex justify-center py-6 px-4"
               style="background: #18181f"
             >

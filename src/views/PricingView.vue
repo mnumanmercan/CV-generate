@@ -1,42 +1,89 @@
 <script setup lang="ts">
+  import { ref, computed, onMounted } from 'vue'
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
-  import { useSubscription, type SubscriptionTier } from '@/composables/useSubscription'
+  import AppFooter from '@/components/ui/AppFooter.vue'
   import { useUserStore } from '@/stores/userStore'
+  import { useScrollReveal } from '@/composables/useScrollReveal'
+  import { PLANS, type SubscriptionTier } from '@/composables/useSubscription'
 
+  /* ── Per-page title ───────────────────────────────────────────────────── */
+  onMounted(() => {
+    document.title = 'Pricing — CV Generate'
+  })
+
+  /* ── Scroll reveal ────────────────────────────────────────────────────── */
+  const { vReveal } = useScrollReveal()
+
+  /* ── Store ────────────────────────────────────────────────────────────── */
   const userStore = useUserStore()
-  const { plans, getCurrentTier } = useSubscription()
 
-  const currentTier = getCurrentTier()
+  /* ── Reactive current tier ────────────────────────────────────────────── */
+  const currentTier = computed(() => (userStore.isPremium ? 'pro' : 'free'))
 
+  /* ── Billing period toggle ────────────────────────────────────────────── */
+  const billingPeriod = ref<'monthly' | 'annual'>('monthly')
+
+  function displayedPrice(price: number): string {
+    if (price === 0) return 'Free'
+    const monthly = billingPeriod.value === 'annual' ? Math.floor(price * 0.8) : price
+    return `$${monthly}`
+  }
+
+  function annualTotal(price: number): number {
+    return Math.floor(price * 0.8) * 12
+  }
+
+  /* ── Plan styling ─────────────────────────────────────────────────────── */
   const tierHighlight: Record<SubscriptionTier, boolean> = {
     free: false,
     pro: true,
     enterprise: false,
   }
 
-  const tierAccent: Record<SubscriptionTier, string> = {
+  const tierBorder: Record<SubscriptionTier, string> = {
     free: 'border-white/10',
     pro: 'border-accent shadow-lg shadow-accent/10',
     enterprise: 'border-white/10',
   }
 
+  /* ── Comparison table data ────────────────────────────────────────────── */
+  type ComparisonRow = [string, boolean, boolean, boolean]
+
+  const comparisonRows: ComparisonRow[] = [
+    ['ATS CV Builder',            true,  true,  true],
+    ['Real-time Preview',          true,  true,  true],
+    ['PDF Download',               true,  true,  true],
+    ['Browser Auto-save',          true,  true,  true],
+    ['ATS Writing Hints',          true,  true,  true],
+    ['Profile Photo Upload',       false, true,  true],
+    ['Premium Templates',          false, true,  true],
+    ['Cloud Storage',              false, true,  true],
+    ['Multiple CVs',               false, true,  true],
+    ['Priority Support',           false, true,  true],
+    ['Team Management',            false, false, true],
+    ['Custom Branding',            false, false, true],
+    ['API Access',                 false, false, true],
+    ['Dedicated Account Manager',  false, false, true],
+  ]
+
+  /* ── FAQ ──────────────────────────────────────────────────────────────── */
   const faq = [
     {
       q: 'Is the Free plan really free forever?',
-      a: 'Yes. The Free plan includes the ATS CV builder, live preview, PDF download, and localStorage auto-save — permanently free with no time limits.',
+      a: 'Yes. The Free plan includes the full ATS CV builder, live preview, PDF download, and browser auto-save — permanently free with no time limits or credit card required.',
     },
     {
       q: 'Is my data safe?',
-      a: 'On the Free plan, all data is stored in your browser via localStorage — it never leaves your device. Pro/Enterprise plans will use encrypted cloud storage (Phase 2).',
+      a: 'On the Free plan, all data is stored in your browser via localStorage — it never leaves your device. Pro and Enterprise plans will use encrypted cloud storage.',
     },
     {
       q: 'What is an ATS-compliant CV?',
-      a: 'ATS (Applicant Tracking System) software scans CVs before a human reads them. An ATS-compliant CV uses single-column layout, standard section headings, no tables or graphics, and machine-readable fonts.',
+      a: 'ATS (Applicant Tracking System) software scans CVs before a human ever reads them. An ATS-compliant CV uses a single-column layout, standard section headings, no tables or graphics, and machine-readable fonts — exactly what CV Generate produces.',
     },
     {
       q: 'When will Pro and Enterprise be available?',
-      a: 'Payment integration is planned for Phase 2. All premium features are currently unlocked for testing. You will be notified when billing goes live.',
+      a: 'Pro and Enterprise are launching soon. Click "Upgrade" on any plan card and leave your email — you\'ll be among the first to know when billing goes live.',
     },
   ]
 </script>
@@ -48,39 +95,86 @@
     <main class="flex-1">
 
       <!-- ── Header ─────────────────────────────────────────────── -->
-      <section class="px-6 pt-16 pb-12 text-center max-w-3xl mx-auto stagger-item">
+      <section class="section-visible px-6 pt-16 pb-12 text-center max-w-3xl mx-auto">
         <div
-          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-semibold mb-5"
+          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-semibold mb-5 stagger-item"
         >
+          <span class="w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true" />
           Simple pricing
         </div>
-        <h1 class="text-3xl md:text-4xl font-bold text-primary mb-3">
+        <h1
+          class="text-3xl md:text-4xl font-bold text-primary mb-3 stagger-item"
+          style="animation-delay: 60ms"
+        >
           Start free. Upgrade when you're ready.
         </h1>
-        <p class="text-secondary text-base max-w-lg mx-auto">
+        <p
+          class="text-secondary text-base max-w-lg mx-auto stagger-item"
+          style="animation-delay: 120ms"
+        >
           The core CV builder is free forever. Pro and Enterprise unlock cloud storage,
           multiple CVs, premium templates, and team features.
         </p>
+
+        <!-- Billing toggle -->
+        <div
+          class="flex items-center justify-center gap-3 mt-8 stagger-item"
+          style="animation-delay: 180ms"
+        >
+          <span :class="['text-sm font-medium transition-colors', billingPeriod === 'monthly' ? 'text-primary' : 'text-secondary']">
+            Monthly
+          </span>
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="billingPeriod === 'annual'"
+            class="relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-shell"
+            :style="{ background: billingPeriod === 'annual' ? 'var(--accent)' : 'rgba(255,255,255,0.12)' }"
+            @click="billingPeriod = billingPeriod === 'monthly' ? 'annual' : 'monthly'"
+          >
+            <span
+              class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+              :style="{ transform: billingPeriod === 'annual' ? 'translateX(20px)' : 'translateX(0)' }"
+              aria-hidden="true"
+            />
+          </button>
+          <span :class="['text-sm font-medium transition-colors', billingPeriod === 'annual' ? 'text-primary' : 'text-secondary']">
+            Annual
+          </span>
+          <span
+            v-if="billingPeriod === 'annual'"
+            class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-semibold"
+          >
+            Save 20%
+          </span>
+        </div>
       </section>
 
       <!-- ── Pricing cards ──────────────────────────────────────── -->
-      <section class="px-6 pb-16 max-w-5xl mx-auto w-full" aria-label="Pricing plans">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+      <section
+        v-reveal
+        class="px-6 pb-16 max-w-5xl mx-auto w-full"
+        aria-label="Pricing plans"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
           <div
-            v-for="(plan, index) in plans"
+            v-for="(plan, index) in PLANS"
             :key="plan.id"
             :class="[
-              'relative rounded-2xl border p-7 flex flex-col gap-5 stagger-item transition-all',
+              'relative rounded-2xl border p-7 flex flex-col gap-5 reveal-item transition-all',
               tierHighlight[plan.id]
-                ? 'bg-gradient-to-b from-accent/10 to-transparent ' + tierAccent[plan.id]
-                : tierAccent[plan.id],
+                ? 'bg-gradient-to-b from-accent/10 to-transparent ' + tierBorder[plan.id]
+                : tierBorder[plan.id],
             ]"
-            :style="{ animationDelay: `${index * 60}ms`, background: tierHighlight[plan.id] ? undefined : 'var(--bg-surface)' }"
+            :style="{
+              animationDelay: `${index * 70}ms`,
+              background: tierHighlight[plan.id] ? undefined : 'var(--bg-surface)',
+            }"
           >
             <!-- Most Popular badge -->
             <div
               v-if="tierHighlight[plan.id]"
-              class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-accent text-white text-xs font-bold shadow-lg"
+              class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-accent text-white text-xs font-bold shadow-lg whitespace-nowrap"
               aria-label="Most popular plan"
             >
               Most Popular
@@ -92,13 +186,32 @@
                 {{ plan.id }}
               </p>
               <h2 class="text-2xl font-bold text-primary">{{ plan.name }}</h2>
-              <div class="flex items-end gap-1.5 mt-2">
-                <span class="text-4xl font-black text-primary leading-none">${{ plan.price }}</span>
-                <span class="text-secondary text-sm mb-1">/ month</span>
+
+              <!-- Price display -->
+              <div class="flex items-end gap-1.5 mt-3">
+                <template v-if="plan.id === 'enterprise'">
+                  <span class="text-3xl font-black text-primary leading-none">Custom</span>
+                </template>
+                <template v-else>
+                  <span class="text-4xl font-black text-primary leading-none">
+                    {{ displayedPrice(plan.price) }}
+                  </span>
+                  <span v-if="plan.price > 0" class="text-secondary text-sm mb-1">/ month</span>
+                </template>
               </div>
-              <p v-if="plan.id === 'free'" class="text-xs text-emerald-400 mt-1">Free forever — no credit card</p>
+
+              <!-- Annual savings note -->
+              <p
+                v-if="plan.price > 0 && plan.id !== 'enterprise' && billingPeriod === 'annual'"
+                class="text-xs text-emerald-400 mt-1"
+              >
+                ${{ annualTotal(plan.price) }} billed annually
+              </p>
+
+              <!-- Plan taglines -->
+              <p v-if="plan.id === 'free'" class="text-xs text-emerald-400 mt-1">No credit card required</p>
               <p v-else-if="plan.id === 'pro'" class="text-xs text-accent mt-1">Everything in Free, plus more</p>
-              <p v-else class="text-xs text-secondary mt-1">Everything in Pro, plus team tools</p>
+              <p v-else class="text-xs text-secondary mt-1">Custom pricing for teams</p>
             </div>
 
             <!-- CTA -->
@@ -116,6 +229,13 @@
               >
                 Get Started Free
               </RouterLink>
+              <a
+                v-else-if="plan.id === 'enterprise'"
+                href="mailto:hello@cv-generate.app"
+                class="block w-full text-center py-3 rounded-xl border border-white/10 text-primary text-sm font-semibold hover:border-accent/40 hover:bg-accent/5 transition-all"
+              >
+                Contact Sales
+              </a>
               <button
                 v-else
                 type="button"
@@ -134,7 +254,7 @@
             <div class="h-px bg-white/5" aria-hidden="true" />
 
             <!-- Feature list -->
-            <ul class="flex flex-col gap-2.5" :aria-label="`${plan.name} features`">
+            <ul class="flex flex-col gap-2.5 flex-1" :aria-label="`${plan.name} features`">
               <li
                 v-for="feature in plan.features"
                 :key="feature"
@@ -147,35 +267,78 @@
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    d="M5 13l4 4L19 7"
-                  />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                 </svg>
                 {{ feature }}
               </li>
             </ul>
           </div>
         </div>
+      </section>
 
-        <p
-          class="text-center text-xs text-secondary mt-8 stagger-item flex items-center justify-center gap-2"
-          style="animation-delay: 240ms"
+      <!-- ── Feature comparison table ───────────────────────────── -->
+      <section
+        v-reveal
+        class="px-6 pb-16 max-w-4xl mx-auto w-full"
+        aria-labelledby="compare-heading"
+      >
+        <h2
+          id="compare-heading"
+          class="text-center text-lg font-semibold text-primary mb-6 reveal-item"
         >
-          <svg class="w-3.5 h-3.5 text-yellow-500/60" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2a10 10 0 110 20A10 10 0 0112 2zm0 2a8 8 0 100 16A8 8 0 0012 4zm0 3a1 1 0 011 1v4a1 1 0 01-2 0V8a1 1 0 011-1zm0 8a1.25 1.25 0 110 2.5A1.25 1.25 0 0112 15z"/>
-          </svg>
-          Payment integration is coming in Phase 2. All premium features are currently unlocked for testing.
-        </p>
+          Full comparison
+        </h2>
+
+        <div class="rounded-2xl border border-white/5 overflow-hidden reveal-item" style="background: var(--bg-surface)">
+          <table class="w-full text-sm" role="table">
+            <thead>
+              <tr class="border-b border-white/5">
+                <th class="text-left px-5 py-3.5 text-secondary font-medium text-xs uppercase tracking-wider w-1/2" scope="col">Feature</th>
+                <th class="text-center px-4 py-3.5 text-secondary font-medium text-xs uppercase tracking-wider" scope="col">Free</th>
+                <th class="text-center px-4 py-3.5 text-accent font-medium text-xs uppercase tracking-wider" scope="col">Pro</th>
+                <th class="text-center px-4 py-3.5 text-secondary font-medium text-xs uppercase tracking-wider" scope="col">Enterprise</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(row, i) in comparisonRows"
+                :key="row[0]"
+                :class="['border-b border-white/5 last:border-0 transition-colors hover:bg-white/[0.02]', i % 2 === 0 ? '' : 'bg-white/[0.01]']"
+              >
+                <td class="px-5 py-3 text-secondary">{{ row[0] }}</td>
+                <td class="px-4 py-3 text-center">
+                  <svg v-if="row[1]" class="w-4 h-4 text-emerald-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Included">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span v-else class="text-white/15 text-base leading-none" aria-label="Not included">—</span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <svg v-if="row[2]" class="w-4 h-4 text-emerald-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Included">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span v-else class="text-white/15 text-base leading-none" aria-label="Not included">—</span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <svg v-if="row[3]" class="w-4 h-4 text-emerald-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Included">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span v-else class="text-white/15 text-base leading-none" aria-label="Not included">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <!-- ── FAQ ───────────────────────────────────────────────── -->
-      <section class="px-6 pb-20 max-w-2xl mx-auto w-full" aria-labelledby="faq-heading">
+      <section
+        v-reveal
+        class="px-6 pb-20 max-w-2xl mx-auto w-full"
+        aria-labelledby="faq-heading"
+      >
         <h2
           id="faq-heading"
-          class="text-center text-xl font-bold text-primary mb-8 stagger-item"
+          class="text-center text-xl font-bold text-primary mb-8 reveal-item"
         >
           Frequently asked questions
         </h2>
@@ -183,16 +346,16 @@
           <details
             v-for="(item, index) in faq"
             :key="item.q"
-            class="group rounded-xl border border-white/5 overflow-hidden stagger-item"
+            class="group rounded-xl border border-white/5 overflow-hidden reveal-item"
             style="background: var(--bg-surface)"
-            :style="{ animationDelay: `${index * 40}ms` }"
+            :style="{ animationDelay: `${index * 50}ms` }"
           >
             <summary
               class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-sm font-semibold text-primary list-none hover:bg-white/5 transition-colors"
             >
               {{ item.q }}
               <svg
-                class="w-4 h-4 text-secondary shrink-0 transition-transform group-open:rotate-180"
+                class="w-4 h-4 text-secondary shrink-0 transition-transform duration-200 group-open:rotate-180"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -210,25 +373,6 @@
 
     </main>
 
-    <footer
-      class="border-t border-white/5 py-8 px-6"
-      style="background: var(--bg-surface)"
-    >
-      <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-          <div class="w-6 h-6 rounded bg-accent flex items-center justify-center text-white text-xs font-bold">
-            CV
-          </div>
-          <span class="text-sm font-semibold text-secondary">CV Generate</span>
-        </div>
-        <div class="flex items-center gap-5 text-xs text-secondary">
-          <RouterLink to="/builder" class="hover:text-primary transition-colors">Builder</RouterLink>
-          <RouterLink to="/pricing" class="hover:text-primary transition-colors">Pricing</RouterLink>
-        </div>
-        <p class="text-xs text-secondary">
-          © {{ new Date().getFullYear() }} CV Generate
-        </p>
-      </div>
-    </footer>
+    <AppFooter />
   </div>
 </template>

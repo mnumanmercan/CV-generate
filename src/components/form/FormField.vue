@@ -9,11 +9,14 @@
     error?: string
     hint?: string
     modelValue: string | undefined
+    autocomplete?: string
+    disabled?: boolean
   }
 
   const props = withDefaults(defineProps<Props>(), {
     type: 'text',
     required: false,
+    disabled: false,
   })
 
   const emit = defineEmits<{
@@ -41,6 +44,7 @@
       :aria-required="required"
       :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined"
       :aria-invalid="!!error"
+      :autocomplete="autocomplete"
       class="w-full px-3 py-2 text-sm rounded-lg resize-none min-h-[80px]"
       :class="error ? 'border-red-500/50' : ''"
       @input="emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
@@ -54,11 +58,13 @@
       :value="modelValue"
       :placeholder="placeholder"
       :required="required"
+      :disabled="disabled"
       :aria-required="required"
       :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined"
       :aria-invalid="!!error"
+      :autocomplete="autocomplete"
       class="w-full px-3 py-2 text-sm rounded-lg"
-      :class="error ? 'border-red-500/50' : ''"
+      :class="[error ? 'border-red-500/50' : '', disabled ? 'opacity-40 cursor-not-allowed' : '']"
       @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
       @blur="emit('blur')"
     />

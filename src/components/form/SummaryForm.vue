@@ -30,7 +30,7 @@
         Professional Summary
       </label>
 
-      <div class="relative mt-1.5">
+      <div class="mt-1.5">
         <textarea
           id="summary"
           v-model="cvData.summary"
@@ -42,7 +42,7 @@
         <!-- Character counter -->
         <div
           id="summary-counter"
-          :class="['absolute bottom-2 right-2 text-xs font-mono transition-colors', counterColor]"
+          :class="['mt-1 text-xs font-mono text-right transition-colors', counterColor]"
           aria-live="polite"
         >
           {{ charCount }}/500

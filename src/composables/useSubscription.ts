@@ -30,7 +30,7 @@ export const PLANS: SubscriptionPlan[] = [
       'Everything in Free',
       'Profile photo upload',
       'Premium templates',
-      'Cloud storage (MongoDB)',
+      'Cloud storage & sync',
       'Multiple CVs',
       'Priority support',
     ],
@@ -44,7 +44,7 @@ export const PLANS: SubscriptionPlan[] = [
       'Team management',
       'Custom branding',
       'API access',
-      'Dedicated support',
+      'Dedicated account manager',
     ],
   },
 ]

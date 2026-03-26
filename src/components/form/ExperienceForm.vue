@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed } from 'vue'
+  import { computed, reactive } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
   import { useDragSort } from '@/composables/useDragSort'
@@ -16,12 +16,30 @@
 
   const drag = useDragSort(computed(() => cvData.value.experience))
 
+  // Track which fields have been blurred so validation only shows after interaction
+  const touchedFields = reactive(new Set<string>())
+
+  function markTouched(expId: string, field: string): void {
+    touchedFields.add(`${expId}-${field}`)
+  }
+
+  function isTouched(expId: string, field: string): boolean {
+    return touchedFields.has(`${expId}-${field}`)
+  }
+
   function addExperience(): void {
     cvData.value.experience.push(createWorkExperience())
   }
 
   function removeExperience(index: number): void {
     cvData.value.experience.splice(index, 1)
+  }
+
+  function toggleCurrentlyEmployed(index: number): void {
+    const exp = cvData.value.experience[index]
+    if (exp) {
+      exp.endDate = exp.endDate === 'Present' ? '' : 'Present'
+    }
   }
 
   function addBullet(expIndex: number): void {
@@ -114,23 +132,37 @@
           :id="`exp-start-${exp.id}`"
           v-model="exp.startDate"
           label="Start Date"
-          placeholder="01/2022"
+          placeholder="MM/YYYY"
           required
-          :error="exp.startDate ? getDateError(exp.startDate, 'Start date') : ''"
+          :error="isTouched(exp.id, 'startDate') ? getDateError(exp.startDate, 'Start date') : ''"
+          @blur="markTouched(exp.id, 'startDate')"
         />
-        <FormField
-          :id="`exp-end-${exp.id}`"
-          v-model="exp.endDate"
-          label="End Date"
-          placeholder="12/2023 or Present"
-          required
-          :error="
-            exp.endDate
-              ? getRangeError(exp.startDate, exp.endDate) ||
-                (exp.endDate !== 'Present' ? getDateError(exp.endDate, 'End date') : '')
-              : ''
-          "
-        />
+        <div>
+          <FormField
+            :id="`exp-end-${exp.id}`"
+            v-model="exp.endDate"
+            label="End Date"
+            placeholder="MM/YYYY"
+            :disabled="exp.endDate === 'Present'"
+            :error="
+              isTouched(exp.id, 'endDate') && exp.endDate !== 'Present'
+                ? getRangeError(exp.startDate, exp.endDate) || getDateError(exp.endDate, 'End date')
+                : ''
+            "
+            @blur="markTouched(exp.id, 'endDate')"
+          />
+          <label :for="`exp-current-${exp.id}`" class="mt-1.5 flex items-center gap-2 cursor-pointer w-fit">
+            <input
+              :id="`exp-current-${exp.id}`"
+              type="checkbox"
+              :checked="exp.endDate === 'Present'"
+              class="rounded accent-cyan-500"
+              style="width: 14px; height: 14px;"
+              @change="toggleCurrentlyEmployed(index)"
+            />
+            <span class="text-xs text-secondary">I currently work here</span>
+          </label>
+        </div>
         <div class="col-span-2">
           <FormField
             :id="`exp-location-${exp.id}`"

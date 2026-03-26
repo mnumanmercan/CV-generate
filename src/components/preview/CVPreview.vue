@@ -30,10 +30,10 @@
 
   const socialLinks = computed(() => {
     const p = cvData.value.personal
-    const links: Array<{ label: string; value: string }> = []
-    if (p.linkedin) links.push({ label: 'LinkedIn', value: p.linkedin.replace('https://', '') })
-    if (p.github) links.push({ label: 'GitHub', value: p.github.replace('https://', '') })
-    if (p.website) links.push({ label: 'Website', value: p.website.replace('https://', '') })
+    const links: Array<{ label: string; value: string; href: string }> = []
+    if (p.linkedin) links.push({ label: 'LinkedIn', value: p.linkedin.replace('https://', ''), href: p.linkedin })
+    if (p.github) links.push({ label: 'GitHub', value: p.github.replace('https://', ''), href: p.github })
+    if (p.website) links.push({ label: 'Website', value: p.website.replace('https://', ''), href: p.website })
     return links
   })
 </script>
@@ -65,6 +65,7 @@
       color: #1a1a1a;
       padding: 40px 44px;
       box-sizing: border-box;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35);
     "
   >
     <!-- ── Personal Info ─────────────────────────────────────────── -->
@@ -72,10 +73,22 @@
       :class="['cv-header', isPulsed('personal') ? 'section-pulse' : '']"
       style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb;"
     >
-      <h1 style="font-size: 26px; font-weight: 700; color: #111827; margin: 0 0 2px 0; line-height: 1.2;">
+      <h1
+        :style="{
+          fontSize: '26px', fontWeight: '700',
+          color: cvData.personal.fullName ? '#111827' : '#9ca3af',
+          margin: '0 0 2px 0', lineHeight: '1.2'
+        }"
+      >
         {{ cvData.personal.fullName || 'Your Name' }}
       </h1>
-      <p style="font-size: 12px; font-weight: 600; color: #4f46e5; margin: 0 0 6px 0;">
+      <p
+        :style="{
+          fontSize: '12px', fontWeight: '600',
+          color: cvData.personal.jobTitle ? '#4f46e5' : '#c4b5fd',
+          margin: '0 0 6px 0'
+        }"
+      >
         {{ cvData.personal.jobTitle || 'Job Title' }}
       </p>
 
@@ -88,7 +101,7 @@
         <span v-if="cvData.personal.location">{{ cvData.personal.location }}</span>
         <template v-for="(link, i) in socialLinks" :key="link.label">
           <span v-if="cvData.personal.location || i > 0" style="margin: 0 8px;">·</span>
-          <span>{{ link.value }}</span>
+          <a :href="link.href" target="_blank" rel="noopener noreferrer" style="color: #4b5563; text-decoration: none;">{{ link.value }}</a>
         </template>
       </div>
     </header>
@@ -236,10 +249,10 @@
 
 <style scoped>
   .cv-section-heading {
-    font-size: 8.5px;
+    font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.10em;
     color: #111827;
     border-bottom: 1.5px solid #d1d5db;
     padding-bottom: 3px;

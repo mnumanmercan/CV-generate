@@ -13,6 +13,7 @@
 
   // New tag input per skill category
   const tagInputs = ref<Record<string, string>>({})
+  const duplicateWarnings = ref(new Set<string>())
 
   function addSkill(): void {
     const skill = createSkill()
@@ -28,7 +29,12 @@
     const input = (tagInputs.value[skillId] ?? '').trim()
     if (!input) return
     const skill = cvData.value.skills[index]
-    if (skill && !skill.items.includes(input)) {
+    if (skill) {
+      if (skill.items.includes(input)) {
+        duplicateWarnings.value.add(skillId)
+        setTimeout(() => duplicateWarnings.value.delete(skillId), 2000)
+        return
+      }
       skill.items.push(input)
     }
     tagInputs.value[skillId] = ''
@@ -134,6 +140,13 @@
             Add
           </button>
         </div>
+        <p
+          v-if="duplicateWarnings.has(skill.id)"
+          class="text-xs text-yellow-400 mt-1 flex items-center gap-1"
+          role="alert"
+        >
+          <span aria-hidden="true">⚠</span> Already added
+        </p>
       </div>
     </div>
 

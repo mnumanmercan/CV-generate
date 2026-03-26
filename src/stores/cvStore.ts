@@ -20,6 +20,35 @@ export const useCVStore = defineStore('cv', () => {
     return !!(p.fullName && p.email && p.phone && p.location && p.jobTitle)
   })
 
+  const isSummaryComplete = computed(() => cvData.value.summary.trim().length >= 50)
+
+  const isExperienceComplete = computed(
+    () =>
+      cvData.value.experience.length > 0 &&
+      cvData.value.experience.every((e) => e.position.trim() && e.company.trim()),
+  )
+
+  const isEducationComplete = computed(
+    () =>
+      cvData.value.education.length > 0 &&
+      cvData.value.education.every((e) => e.institution.trim()),
+  )
+
+  const isSkillsComplete = computed(
+    () => cvData.value.skills.length > 0 && cvData.value.skills.some((s) => s.items.length > 0),
+  )
+
+  const isProjectsComplete = computed(
+    () =>
+      cvData.value.projects.length > 0 && cvData.value.projects.every((p) => p.name.trim()),
+  )
+
+  const isCertificationsComplete = computed(
+    () =>
+      cvData.value.certifications.length > 0 &&
+      cvData.value.certifications.every((c) => c.name.trim()),
+  )
+
   async function loadFromStorage(): Promise<void> {
     const stored = await localStorageService.load()
     if (stored) {
@@ -47,7 +76,7 @@ export const useCVStore = defineStore('cv', () => {
     highlightedSection.value = section
     setTimeout(() => {
       highlightedSection.value = null
-    }, 700)
+    }, 1300)
   }
 
   async function clearData(): Promise<void> {
@@ -63,6 +92,12 @@ export const useCVStore = defineStore('cv', () => {
     lastSavedAt,
     saveIndicatorVisible,
     isPersonalComplete,
+    isSummaryComplete,
+    isExperienceComplete,
+    isEducationComplete,
+    isSkillsComplete,
+    isProjectsComplete,
+    isCertificationsComplete,
     loadFromStorage,
     saveToStorage,
     setActiveSection,

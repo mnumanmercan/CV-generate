@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed } from 'vue'
+  import { computed, reactive } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
   import { useDragSort } from '@/composables/useDragSort'
@@ -11,6 +11,16 @@
   const { cvData } = storeToRefs(cvStore)
 
   const drag = useDragSort(computed(() => cvData.value.education))
+
+  const touchedFields = reactive(new Set<string>())
+
+  function markTouched(eduId: string, field: string): void {
+    touchedFields.add(`${eduId}-${field}`)
+  }
+
+  function isTouched(eduId: string, field: string): boolean {
+    return touchedFields.has(`${eduId}-${field}`)
+  }
 
   function addEducation(): void {
     cvData.value.education.push(createEducation())
@@ -92,15 +102,17 @@
             :id="`edu-start-${edu.id}`"
             v-model="edu.startDate"
             label="Start Date"
-            placeholder="09/2018"
-            :error="getDateError(edu.startDate)"
+            placeholder="MM/YYYY"
+            :error="isTouched(edu.id, 'startDate') ? getDateError(edu.startDate) : ''"
+            @blur="markTouched(edu.id, 'startDate')"
           />
           <FormField
             :id="`edu-end-${edu.id}`"
             v-model="edu.endDate"
             label="End Date"
-            placeholder="06/2022"
-            :error="getDateError(edu.endDate) || getRangeError(edu.startDate, edu.endDate)"
+            placeholder="MM/YYYY"
+            :error="isTouched(edu.id, 'endDate') ? getDateError(edu.endDate) || getRangeError(edu.startDate, edu.endDate) : ''"
+            @blur="markTouched(edu.id, 'endDate')"
           />
           <FormField
             :id="`edu-gpa-${edu.id}`"
