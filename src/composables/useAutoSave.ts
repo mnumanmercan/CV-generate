@@ -10,6 +10,9 @@ export function useAutoSave() {
   watch(
     () => cvStore.cvData,
     () => {
+      // Skip while loadFromStorage is replacing cvData — that replacement would
+      // otherwise trigger an immediate save of the just-loaded data.
+      if (cvStore.loadingData) return
       if (debounceTimer) clearTimeout(debounceTimer)
       debounceTimer = setTimeout(() => {
         cvStore.saveToStorage()

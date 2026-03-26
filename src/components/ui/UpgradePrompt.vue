@@ -1,9 +1,17 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
+  import { ref, onMounted, onUnmounted } from 'vue'
   import { RouterLink } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
 
   const userStore = useUserStore()
+
+  // @keydown.esc on a non-focusable div never fires.
+  // Register on window instead so ESC always closes the modal.
+  function onWindowKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Escape' && userStore.showUpgradeModal) handleClose()
+  }
+  onMounted(() => window.addEventListener('keydown', onWindowKeydown))
+  onUnmounted(() => window.removeEventListener('keydown', onWindowKeydown))
 
   const email = ref('')
   const submitted = ref(false)
@@ -54,7 +62,6 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="upgrade-modal-title"
-      @keydown.esc="handleClose"
     >
       <!-- Backdrop -->
       <div

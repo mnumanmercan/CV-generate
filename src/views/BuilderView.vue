@@ -41,39 +41,42 @@
     cvStore.loadFromStorage()
   })
 
-  // Watch each section for changes and trigger preview highlight
+  // Watch each section for changes and trigger preview highlight.
+  // Guard with cvStore.loadingData so the initial data load (which replaces the
+  // entire cvData object and fires all deep watchers) does not flash every
+  // section in the preview on page load.
   watch(
     () => cvData.value.personal,
-    () => cvStore.triggerSectionHighlight('personal'),
+    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('personal') },
     { deep: true },
   )
   watch(
     () => cvData.value.summary,
-    () => cvStore.triggerSectionHighlight('summary'),
+    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('summary') },
   )
   watch(
     () => cvData.value.experience,
-    () => cvStore.triggerSectionHighlight('experience'),
+    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('experience') },
     { deep: true },
   )
   watch(
     () => cvData.value.education,
-    () => cvStore.triggerSectionHighlight('education'),
+    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('education') },
     { deep: true },
   )
   watch(
     () => cvData.value.skills,
-    () => cvStore.triggerSectionHighlight('skills'),
+    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('skills') },
     { deep: true },
   )
   watch(
     () => cvData.value.projects,
-    () => cvStore.triggerSectionHighlight('projects'),
+    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('projects') },
     { deep: true },
   )
   watch(
     () => cvData.value.certifications,
-    () => cvStore.triggerSectionHighlight('certifications'),
+    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('certifications') },
     { deep: true },
   )
 

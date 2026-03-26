@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import {
   type CVData,
   type SectionKey,
@@ -12,6 +12,7 @@ export const useCVStore = defineStore('cv', () => {
   const activeSection = ref<SectionKey | null>(null)
   const highlightedSection = ref<SectionKey | null>(null)
   const isSaving = ref(false)
+  const loadingData = ref(false)
   const lastSavedAt = ref<Date | null>(null)
   const saveIndicatorVisible = ref(false)
 
@@ -50,10 +51,17 @@ export const useCVStore = defineStore('cv', () => {
   )
 
   async function loadFromStorage(): Promise<void> {
+    loadingData.value = true
     const stored = await localStorageService.load()
     if (stored) {
       cvData.value = stored
     }
+    // Wait for Vue to flush the queued watchers (triggered by the cvData
+    // replacement above) BEFORE clearing the flag — this lets every watcher
+    // see loadingData === true and bail out, preventing spurious auto-saves
+    // and preview-section flashes on initial page load.
+    await nextTick()
+    loadingData.value = false
   }
 
   async function saveToStorage(): Promise<void> {
@@ -96,6 +104,7 @@ export const useCVStore = defineStore('cv', () => {
     activeSection,
     highlightedSection,
     isSaving,
+    loadingData,
     lastSavedAt,
     saveIndicatorVisible,
     isPersonalComplete,
