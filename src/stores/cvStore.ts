@@ -58,8 +58,15 @@ export const useCVStore = defineStore('cv', () => {
 
   async function saveToStorage(): Promise<void> {
     isSaving.value = true
-    cvData.value.meta.updatedAt = new Date().toISOString()
-    await localStorageService.save(cvData.value)
+    // Build a snapshot with the updated timestamp instead of mutating cvData
+    // directly — mutating cvData here would re-trigger the deep watcher in
+    // useAutoSave, creating an infinite save loop that causes the indicator
+    // to flicker every 500ms.
+    const snapshot: CVData = {
+      ...cvData.value,
+      meta: { ...cvData.value.meta, updatedAt: new Date().toISOString() },
+    }
+    await localStorageService.save(snapshot)
     isSaving.value = false
     lastSavedAt.value = new Date()
     saveIndicatorVisible.value = true
