@@ -81,7 +81,7 @@
   )
 
   // A4 preview scale — CSS-only zoom, does NOT resize the element
-  const previewScale = ref(0.80)
+  const previewScale = ref(1.0)
   const ZOOM_MIN = 0.55
   const ZOOM_MAX = 1.0
   const ZOOM_STEP = 0.10
