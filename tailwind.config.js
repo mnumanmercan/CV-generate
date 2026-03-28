@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{vue,ts,js}'],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -21,8 +22,16 @@ export default {
           accent: '#0D9488',
         },
         cv: '#FFFFFF',
-        primary: '#E2E8F0',
-        secondary: '#94A3B8',
+        // These reference CSS vars so they switch automatically with the theme.
+        // Light:  primary = #0f172a (slate-900), secondary = #64748b (slate-500)
+        // Dark:   primary = #E2E8F0 (slate-200), secondary = #94A3B8 (slate-400)
+        primary: 'var(--text-primary)',
+        secondary: 'var(--text-secondary)',
+        shell: 'var(--bg-shell)',
+        surface: 'var(--bg-surface)',
+        // Theme-aware overlay — light: rgb(0 0 0 / N), dark: rgb(255 255 255 / N)
+        // Replaces border-white/N, bg-white/N etc. so they adapt to both themes.
+        overlay: 'rgb(var(--overlay-rgb) / <alpha-value>)',
       },
       animation: {
         'fade-in': 'fadeIn 0.4s ease forwards',

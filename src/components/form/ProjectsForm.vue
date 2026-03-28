@@ -57,8 +57,8 @@
       :key="project.id"
       :class="[
         'rounded-xl border p-4 transition-all',
-        drag.isDragging(project.id) ? 'dragging border-white/5' : '',
-        drag.isDragOver(project.id) ? 'drag-over' : 'border-white/5',
+        drag.isDragging(project.id) ? 'dragging border-overlay/5' : '',
+        drag.isDragOver(project.id) ? 'drag-over' : 'border-overlay/5',
       ]"
       draggable="true"
       :aria-label="`Project entry ${index + 1}`"
@@ -118,7 +118,7 @@
             <span
               v-for="(tech, tIdx) in project.techStack"
               :key="tIdx"
-              class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface text-secondary text-xs border border-white/10 animate-chip-in"
+              class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface text-secondary text-xs border border-overlay/10 animate-chip-in"
             >
               {{ tech }}
               <button
@@ -153,7 +153,7 @@
 
     <button
       type="button"
-      class="w-full py-3 rounded-xl border-2 border-dashed border-white/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
+      class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addProject"
     >
       <span aria-hidden="true">+</span> Add Project

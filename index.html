@@ -40,6 +40,17 @@
       rel="stylesheet"
     />
   </head>
+  <!-- Anti-flash: apply saved theme class before Vue mounts so there's no white flash -->
+  <script>
+    ;(function () {
+      try {
+        var saved = localStorage.getItem('cv-generate-theme')
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        var isDark = saved ? saved === 'dark' : prefersDark
+        if (isDark) document.documentElement.classList.add('dark')
+      } catch (e) {}
+    })()
+  </script>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>

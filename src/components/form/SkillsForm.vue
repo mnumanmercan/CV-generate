@@ -63,8 +63,8 @@
       :key="skill.id"
       :class="[
         'rounded-xl border p-4 transition-all',
-        drag.isDragging(skill.id) ? 'dragging border-white/5' : '',
-        drag.isDragOver(skill.id) ? 'drag-over' : 'border-white/5',
+        drag.isDragging(skill.id) ? 'dragging border-overlay/5' : '',
+        drag.isDragOver(skill.id) ? 'drag-over' : 'border-overlay/5',
       ]"
       draggable="true"
       :aria-label="`Skill category ${index + 1}`"
@@ -152,7 +152,7 @@
 
     <button
       type="button"
-      class="w-full py-3 rounded-xl border-2 border-dashed border-white/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
+      class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addSkill"
     >
       <span aria-hidden="true">+</span> Add Skill Category

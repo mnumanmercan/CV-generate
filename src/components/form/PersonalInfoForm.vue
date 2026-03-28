@@ -71,7 +71,7 @@
       </span>
       <button
         type="button"
-        class="mt-1.5 w-full h-20 rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-secondary hover:border-accent/50 hover:text-accent transition-colors cursor-pointer"
+        class="mt-1.5 w-full h-20 rounded-xl border-2 border-dashed border-overlay/10 flex flex-col items-center justify-center gap-1 text-secondary hover:border-accent/50 hover:text-accent transition-colors cursor-pointer"
         aria-label="Upload profile photo (Pro feature)"
         @click="handlePhotoUploadClick"
       >
@@ -145,7 +145,7 @@
     />
 
     <!-- Optional URLs -->
-    <div class="pt-1 border-t border-white/5">
+    <div class="pt-1 border-t border-overlay/5">
       <p class="text-xs text-secondary mb-3">Optional links (must start with https://)</p>
       <div class="flex flex-col gap-3">
         <FormField

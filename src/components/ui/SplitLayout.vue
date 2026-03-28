@@ -76,7 +76,7 @@
 
     <!-- ── Mobile tab bar ─────────────────────────────────────────────── -->
     <div
-      class="md:hidden flex border-b border-white/10 sticky top-0 z-10"
+      class="md:hidden flex border-b border-overlay/10 sticky top-0 z-10"
       style="background: var(--bg-shell)"
       role="tablist"
       aria-label="Toggle form or preview"
@@ -133,7 +133,7 @@
         :style="isDesktop ? {
           width: `${formPct}%`,
           background: 'var(--bg-surface)',
-          borderRight: '1px solid rgba(255,255,255,0.05)',
+          borderRight: '1px solid var(--drag-center-line)',
         } : {
           width: '100%',
           background: 'var(--bg-surface)',
@@ -149,7 +149,7 @@
         :style="{
           background: isDragging
             ? 'rgba(8,145,178,0.18)'
-            : 'rgba(255,255,255,0.025)',
+            : 'var(--drag-handle-bg)',
           transition: 'background 0.15s',
         }"
         aria-hidden="true"
@@ -160,7 +160,7 @@
         <div
           class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px pointer-events-none"
           :style="{
-            background: isDragging ? 'rgba(8,145,178,0.55)' : 'rgba(255,255,255,0.07)',
+            background: isDragging ? 'rgba(8,145,178,0.55)' : 'var(--drag-center-line)',
             transition: 'background 0.15s',
           }"
         />

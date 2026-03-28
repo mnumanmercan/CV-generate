@@ -71,7 +71,7 @@
 
       <!-- Modal card -->
       <div
-        class="relative z-10 w-full max-w-sm rounded-2xl p-7 shadow-2xl border border-white/10"
+        class="relative z-10 w-full max-w-sm rounded-2xl p-7 shadow-2xl border border-overlay/10"
         style="background: var(--bg-surface)"
       >
         <!-- ── Success state ── -->
@@ -88,7 +88,7 @@
             </div>
             <button
               type="button"
-              class="w-full py-2.5 rounded-xl border border-white/10 text-sm font-medium text-secondary hover:text-primary hover:border-white/20 transition-colors"
+              class="w-full py-2.5 rounded-xl border border-overlay/10 text-sm font-medium text-secondary hover:text-primary hover:border-overlay/20 transition-colors"
               @click="handleClose"
             >
               Close
@@ -146,7 +146,7 @@
           </div>
 
           <!-- Footer actions -->
-          <div class="flex items-center justify-between pt-3 border-t border-white/5">
+          <div class="flex items-center justify-between pt-3 border-t border-overlay/5">
             <button
               type="button"
               class="text-xs text-secondary hover:text-primary transition-colors"

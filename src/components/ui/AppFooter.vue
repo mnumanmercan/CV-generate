@@ -4,7 +4,7 @@
 
 <template>
   <footer
-    class="border-t border-white/5 py-8 px-6"
+    class="border-t border-overlay/5 py-8 px-6"
     style="background: var(--bg-surface)"
   >
     <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">

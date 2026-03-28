@@ -42,9 +42,9 @@
   }
 
   const tierBorder: Record<SubscriptionTier, string> = {
-    free: 'border-white/10',
+    free: 'border-overlay/10',
     pro: 'border-accent shadow-lg shadow-accent/10',
-    enterprise: 'border-white/10',
+    enterprise: 'border-overlay/10',
   }
 
   /* ── Comparison table data ────────────────────────────────────────────── */
@@ -129,7 +129,7 @@
             role="switch"
             :aria-checked="billingPeriod === 'annual'"
             class="relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-shell"
-            :style="{ background: billingPeriod === 'annual' ? 'var(--accent)' : 'rgba(255,255,255,0.12)' }"
+            :style="{ background: billingPeriod === 'annual' ? 'var(--accent)' : 'rgb(var(--overlay-rgb) / 0.12)' }"
             @click="billingPeriod = billingPeriod === 'monthly' ? 'annual' : 'monthly'"
           >
             <span
@@ -225,14 +225,14 @@
               <RouterLink
                 v-else-if="plan.id === 'free'"
                 to="/builder"
-                class="block w-full text-center py-3 rounded-xl border border-white/10 text-primary text-sm font-semibold hover:border-white/20 hover:bg-white/5 transition-all"
+                class="block w-full text-center py-3 rounded-xl border border-overlay/10 text-primary text-sm font-semibold hover:border-overlay/20 hover:bg-overlay/5 transition-all"
               >
                 Get Started Free
               </RouterLink>
               <a
                 v-else-if="plan.id === 'enterprise'"
                 href="mailto:hello@cv-generate.app"
-                class="block w-full text-center py-3 rounded-xl border border-white/10 text-primary text-sm font-semibold hover:border-accent/40 hover:bg-accent/5 transition-all"
+                class="block w-full text-center py-3 rounded-xl border border-overlay/10 text-primary text-sm font-semibold hover:border-accent/40 hover:bg-accent/5 transition-all"
               >
                 Contact Sales
               </a>
@@ -243,7 +243,7 @@
                   'w-full py-3 rounded-xl text-sm font-semibold transition-all',
                   tierHighlight[plan.id]
                     ? 'shimmer-btn text-white shadow-lg shadow-accent/20'
-                    : 'border border-white/10 text-primary hover:border-accent/40 hover:bg-accent/5',
+                    : 'border border-overlay/10 text-primary hover:border-accent/40 hover:bg-accent/5',
                 ]"
                 @click="userStore.openUpgradeModal(`${plan.name} Plan`)"
               >
@@ -251,7 +251,7 @@
               </button>
             </div>
 
-            <div class="h-px bg-white/5" aria-hidden="true" />
+            <div class="h-px bg-overlay/5" aria-hidden="true" />
 
             <!-- Feature list -->
             <ul class="flex flex-col gap-2.5 flex-1" :aria-label="`${plan.name} features`">
@@ -289,10 +289,10 @@
           Full comparison
         </h2>
 
-        <div class="rounded-2xl border border-white/5 overflow-hidden reveal-item" style="background: var(--bg-surface)">
+        <div class="rounded-2xl border border-overlay/5 overflow-hidden reveal-item" style="background: var(--bg-surface)">
           <table class="w-full text-sm" role="table">
             <thead>
-              <tr class="border-b border-white/5">
+              <tr class="border-b border-overlay/5">
                 <th class="text-left px-5 py-3.5 text-secondary font-medium text-xs uppercase tracking-wider w-1/2" scope="col">Feature</th>
                 <th class="text-center px-4 py-3.5 text-secondary font-medium text-xs uppercase tracking-wider" scope="col">Free</th>
                 <th class="text-center px-4 py-3.5 text-accent font-medium text-xs uppercase tracking-wider" scope="col">Pro</th>
@@ -303,26 +303,26 @@
               <tr
                 v-for="(row, i) in comparisonRows"
                 :key="row[0]"
-                :class="['border-b border-white/5 last:border-0 transition-colors hover:bg-white/[0.02]', i % 2 === 0 ? '' : 'bg-white/[0.01]']"
+                :class="['border-b border-overlay/5 last:border-0 transition-colors hover:bg-overlay/[0.02]', i % 2 === 0 ? '' : 'bg-overlay/[0.01]']"
               >
                 <td class="px-5 py-3 text-secondary">{{ row[0] }}</td>
                 <td class="px-4 py-3 text-center">
                   <svg v-if="row[1]" class="w-4 h-4 text-emerald-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Included">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span v-else class="text-white/15 text-base leading-none" aria-label="Not included">—</span>
+                  <span v-else class="text-overlay/20 text-base leading-none" aria-label="Not included">—</span>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <svg v-if="row[2]" class="w-4 h-4 text-emerald-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Included">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span v-else class="text-white/15 text-base leading-none" aria-label="Not included">—</span>
+                  <span v-else class="text-overlay/20 text-base leading-none" aria-label="Not included">—</span>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <svg v-if="row[3]" class="w-4 h-4 text-emerald-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Included">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span v-else class="text-white/15 text-base leading-none" aria-label="Not included">—</span>
+                  <span v-else class="text-overlay/20 text-base leading-none" aria-label="Not included">—</span>
                 </td>
               </tr>
             </tbody>
@@ -346,12 +346,12 @@
           <details
             v-for="(item, index) in faq"
             :key="item.q"
-            class="group rounded-xl border border-white/5 overflow-hidden reveal-item"
+            class="group rounded-xl border border-overlay/5 overflow-hidden reveal-item"
             style="background: var(--bg-surface)"
             :style="{ animationDelay: `${index * 50}ms` }"
           >
             <summary
-              class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-sm font-semibold text-primary list-none hover:bg-white/5 transition-colors"
+              class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-sm font-semibold text-primary list-none hover:bg-overlay/5 transition-colors"
             >
               {{ item.q }}
               <svg
@@ -364,7 +364,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </summary>
-            <div class="px-5 pb-4 text-sm text-secondary leading-relaxed border-t border-white/5 pt-3">
+            <div class="px-5 pb-4 text-sm text-secondary leading-relaxed border-t border-overlay/5 pt-3">
               {{ item.a }}
             </div>
           </details>

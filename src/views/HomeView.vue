@@ -223,7 +223,7 @@
                 </RouterLink>
                 <RouterLink
                   to="/pricing"
-                  class="group px-7 py-3.5 rounded-xl border border-white/20 text-primary font-medium text-base hover:border-accent/40 hover:bg-accent/5 transition-all flex items-center justify-center gap-2"
+                  class="group px-7 py-3.5 rounded-xl border border-overlay/20 text-primary font-medium text-base hover:border-accent/40 hover:bg-accent/5 transition-all flex items-center justify-center gap-2"
                 >
                   See Plans
                   <span class="text-xs text-accent group-hover:text-accent/80 transition-colors">Free forever</span>
@@ -250,18 +250,18 @@
             <!-- Right: Product mockup -->
             <div class="flex-1 min-w-0 w-full stagger-item" style="animation-delay: 100ms" aria-hidden="true">
               <div
-                class="rounded-2xl border border-white/5 overflow-hidden shadow-2xl shadow-black/50"
-                style="background: #0d1117"
+                class="rounded-2xl border border-overlay/5 overflow-hidden shadow-2xl shadow-black/50"
+                style="background: var(--mockup-bg)"
               >
                 <!-- Browser chrome -->
                 <div
-                  class="flex items-center gap-2 px-4 py-3 border-b border-white/5"
-                  style="background: #0a0e14"
+                  class="flex items-center gap-2 px-4 py-3 border-b border-overlay/5"
+                  style="background: var(--mockup-chrome)"
                 >
                   <span class="w-3 h-3 rounded-full bg-red-500/60" />
                   <span class="w-3 h-3 rounded-full bg-yellow-500/60" />
                   <span class="w-3 h-3 rounded-full bg-green-500/60" />
-                  <div class="flex-1 mx-4 h-5 rounded-md bg-white/5 flex items-center px-3">
+                  <div class="flex-1 mx-4 h-5 rounded-md bg-overlay/5 flex items-center px-3">
                     <span class="text-secondary text-xs opacity-50">cv-generate.app/builder</span>
                   </div>
                   <div class="h-5 w-16 rounded bg-accent/20 flex items-center justify-center ml-2">
@@ -273,7 +273,7 @@
                 <div class="flex ">
                   <!-- Form panel -->
                   <div
-                    class="w-[40%] border-r border-white/5 p-4 flex flex-col gap-2 overflow-hidden"
+                    class="w-[40%] border-r border-overlay/5 p-4 flex flex-col gap-2 overflow-hidden"
                     style="background: var(--bg-surface)"
                   >
                     <div class="flex items-center justify-between mb-1">
@@ -293,14 +293,14 @@
                         </svg>
                       </div>
                       <div class="flex flex-col gap-1.5">
-                        <div class="h-5 rounded bg-white/8 flex items-center px-2">
+                        <div class="h-5 rounded bg-overlay/8 flex items-center px-2">
                           <span class="text-[8px] text-secondary/70">Alex Johnson</span>
                         </div>
                         <div class="flex gap-1.5">
-                          <div class="flex-1 h-5 rounded bg-white/8 flex items-center px-2">
+                          <div class="flex-1 h-5 rounded bg-overlay/8 flex items-center px-2">
                             <span class="text-[8px] text-secondary/70">Software Engineer</span>
                           </div>
-                          <div class="flex-1 h-5 rounded bg-white/8 flex items-center px-2">
+                          <div class="flex-1 h-5 rounded bg-overlay/8 flex items-center px-2">
                             <span class="text-[8px] text-secondary/70">San Francisco, CA</span>
                           </div>
                         </div>
@@ -311,7 +311,7 @@
                     <div
                       v-for="label in ['📝 Summary', '💼 Work Experience', '🎓 Education', '⚙️ Skills', '🚀 Projects', '🏆 Certifications']"
                       :key="label"
-                      class="flex items-center justify-between px-3 py-2 rounded-lg border border-white/5"
+                      class="flex items-center justify-between px-3 py-2 rounded-lg border border-overlay/5"
                     >
                       <span class="text-xs text-secondary">{{ label }}</span>
                       <svg class="w-3 h-3 text-secondary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -321,7 +321,7 @@
                   </div>
 
                   <!-- CV preview panel -->
-                  <div class="flex-1 flex justify-center items-start overflow-hidden p-5" style="background: #18181f">
+                  <div class="flex-1 flex justify-center items-start overflow-hidden p-5" style="background: var(--preview-bg)">
                     <div
                       class="bg-white rounded shadow-xl w-full max-w-[320px] p-5 text-[#1a1a1a]"
                       style="font-family: 'Inter', sans-serif; font-size: 9.5px; line-height: 1.6"
@@ -400,7 +400,7 @@
               >
                 {{ step.number }}
               </span>
-              <div class="flex-1 h-px bg-white/5" aria-hidden="true" />
+              <div class="flex-1 h-px bg-overlay/5" aria-hidden="true" />
             </div>
             <h3 class="text-base font-semibold text-primary">{{ step.title }}</h3>
             <p class="text-sm text-secondary leading-relaxed">{{ step.description }}</p>
@@ -478,7 +478,7 @@
               "{{ t.text }}"
             </p>
 
-            <div class="flex items-center gap-2.5 pt-3 border-t border-white/5">
+            <div class="flex items-center gap-2.5 pt-3 border-t border-overlay/5">
               <div
                 class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent text-xs font-bold shrink-0"
                 aria-hidden="true"

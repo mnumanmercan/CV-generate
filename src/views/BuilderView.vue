@@ -183,12 +183,12 @@
           <div class="flex flex-col h-full">
             <!-- Preview toolbar -->
             <div
-              class="flex items-center justify-between px-4 py-3 border-b border-white/5 sticky top-0 z-10"
+              class="flex items-center justify-between px-4 py-3 border-b border-overlay/5 sticky top-0 z-10"
               style="background: var(--bg-shell)"
             >
               <div class="flex items-center gap-2">
                 <span class="text-xs text-secondary font-mono">A4 Preview</span>
-                <span class="w-1 h-1 rounded-full bg-white/20" aria-hidden="true" />
+                <span class="w-1 h-1 rounded-full bg-overlay/20" aria-hidden="true" />
                 <span class="text-xs text-secondary font-mono">ATS</span>
               </div>
 
@@ -198,7 +198,7 @@
                 <button
                   type="button"
                   :disabled="previewScale <= ZOOM_MIN"
-                  class="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-secondary hover:text-primary hover:border-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  class="w-7 h-7 rounded-lg border border-overlay/10 flex items-center justify-center text-secondary hover:text-primary hover:border-overlay/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Zoom out"
                   @click="zoomOut"
                 >
@@ -213,7 +213,7 @@
                 <button
                   type="button"
                   :disabled="previewScale >= ZOOM_MAX"
-                  class="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-secondary hover:text-primary hover:border-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  class="w-7 h-7 rounded-lg border border-overlay/10 flex items-center justify-center text-secondary hover:text-primary hover:border-overlay/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Zoom in"
                   @click="zoomIn"
                 >
@@ -224,7 +224,7 @@
                 <!-- Fit to panel -->
                 <button
                   type="button"
-                  class="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-secondary hover:text-primary hover:border-white/20 transition-colors"
+                  class="w-7 h-7 rounded-lg border border-overlay/10 flex items-center justify-center text-secondary hover:text-primary hover:border-overlay/20 transition-colors"
                   aria-label="Fit to panel width"
                   title="Fit to panel"
                   @click="fitToPanel"
@@ -233,7 +233,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
                   </svg>
                 </button>
-                <span class="w-px h-4 bg-white/10 mx-1" aria-hidden="true" />
+                <span class="w-px h-4 bg-overlay/10 mx-1" aria-hidden="true" />
                 <!-- PDF Download -->
                 <button
                   type="button"
@@ -260,7 +260,7 @@
             <div
               ref="previewScrollEl"
               class="flex-1 overflow-auto flex justify-center py-6 px-4"
-              style="background: #18181f"
+              style="background: var(--preview-bg)"
             >
               <div
                 :style="{

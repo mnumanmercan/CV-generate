@@ -11,8 +11,8 @@
 
 <template>
   <header
-    class="sticky top-0 z-50 grid grid-cols-[1fr_auto_1fr] items-center px-6 py-3.5 border-b border-white/5"
-    style="background: rgba(7, 13, 22, 0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px)"
+    class="sticky top-0 z-50 grid grid-cols-[1fr_auto_1fr] items-center px-6 py-3.5 border-b border-overlay/5"
+    style="background: var(--header-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px)"
   >
     <!-- ── Logo ──────────────────────────────────────────────── -->
     <RouterLink
@@ -64,7 +64,7 @@
 
     <!-- ── Nav (centered via grid) ────────────────────────────── -->
     <nav
-      class="flex items-center gap-0.5 px-1.5 py-1.5 rounded-xl border border-white/8 bg-white/[0.025]"
+      class="flex items-center gap-0.5 px-1.5 py-1.5 rounded-xl border border-overlay/8 bg-overlay/[0.025]"
       aria-label="Main navigation"
     >
       <RouterLink
@@ -74,7 +74,7 @@
         :class="[
           'relative px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200',
           route.name === link.name
-            ? 'text-white'
+            ? 'text-primary'
             : 'text-secondary hover:text-primary',
         ]"
       >
@@ -95,8 +95,8 @@
       </RouterLink>
     </nav>
 
-    <!-- ── CTA ──────────────────────────────────────────────────── -->
-    <div class="flex justify-end">
+    <!-- ── Right side: CTA ────────────────────────────────────── -->
+    <div class="flex items-center justify-end gap-2">
       <RouterLink
         to="/builder"
         class="shimmer-btn flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-semibold transition-all"

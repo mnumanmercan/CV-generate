@@ -25,13 +25,13 @@
 
 <template>
   <div
-    class="border border-white/5 rounded-xl overflow-hidden mb-3 stagger-item"
+    class="border border-overlay/5 rounded-xl overflow-hidden mb-3 stagger-item"
     :style="{ animationDelay: `${stepIndex * 60}ms` }"
   >
     <!-- Section header / toggle -->
     <button
       type="button"
-      class="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-white/5 transition-colors group"
+      class="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-overlay/5 transition-colors group"
       :aria-expanded="isOpen"
       :aria-controls="`section-content-${title.replace(/\s+/g, '-').toLowerCase()}`"
       @click="toggle"
@@ -45,7 +45,7 @@
               ? 'bg-emerald-500 text-white'
               : isOpen
                 ? 'bg-accent text-white'
-                : 'bg-white/10 text-secondary',
+                : 'bg-overlay/10 text-secondary',
           ]"
           aria-hidden="true"
         >

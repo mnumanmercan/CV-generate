@@ -2,26 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── CSS custom properties ─────────────────────────────────────────────── */
+/* ─── Light theme (default) ──────────────────────────────────────────────── */
 :root {
-  --bg-shell: #070D16;
-  --bg-surface: #0C1523;
-  --accent: #0891B2;          /* Cyan-600  */
-  --accent-light: #06B6D4;    /* Cyan-500  */
-  --accent-teal: #0D9488;     /* Teal-600  */
-  --accent-emerald: #059669;  /* Emerald-600 */
+  /* Backgrounds */
+  --bg-shell: #f1f5f9;
+  --bg-surface: #ffffff;
+
+  /* Accent colours (same in both themes) */
+  --accent: #0891B2;
+  --accent-light: #06B6D4;
+  --accent-teal: #0D9488;
+  --accent-emerald: #059669;
+
+  /* CV document background — always white */
   --cv-bg: #ffffff;
-  --text-primary: #E2E8F0;
-  --text-secondary: #94A3B8;
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
 
   /* A4 dimensions at 96dpi */
   --a4-width: 794px;
   --a4-height: 1123px;
 
-  /* Shimmer gradient – updated to cyan→teal */
+  /* Shimmer gradient */
   --shimmer-from: #0891B2;
   --shimmer-mid: #06B6D4;
   --shimmer-to: #0D9488;
+
+  /* Overlay channel: 0 0 0 in light, 255 255 255 in dark.
+     Used for Tailwind overlay/N utilities (border-overlay/5 etc.) */
+  --overlay-rgb: 0 0 0;
+
+  /* Specific one-off colours that inline styles reference */
+  --header-bg: rgba(248, 250, 252, 0.92);
+  --preview-bg: #dde3ea;         /* builder preview panel bg     */
+  --mockup-bg: #f8fafc;          /* homepage product mockup body  */
+  --mockup-chrome: #f1f5f9;      /* homepage browser chrome bar   */
+  --drag-handle-bg: rgba(0, 0, 0, 0.04);
+  --drag-center-line: rgba(0, 0, 0, 0.10);
+
+  /* Form inputs */
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.12);
+
+  /* Scrollbar */
+  --scrollbar-thumb: #cbd5e1;
+
+  /* Dot-grid dot colour */
+  --dot-color: rgba(15, 23, 42, 0.10);
+
+  /* Feature-card gradient stops */
+  --fc-from: rgba(8, 145, 178, 0.06);
+  --fc-mid: rgba(255, 255, 255, 0.96);
+  --fc-to: rgba(13, 148, 136, 0.03);
+  --fc-border: rgba(0, 0, 0, 0.07);
+  --fc-hover-from: rgba(8, 145, 178, 0.09);
+  --fc-hover-mid: rgba(255, 255, 255, 1);
+  --fc-hover-to: rgba(13, 148, 136, 0.06);
+  --fc-hover-border: rgba(8, 145, 178, 0.36);
+}
+
+/* ─── Dark theme ─────────────────────────────────────────────────────────── */
+.dark {
+  --bg-shell: #070D16;
+  --bg-surface: #0C1523;
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --overlay-rgb: 255 255 255;
+  --header-bg: rgba(7, 13, 22, 0.88);
+  --preview-bg: #18181f;
+  --mockup-bg: #0d1117;
+  --mockup-chrome: #0a0e14;
+  --drag-handle-bg: rgba(255, 255, 255, 0.025);
+  --drag-center-line: rgba(255, 255, 255, 0.07);
+  --input-bg: #0C1523;
+  --input-border: rgba(255, 255, 255, 0.08);
+  --scrollbar-thumb: #1a2a3d;
+  --dot-color: rgba(30, 58, 82, 0.19);
+  --fc-from: rgba(8, 145, 178, 0.07);
+  --fc-mid: rgba(12, 21, 35, 0.92);
+  --fc-to: rgba(13, 148, 136, 0.04);
+  --fc-border: rgba(255, 255, 255, 0.06);
+  --fc-hover-from: rgba(8, 145, 178, 0.11);
+  --fc-hover-mid: rgba(12, 21, 35, 0.95);
+  --fc-hover-to: rgba(13, 148, 136, 0.07);
+  --fc-hover-border: rgba(8, 145, 178, 0.38);
+}
+
+/* ─── Smooth theme transition (only active during toggle) ────────────────── */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease,
+    opacity 0.3s ease !important;
+  transition-delay: 0s !important;
 }
 
 /* ─── Base reset ──────────────────────────────────────────────────────────── */
@@ -61,7 +141,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1a2a3d;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
@@ -83,10 +163,10 @@ body {
 [type='date'],
 textarea,
 select {
-  background-color: var(--bg-surface) !important;
+  background-color: var(--input-bg) !important;
   border-width: 1px !important;
   border-style: solid !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--input-border) !important;
   color: var(--text-primary) !important;
   border-radius: 8px !important;
   transition:
@@ -202,7 +282,7 @@ select:focus {
 .aurora-ambient {
   pointer-events: none;
   position: absolute;
-  inset: -20%;         /* wider than the container so gradients bleed freely */
+  inset: -20%;
   background:
     radial-gradient(900px circle at 25% 45%, rgba(8, 145, 178, 0.10) 0%, transparent 68%),
     radial-gradient(700px circle at 78% 55%, rgba(13, 148, 136, 0.08) 0%, transparent 60%),
@@ -210,16 +290,24 @@ select:focus {
   animation: auroraFloat 14s ease-in-out infinite;
 }
 
+/* Reduce aurora opacity in light mode so it doesn't overwhelm the lighter bg */
+:root .aurora-ambient {
+  opacity: 0.55;
+}
+.dark .aurora-ambient {
+  opacity: 1;
+}
+
 @keyframes auroraFloat {
-  0%,  100% { opacity: 0.75; transform: scale(1)    translate(0%,   0%);   }
-  25%        { opacity: 1;    transform: scale(1.04) translate(1.5%, -1%);  }
-  50%        { opacity: 0.85; transform: scale(1.07) translate(-1%,  1.5%); }
-  75%        { opacity: 1;    transform: scale(1.03) translate(0.5%, 1%);   }
+  0%,  100% { transform: scale(1)    translate(0%,   0%);   }
+  25%        { transform: scale(1.04) translate(1.5%, -1%);  }
+  50%        { transform: scale(1.07) translate(-1%,  1.5%); }
+  75%        { transform: scale(1.03) translate(0.5%, 1%);   }
 }
 
 /* ─── Grid dot pattern (homepage) ───────────────────────────────────────── */
 .dot-grid {
-  background-image: radial-gradient(circle, #1e3a5230 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
@@ -227,11 +315,11 @@ select:focus {
 .feature-card {
   background: linear-gradient(
     140deg,
-    rgba(8,  145, 178, 0.07) 0%,
-    rgba(12,  21,  35, 0.92) 55%,
-    rgba(13, 148, 136, 0.04) 100%
+    var(--fc-from)  0%,
+    var(--fc-mid)  55%,
+    var(--fc-to)  100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--fc-border);
   transition:
     border-color  0.35s ease,
     box-shadow    0.35s ease,
@@ -239,14 +327,14 @@ select:focus {
 }
 
 .feature-card:hover {
-  border-color: rgba(8, 145, 178, 0.38);
+  border-color: var(--fc-hover-border);
   box-shadow:
     0 0 28px rgba(8, 145, 178, 0.09),
     inset 0 0 28px rgba(8, 145, 178, 0.04);
   background: linear-gradient(
     140deg,
-    rgba(8,  145, 178, 0.11) 0%,
-    rgba(12,  21,  35, 0.95) 55%,
-    rgba(13, 148, 136, 0.07) 100%
+    var(--fc-hover-from)  0%,
+    var(--fc-hover-mid)  55%,
+    var(--fc-hover-to)  100%
   );
 }
