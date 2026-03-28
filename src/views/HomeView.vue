@@ -8,7 +8,7 @@
 
   /* ── Per-page title ───────────────────────────────────────────────────── */
   onMounted(() => {
-    document.title = 'CV Generate — Build a Professional CV Free'
+    document.title = 'Resumark — Build a Professional CV Free'
   })
 
   /* ── Mouse-tracking aurora ────────────────────────────────────────────── */
@@ -262,7 +262,7 @@
                   <span class="w-3 h-3 rounded-full bg-yellow-500/60" />
                   <span class="w-3 h-3 rounded-full bg-green-500/60" />
                   <div class="flex-1 mx-4 h-5 rounded-md bg-overlay/5 flex items-center px-3">
-                    <span class="text-secondary text-xs opacity-50">cv-generate.app/builder</span>
+                    <span class="text-secondary text-xs opacity-50">resumark.app/builder</span>
                   </div>
                   <div class="h-5 w-16 rounded bg-accent/20 flex items-center justify-center ml-2">
                     <span class="text-accent text-[9px] font-semibold">↓ PDF</span>

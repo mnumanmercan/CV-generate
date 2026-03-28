@@ -9,7 +9,7 @@
 
   /* ── Per-page title ───────────────────────────────────────────────────── */
   onMounted(() => {
-    document.title = 'Pricing — CV Generate'
+    document.title = 'Pricing — Resumark'
   })
 
   /* ── Scroll reveal ────────────────────────────────────────────────────── */
@@ -79,7 +79,7 @@
     },
     {
       q: 'What is an ATS-compliant CV?',
-      a: 'ATS (Applicant Tracking System) software scans CVs before a human ever reads them. An ATS-compliant CV uses a single-column layout, standard section headings, no tables or graphics, and machine-readable fonts — exactly what CV Generate produces.',
+      a: 'ATS (Applicant Tracking System) software scans CVs before a human ever reads them. An ATS-compliant CV uses a single-column layout, standard section headings, no tables or graphics, and machine-readable fonts — exactly what Resumark produces.',
     },
     {
       q: 'When will Pro and Enterprise be available?',
@@ -231,7 +231,7 @@
               </RouterLink>
               <a
                 v-else-if="plan.id === 'enterprise'"
-                href="mailto:hello@cv-generate.app"
+                href="mailto:hello@resumark.app"
                 class="block w-full text-center py-3 rounded-xl border border-overlay/10 text-primary text-sm font-semibold hover:border-accent/40 hover:bg-accent/5 transition-all"
               >
                 Contact Sales

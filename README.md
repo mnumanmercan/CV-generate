@@ -1,4 +1,4 @@
-# CV Generate
+# Resumark
 
 > **ATS-Friendly Professional CV Builder** — built with Vue 3, TypeScript, and TailwindCSS.
 
