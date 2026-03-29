@@ -180,81 +180,14 @@
 
         <!-- ── Preview Panel ────────────────────────────────── -->
         <template #preview>
+          <!--
+            flex-col so the scroll area (flex-1) and the bottom control strip
+            are siblings — controls live entirely outside the scrollable content,
+            so they can never overlap the CV document.
+          -->
           <div class="flex flex-col h-full">
-            <!-- Preview toolbar -->
-            <div
-              class="flex items-center justify-between px-4 py-3 border-b border-overlay/5 sticky top-0 z-10"
-              style="background: var(--bg-shell)"
-            >
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-secondary font-mono">A4 Preview</span>
-                <span class="w-1 h-1 rounded-full bg-overlay/20" aria-hidden="true" />
-                <span class="text-xs text-secondary font-mono">ATS</span>
-              </div>
 
-              <!-- Zoom controls + PDF Download -->
-              <div class="flex items-center gap-2">
-                <!-- Zoom out -->
-                <button
-                  type="button"
-                  :disabled="previewScale <= ZOOM_MIN"
-                  class="w-7 h-7 rounded-lg border border-overlay/10 flex items-center justify-center text-secondary hover:text-primary hover:border-overlay/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Zoom out"
-                  @click="zoomOut"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
-                  </svg>
-                </button>
-                <span class="text-xs text-secondary font-mono w-10 text-center select-none">
-                  {{ Math.round(previewScale * 100) }}%
-                </span>
-                <!-- Zoom in -->
-                <button
-                  type="button"
-                  :disabled="previewScale >= ZOOM_MAX"
-                  class="w-7 h-7 rounded-lg border border-overlay/10 flex items-center justify-center text-secondary hover:text-primary hover:border-overlay/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Zoom in"
-                  @click="zoomIn"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                  </svg>
-                </button>
-                <!-- Fit to panel -->
-                <button
-                  type="button"
-                  class="w-7 h-7 rounded-lg border border-overlay/10 flex items-center justify-center text-secondary hover:text-primary hover:border-overlay/20 transition-colors"
-                  aria-label="Fit to panel width"
-                  title="Fit to panel"
-                  @click="fitToPanel"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
-                  </svg>
-                </button>
-                <span class="w-px h-4 bg-overlay/10 mx-1" aria-hidden="true" />
-                <!-- PDF Download -->
-                <button
-                  type="button"
-                  :disabled="pdfStatus === 'generating'"
-                  :class="[
-                    'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all',
-                    pdfStatus === 'generating'
-                      ? 'bg-accent/50 text-white/70 cursor-not-allowed'
-                      : 'shimmer-btn text-white',
-                  ]"
-                  aria-label="Download CV as PDF"
-                  @click="handleDownload"
-                >
-                  <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
-                  <span v-else aria-hidden="true">↓</span>
-                  {{ pdfStatus === 'generating' ? 'Generating...' : 'Download PDF' }}
-                </button>
-              </div>
-            </div><!-- end toolbar -->
-
-            <!-- A4 preview with scale transform to fit panel.
+            <!-- A4 preview scroll area — fills all remaining height.
                  overflow-hidden is intentionally ABSENT from the inner wrapper:
                  the CV element must not be clipped in either the preview or PDF. -->
             <div
@@ -266,8 +199,6 @@
                 :style="{
                   transform: `scale(${previewScale})`,
                   transformOrigin: 'top center',
-                  // Preserve the layout space so the scroll container size
-                  // reflects the scaled-down visual height, not the native 1123px.
                   height: `${1123 * previewScale}px`,
                   width: `${794 * previewScale}px`,
                   flexShrink: '0',
@@ -276,6 +207,82 @@
                 <CVPreview />
               </div>
             </div>
+
+            <!-- ── Bottom control strip ───────────────────────────── -->
+            <!--
+              Centered layout keeps controls away from the theme-toggle FAB
+              (fixed bottom-5 right-5) which sits at the viewport's bottom-right
+              corner just outside this panel.
+            -->
+            <div
+              class="flex items-center justify-center gap-1.5 px-4 py-2 border-t border-overlay/5 shrink-0"
+              style="background: var(--bg-surface)"
+            >
+              <!-- Zoom out -->
+              <button
+                type="button"
+                :disabled="previewScale <= ZOOM_MIN"
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Zoom out"
+                @click="zoomOut"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+                </svg>
+              </button>
+
+              <span class="text-xs text-secondary font-mono w-9 text-center select-none tabular-nums">
+                {{ Math.round(previewScale * 100) }}%
+              </span>
+
+              <!-- Zoom in -->
+              <button
+                type="button"
+                :disabled="previewScale >= ZOOM_MAX"
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Zoom in"
+                @click="zoomIn"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+
+              <!-- Fit to panel -->
+              <button
+                type="button"
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-overlay/5 transition-colors"
+                aria-label="Fit to panel width"
+                title="Fit to panel"
+                @click="fitToPanel"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
+                </svg>
+              </button>
+
+              <!-- Divider -->
+              <span class="w-px h-4 bg-overlay/10 mx-1" aria-hidden="true" />
+
+              <!-- PDF Download -->
+              <button
+                type="button"
+                :disabled="pdfStatus === 'generating'"
+                :class="[
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all',
+                  pdfStatus === 'generating'
+                    ? 'bg-accent/50 text-white/70 cursor-not-allowed'
+                    : 'shimmer-btn text-white',
+                ]"
+                aria-label="Download CV as PDF"
+                @click="handleDownload"
+              >
+                <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
+                <span v-else aria-hidden="true">↓</span>
+                {{ pdfStatus === 'generating' ? 'Generating...' : 'Download PDF' }}
+              </button>
+            </div>
+
           </div>
         </template>
       </SplitLayout>

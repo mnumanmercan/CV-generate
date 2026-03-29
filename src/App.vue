@@ -1,9 +1,11 @@
 <script setup lang="ts">
-  import { RouterView } from 'vue-router'
+  import { RouterView, useRoute } from 'vue-router'
   import ThemeToggle from '@/components/ui/ThemeToggle.vue'
+
+  const route = useRoute()
 </script>
 
 <template>
   <RouterView />
-  <ThemeToggle />
+  <ThemeToggle :bottom-offset="route.name === 'builder' ? 60 : 20" />
 </template>
