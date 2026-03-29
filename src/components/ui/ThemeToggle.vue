@@ -1,14 +1,16 @@
 <script setup lang="ts">
   import { useThemeStore } from '@/stores/themeStore'
 
+  const props = withDefaults(defineProps<{ bottomOffset?: number }>(), { bottomOffset: 20 })
   const themeStore = useThemeStore()
 </script>
 
 <template>
   <button
     type="button"
-    class="fixed bottom-5 right-5 z-50 w-11 h-11 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+    class="fixed right-5 z-50 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
     :style="{
+      bottom: `${props.bottomOffset}px`,
       background: 'var(--bg-surface)',
       border: '1px solid rgb(var(--overlay-rgb) / 0.12)',
       boxShadow: '0 4px 16px rgb(var(--overlay-rgb) / 0.10), 0 1px 4px rgb(var(--overlay-rgb) / 0.08)',
