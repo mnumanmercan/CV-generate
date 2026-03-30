@@ -5,6 +5,8 @@
   import AppFooter from '@/components/ui/AppFooter.vue'
   import FeatureIcon from '@/components/ui/FeatureIcon.vue'
   import { useScrollReveal } from '@/composables/useScrollReveal'
+  import { localStorageService } from '@/services/storageService'
+  import type { CVData } from '@/types/cv.types'
 
   /* ── Per-page title ───────────────────────────────────────────────────── */
   onMounted(() => {
@@ -53,6 +55,34 @@
 
   /* ── Scroll reveal directive ──────────────────────────────────────────── */
   const { vReveal } = useScrollReveal()
+
+  /* ── Personalized mockup ──────────────────────────────────────────────── */
+  const storedCV = ref<CVData | null>(null)
+
+  onMounted(async () => {
+    const data = await localStorageService.load()
+    if (data?.personal?.fullName?.trim()) {
+      storedCV.value = data
+    }
+  })
+
+  function trunc(s: string | undefined, len: number): string {
+    if (!s) return ''
+    return s.length > len ? s.slice(0, len) + '…' : s
+  }
+
+  const mockPersonal = computed(() =>
+    storedCV.value?.personal?.fullName?.trim() ? storedCV.value.personal : null,
+  )
+  const mockExp = computed(() =>
+    storedCV.value?.experience?.length ? storedCV.value.experience[0] : null,
+  )
+  const mockEdu = computed(() =>
+    storedCV.value?.education?.length ? storedCV.value.education[0] : null,
+  )
+  const mockSkills = computed(() =>
+    storedCV.value?.skills?.length ? storedCV.value.skills.slice(0, 2) : null,
+  )
 
   /* ── Page data ────────────────────────────────────────────────────────── */
   const stats = [
@@ -248,7 +278,7 @@
             </div>
 
             <!-- Right: Product mockup -->
-            <div class="flex-1 min-w-0 w-full stagger-item" style="animation-delay: 100ms" aria-hidden="true">
+            <div class="flex-1 min-w-0 w-full stagger-item flex flex-col" style="animation-delay: 100ms" aria-hidden="true">
               <div
                 class="rounded-2xl border border-overlay/5 overflow-hidden shadow-2xl shadow-black/50"
                 style="background: var(--mockup-bg)"
@@ -294,14 +324,14 @@
                       </div>
                       <div class="flex flex-col gap-1.5">
                         <div class="h-5 rounded bg-overlay/8 flex items-center px-2">
-                          <span class="text-[8px] text-secondary/70">Alex Johnson</span>
+                          <span class="text-[8px] text-secondary/70">{{ trunc(mockPersonal?.fullName ?? 'Alex Johnson', 28) }}</span>
                         </div>
                         <div class="flex gap-1.5">
                           <div class="flex-1 h-5 rounded bg-overlay/8 flex items-center px-2">
-                            <span class="text-[8px] text-secondary/70">Software Engineer</span>
+                            <span class="text-[8px] text-secondary/70">{{ trunc(mockPersonal?.jobTitle ?? 'Software Engineer', 22) }}</span>
                           </div>
                           <div class="flex-1 h-5 rounded bg-overlay/8 flex items-center px-2">
-                            <span class="text-[8px] text-secondary/70">San Francisco, CA</span>
+                            <span class="text-[8px] text-secondary/70">{{ trunc(mockPersonal?.location ?? 'San Francisco, CA', 20) }}</span>
                           </div>
                         </div>
                       </div>
@@ -327,48 +357,106 @@
                       style="font-family: 'Inter', sans-serif; font-size: 9.5px; line-height: 1.6"
                     >
                       <div style="border-bottom: 1.5px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 9px;">
-                        <div style="font-size: 20px; font-weight: 800; color: #111; letter-spacing: -0.4px;">Alex Johnson</div>
-                        <div style="font-size: 12px; font-weight: 600; color: #0891B2; margin: 3px 0 4px;">Senior Software Engineer</div>
+                        <div style="font-size: 20px; font-weight: 800; color: #111; letter-spacing: -0.4px;">{{ trunc(mockPersonal?.fullName ?? 'Alex Johnson', 30) }}</div>
+                        <div style="font-size: 12px; font-weight: 600; color: #0891B2; margin: 3px 0 4px;">{{ trunc(mockPersonal?.jobTitle ?? 'Senior Software Engineer', 36) }}</div>
                         <div style="font-size: 9px; color: #6b7280; display: flex; gap: 8px; flex-wrap: wrap;">
-                          <span>alex@example.com</span><span>·</span>
-                          <span>+1 415 000 0000</span><span>·</span>
-                          <span>San Francisco, CA</span>
+                          <span>{{ trunc(mockPersonal?.email ?? 'alex@example.com', 24) }}</span><span>·</span>
+                          <span>{{ trunc(mockPersonal?.phone ?? '+1 415 000 0000', 18) }}</span><span>·</span>
+                          <span>{{ trunc(mockPersonal?.location ?? 'San Francisco, CA', 20) }}</span>
                         </div>
                       </div>
                       <div style="margin-bottom: 8px;">
                         <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; margin-bottom: 5px; color: #111;">Work Experience</div>
                         <div style="display: flex; justify-content: space-between;">
                           <div>
-                            <div style="font-weight: 700; font-size: 11px; color: #111;">Senior Software Engineer</div>
-                            <div style="color: #6b7280; font-size: 9px;">TechCorp Inc. · San Francisco</div>
+                            <div style="font-weight: 700; font-size: 11px; color: #111;">{{ trunc(mockExp?.position ?? 'Senior Software Engineer', 30) }}</div>
+                            <div style="color: #6b7280; font-size: 9px;">{{ trunc(mockExp ? (mockExp.company + (mockExp.location ? ' · ' + mockExp.location : '')) : 'TechCorp Inc. · San Francisco', 32) }}</div>
                           </div>
-                          <div style="color: #9ca3af; font-size: 8.5px; white-space: nowrap; margin-left: 8px;">03/2022 – Present</div>
+                          <div style="color: #9ca3af; font-size: 8.5px; white-space: nowrap; margin-left: 8px;">{{ mockExp ? (mockExp.startDate + ' – ' + (mockExp.endDate || 'Present')) : '03/2022 – Present' }}</div>
                         </div>
                         <ul style="padding-left: 11px; margin-top: 3px; color: #374151;">
-                          <li style="list-style: disc; margin-bottom: 2px;">Reduced bundle size by 35% via Vue 3 migration.</li>
-                          <li style="list-style: disc; margin-bottom: 2px;">Led team of 4 to cut API latency by 40%.</li>
-                          <li style="list-style: disc;">Shipped real-time dashboard for 50 k+ DAUs.</li>
+                          <template v-if="mockExp?.bullets?.length">
+                            <li
+                              v-for="(b, i) in mockExp.bullets.slice(0, 3)"
+                              :key="i"
+                              :style="{ listStyle: 'disc', marginBottom: i < 2 ? '2px' : '0' }"
+                            >{{ trunc(b, 58) }}</li>
+                          </template>
+                          <template v-else>
+                            <li style="list-style: disc; margin-bottom: 2px;">Reduced bundle size by 35% via Vue 3 migration.</li>
+                            <li style="list-style: disc; margin-bottom: 2px;">Led team of 4 to cut API latency by 40%.</li>
+                            <li style="list-style: disc;">Shipped real-time dashboard for 50 k+ DAUs.</li>
+                          </template>
                         </ul>
                       </div>
                       <div style="margin-bottom: 8px;">
                         <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; margin-bottom: 5px; color: #111;">Education</div>
                         <div style="display: flex; justify-content: space-between;">
                           <div>
-                            <div style="font-weight: 700; font-size: 11px; color: #111;">B.S. Computer Science</div>
-                            <div style="color: #6b7280; font-size: 9px;">UC Berkeley</div>
+                            <div style="font-weight: 700; font-size: 11px; color: #111;">{{ trunc(mockEdu ? ((mockEdu.degree ?? '') + (mockEdu.field ? ' ' + mockEdu.field : '')) : 'B.S. Computer Science', 28) }}</div>
+                            <div style="color: #6b7280; font-size: 9px;">{{ trunc(mockEdu?.institution ?? 'UC Berkeley', 22) }}</div>
                           </div>
-                          <div style="color: #9ca3af; font-size: 8.5px; white-space: nowrap; margin-left: 8px;">2018 – 2022</div>
+                          <div style="color: #9ca3af; font-size: 8.5px; white-space: nowrap; margin-left: 8px;">{{ mockEdu ? ((mockEdu.startDate ?? '') + ' – ' + (mockEdu.endDate ?? '')) : '2018 – 2022' }}</div>
                         </div>
                       </div>
                       <div>
                         <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; margin-bottom: 5px; color: #111;">Skills</div>
-                        <div style="color: #374151; margin-bottom: 2px;"><span style="font-weight: 700;">Frontend:</span> Vue 3, React, TypeScript, Tailwind</div>
-                        <div style="color: #374151;"><span style="font-weight: 700;">Backend:</span> Node.js, PostgreSQL, Redis, Docker</div>
+                        <template v-if="mockSkills">
+                          <div
+                            v-for="(skill, i) in mockSkills"
+                            :key="skill.category"
+                            :style="{ color: '#374151', marginBottom: i < mockSkills.length - 1 ? '2px' : '0' }"
+                          ><span style="font-weight: 700;">{{ trunc(skill.category, 14) }}:</span> {{ trunc(skill.items.join(', '), 40) }}</div>
+                        </template>
+                        <template v-else>
+                          <div style="color: #374151; margin-bottom: 2px;"><span style="font-weight: 700;">Frontend:</span> Vue 3, React, TypeScript, Tailwind</div>
+                          <div style="color: #374151;"><span style="font-weight: 700;">Backend:</span> Node.js, PostgreSQL, Redis, Docker</div>
+                        </template>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
+
+              <!-- ── Personalized CTA bubble — below the mockup ──────────── -->
+              <!-- Shown only when the user already has saved CV data.         -->
+              <Transition
+                appear
+                enter-active-class="transition-all duration-[700ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+                enter-from-class="opacity-0 translate-y-4 scale-95"
+                enter-to-class="opacity-100 translate-y-0 scale-100"
+              >
+                <div
+                  v-if="mockPersonal"
+                  class="mt-3 rounded-2xl border border-overlay/8 flex items-center justify-between gap-4 px-5 py-4"
+                  style="background: var(--bg-surface); box-shadow: 0 4px 24px rgba(8,145,178,0.18), 0 1px 8px rgba(0,0,0,0.08)"
+                >
+                  <!-- Avatar + name + status line -->
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div
+                      class="w-9 h-9 shrink-0 rounded-full flex items-center justify-center font-bold text-white text-sm"
+                      style="background: linear-gradient(135deg, #0891B2, #0D9488)"
+                    >
+                      {{ mockPersonal.fullName.charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-primary truncate leading-snug">{{ trunc(mockPersonal.fullName, 32) }}</p>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
+                        <span class="text-xs text-secondary">Your CV is saved — continue where you left off</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- CTA -->
+                  <RouterLink
+                    to="/builder"
+                    class="shrink-0 shimmer-btn text-white text-sm font-semibold rounded-xl px-5 py-2.5 whitespace-nowrap"
+                  >
+                    Continue CV →
+                  </RouterLink>
+                </div>
+              </Transition>
             </div>
 
           </div>
