@@ -83,7 +83,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
 }
 
 export const CURRENT_VERSION = '1.0.0'
-export const DEFAULT_TEMPLATE_ID = 'ats-clean'
+export const DEFAULT_TEMPLATE_ID = 'classic'
 
 export function createEmptyCVData(): CVData {
   const now = new Date().toISOString()

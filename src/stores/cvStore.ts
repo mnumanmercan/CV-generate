@@ -94,6 +94,10 @@ export const useCVStore = defineStore('cv', () => {
     }, 1300)
   }
 
+  function setTemplate(templateId: string): void {
+    cvData.value.meta.templateId = templateId
+  }
+
   async function clearData(): Promise<void> {
     cvData.value = createEmptyCVData()
     await localStorageService.clear()
@@ -118,6 +122,7 @@ export const useCVStore = defineStore('cv', () => {
     saveToStorage,
     setActiveSection,
     triggerSectionHighlight,
+    setTemplate,
     clearData,
   }
 })

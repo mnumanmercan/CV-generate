@@ -18,6 +18,7 @@
   import ProjectsForm from '@/components/form/ProjectsForm.vue'
   import CertificationsForm from '@/components/form/CertificationsForm.vue'
   import CVPreview from '@/components/preview/CVPreview.vue'
+  import TemplatePicker from '@/components/preview/TemplatePicker.vue'
   import type { SectionKey } from '@/types/cv.types'
 
   const cvStore = useCVStore()
@@ -186,6 +187,9 @@
             so they can never overlap the CV document.
           -->
           <div class="flex flex-col h-full">
+
+            <!-- Template picker strip -->
+            <TemplatePicker />
 
             <!-- A4 preview scroll area — fills all remaining height.
                  overflow-hidden is intentionally ABSENT from the inner wrapper:
