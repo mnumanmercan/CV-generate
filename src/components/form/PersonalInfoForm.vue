@@ -63,7 +63,8 @@
 
 <template>
   <div class="flex flex-col gap-4">
-    <!-- Profile photo (premium-gated) -->
+    <!-- Profile photo (premium-gated) — temporarily hidden -->
+    <!--
     <div>
       <span class="text-xs font-medium text-secondary font-mono uppercase tracking-wider">
         Profile Photo
@@ -83,6 +84,7 @@
         <span class="text-xs">Click to upload (Pro)</span>
       </button>
     </div>
+    -->
 
     <!-- Required fields -->
     <div class="grid grid-cols-1 gap-3">
