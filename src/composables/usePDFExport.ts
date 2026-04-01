@@ -13,6 +13,37 @@ interface TransformSnapshot {
   inlineValue: string
 }
 
+// ─── Element normalization for capture ───────────────────────────────────────
+// Before capture we strip the box-shadow (its vertical bleed causes html2canvas
+// to expand the canvas height beyond 1123px) and clamp the element to exactly
+// one A4 page tall (height + overflow:hidden).  offsetHeight then returns 1123,
+// which we pass as windowHeight so the captured canvas maps to exactly one page.
+// Everything is restored in the finally block — the live preview is unaffected.
+
+interface ElementSnapshot {
+  boxShadow: string
+  height: string
+  overflow: string
+}
+
+function normalizeForCapture(element: HTMLElement): ElementSnapshot {
+  const snapshot: ElementSnapshot = {
+    boxShadow: element.style.boxShadow,
+    height: element.style.height,
+    overflow: element.style.overflow,
+  }
+  element.style.boxShadow = 'none'
+  element.style.height = '1123px'
+  element.style.overflow = 'hidden'
+  return snapshot
+}
+
+function restoreAfterCapture(element: HTMLElement, snapshot: ElementSnapshot): void {
+  element.style.boxShadow = snapshot.boxShadow
+  element.style.height = snapshot.height
+  element.style.overflow = snapshot.overflow
+}
+
 function neutralizeAncestorTransforms(target: HTMLElement): TransformSnapshot[] {
   const snapshots: TransformSnapshot[] = []
   let el: HTMLElement | null = target.parentElement
@@ -69,6 +100,9 @@ export function usePDFExport() {
 
     // Issue 1: neutralize parent transforms so html2canvas renders at 100%
     const transformSnapshots = neutralizeAncestorTransforms(element)
+    // Issue 6: strip box-shadow and clamp height to exactly one A4 page so
+    // html2canvas never captures more than 1123px and no blank second page appears.
+    const elementSnapshot = normalizeForCapture(element)
 
     try {
       const html2pdf = (await import('html2pdf.js')).default
@@ -88,8 +122,8 @@ export function usePDFExport() {
           // Prevent html2canvas from reading scroll offset
           scrollX: 0,
           scrollY: 0,
-          windowWidth: element.scrollWidth,
-          windowHeight: element.scrollHeight,
+          windowWidth: element.offsetWidth,
+          windowHeight: element.offsetHeight,
         },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
       }
@@ -113,7 +147,8 @@ export function usePDFExport() {
         errorMessage.value = ''
       }, 4000)
     } finally {
-      // Always restore transforms — even if export fails
+      // Always restore — even if export fails
+      restoreAfterCapture(element, elementSnapshot)
       restoreAncestorTransforms(transformSnapshots)
     }
   }
