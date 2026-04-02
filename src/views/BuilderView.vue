@@ -19,7 +19,8 @@
   import CertificationsForm from '@/components/form/CertificationsForm.vue'
   import CVPreview from '@/components/preview/CVPreview.vue'
   import TemplatePicker from '@/components/preview/TemplatePicker.vue'
-  import type { SectionKey } from '@/types/cv.types'
+  import { VueDraggable } from 'vue-draggable-plus'
+  import { type SectionKey, DRAGGABLE_SECTION_KEYS } from '@/types/cv.types'
 
   const cvStore = useCVStore()
   const {
@@ -108,16 +109,54 @@
     await exportPDF('cv-preview')
   }
 
-  // Sections config with reactive completion state
-  const sections = computed(() => [
+  // ── Section config ──────────────────────────────────────────────────────────
+
+  // Static sections — always first, never draggable
+  const staticSections = computed(() => [
     { key: 'personal' as SectionKey, title: 'Personal Info', icon: '👤', defaultOpen: true, completed: isPersonalComplete.value },
     { key: 'summary' as SectionKey, title: 'Professional Summary', icon: '📝', defaultOpen: false, completed: isSummaryComplete.value },
-    { key: 'experience' as SectionKey, title: 'Work Experience', icon: '💼', defaultOpen: false, completed: isExperienceComplete.value },
-    { key: 'education' as SectionKey, title: 'Education', icon: '🎓', defaultOpen: false, completed: isEducationComplete.value },
-    { key: 'skills' as SectionKey, title: 'Skills', icon: '⚙️', defaultOpen: false, completed: isSkillsComplete.value },
-    { key: 'projects' as SectionKey, title: 'Projects', icon: '🚀', defaultOpen: false, completed: isProjectsComplete.value },
-    { key: 'certifications' as SectionKey, title: 'Certifications', icon: '🏆', defaultOpen: false, completed: isCertificationsComplete.value },
   ])
+
+  // Metadata map for draggable sections (non-reactive title/icon only)
+  const DRAGGABLE_META: Record<string, { title: string; icon: string }> = {
+    experience:     { title: 'Work Experience', icon: '💼' },
+    education:      { title: 'Education',       icon: '🎓' },
+    skills:         { title: 'Skills',          icon: '⚙️' },
+    projects:       { title: 'Projects',        icon: '🚀' },
+    certifications: { title: 'Certifications',  icon: '🏆' },
+  }
+
+  // Mutable ref — v-model target for VueDraggable. Holds key + metadata only;
+  // completion state is kept separate (completionFor) so it stays reactive.
+  const draggableSections = ref(
+    DRAGGABLE_SECTION_KEYS.map((key) => ({ key, ...DRAGGABLE_META[key] })),
+  )
+
+  // Reactive completion map — read in template as completionFor[section.key]
+  const completionFor = computed<Record<string, boolean>>(() => ({
+    experience:     isExperienceComplete.value,
+    education:      isEducationComplete.value,
+    skills:         isSkillsComplete.value,
+    projects:       isProjectsComplete.value,
+    certifications: isCertificationsComplete.value,
+  }))
+
+  // Sync draggableSections order from store after loadFromStorage completes.
+  // The loadingData guard ensures this only runs during the initial load, not
+  // after every setSectionOrder call (which would create a redundant re-sync).
+  watch(
+    () => cvData.value.meta.sectionOrder,
+    (order) => {
+      if (!order || !cvStore.loadingData) return
+      const known = order.filter((k) => k in DRAGGABLE_META) as SectionKey[]
+      const missing = DRAGGABLE_SECTION_KEYS.filter((k) => !known.includes(k))
+      draggableSections.value = [...known, ...missing].map((key) => ({ key, ...DRAGGABLE_META[key] }))
+    },
+  )
+
+  function onSectionDragEnd(): void {
+    cvStore.setSectionOrder(draggableSections.value.map((s) => s.key))
+  }
 
   async function confirmClearData(): Promise<void> {
     if (window.confirm('Clear all CV data? This cannot be undone.')) {
@@ -149,9 +188,9 @@
               </div>
             </div>
 
-            <!-- Accordion sections -->
+            <!-- Static sections — Personal Info and Professional Summary -->
             <FormSection
-              v-for="(section, idx) in sections"
+              v-for="(section, idx) in staticSections"
               :key="section.key"
               :title="section.title"
               :icon="section.icon"
@@ -161,12 +200,36 @@
             >
               <PersonalInfoForm v-if="section.key === 'personal'" />
               <SummaryForm v-else-if="section.key === 'summary'" />
-              <ExperienceForm v-else-if="section.key === 'experience'" />
-              <EducationForm v-else-if="section.key === 'education'" />
-              <SkillsForm v-else-if="section.key === 'skills'" />
-              <ProjectsForm v-else-if="section.key === 'projects'" />
-              <CertificationsForm v-else-if="section.key === 'certifications'" />
             </FormSection>
+
+            <!-- Draggable sections — Experience through Certifications -->
+            <VueDraggable
+              v-model="draggableSections"
+              tag="div"
+              :animation="220"
+              easing="cubic-bezier(0.25, 1, 0.5, 1)"
+              ghost-class="section-ghost"
+              chosen-class="section-chosen"
+              handle=".drag-handle"
+              @end="onSectionDragEnd"
+            >
+              <FormSection
+                v-for="(section, idx) in draggableSections"
+                :key="section.key"
+                :title="section.title"
+                :icon="section.icon"
+                :default-open="false"
+                :step-index="staticSections.length + idx"
+                :completed="completionFor[section.key] ?? false"
+                :draggable="true"
+              >
+                <ExperienceForm     v-if="section.key === 'experience'" />
+                <EducationForm      v-else-if="section.key === 'education'" />
+                <SkillsForm         v-else-if="section.key === 'skills'" />
+                <ProjectsForm       v-else-if="section.key === 'projects'" />
+                <CertificationsForm v-else-if="section.key === 'certifications'" />
+              </FormSection>
+            </VueDraggable>
 
             <!-- Clear data -->
             <button

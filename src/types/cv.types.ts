@@ -57,6 +57,7 @@ export interface CVMeta {
   updatedAt: string
   version: string
   templateId: string
+  sectionOrder?: SectionKey[]
 }
 
 export interface CVData {
@@ -71,6 +72,15 @@ export interface CVData {
 }
 
 export type SectionKey = keyof Omit<CVData, 'meta'>
+
+/** The 5 sections that participate in drag-to-reorder. Personal and Summary are always static. */
+export const DRAGGABLE_SECTION_KEYS: readonly SectionKey[] = [
+  'experience',
+  'education',
+  'skills',
+  'projects',
+  'certifications',
+] as const
 
 export const SECTION_LABELS: Record<SectionKey, string> = {
   personal: 'Personal Info',
