@@ -1,6 +1,6 @@
 <!-- Reusable accordion-style collapsible section wrapper -->
 <script setup lang="ts">
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
 
   interface Props {
     title: string
@@ -8,12 +8,14 @@
     defaultOpen?: boolean
     completed?: boolean
     stepIndex?: number
+    draggable?: boolean
   }
 
   const props = withDefaults(defineProps<Props>(), {
     defaultOpen: false,
     completed: false,
     stepIndex: 0,
+    draggable: false,
   })
 
   const isOpen = ref(props.defaultOpen)
@@ -21,12 +23,24 @@
   function toggle(): void {
     isOpen.value = !isOpen.value
   }
+
+  // Once the stagger-item entrance animation has played, remove the class so
+  // that DOM reordering during drag-and-drop does not restart the animation
+  // and cause a flicker (moving a node via insertBefore resets CSS animations).
+  const staggerDone = ref(false)
+  onMounted(() => {
+    const delay = props.stepIndex * 60    // matches :style animationDelay
+    const duration = 450                  // matches slideUp 0.45s
+    setTimeout(() => {
+      staggerDone.value = true
+    }, delay + duration + 50)             // +50ms safety margin
+  })
 </script>
 
 <template>
   <div
-    class="border border-overlay/5 rounded-xl overflow-hidden mb-3 stagger-item"
-    :style="{ animationDelay: `${stepIndex * 60}ms` }"
+    :class="['border border-overlay/5 rounded-xl overflow-hidden mb-3', staggerDone ? 'opacity-100' : 'stagger-item']"
+    :style="staggerDone ? undefined : { animationDelay: `${stepIndex * 60}ms` }"
   >
     <!-- Section header / toggle -->
     <button
@@ -37,6 +51,23 @@
       @click="toggle"
     >
       <div class="flex items-center gap-3">
+        <!-- Drag handle — only for draggable sections -->
+        <span
+          v-if="draggable"
+          class="drag-handle shrink-0 cursor-grab active:cursor-grabbing text-secondary hover:text-primary transition-colors"
+          aria-hidden="true"
+          @click.stop
+        >
+          <svg width="12" height="20" viewBox="0 0 12 20" fill="currentColor" aria-hidden="true">
+            <circle cx="2"  cy="4"  r="1.5" />
+            <circle cx="2"  cy="10" r="1.5" />
+            <circle cx="2"  cy="16" r="1.5" />
+            <circle cx="10" cy="4"  r="1.5" />
+            <circle cx="10" cy="10" r="1.5" />
+            <circle cx="10" cy="16" r="1.5" />
+          </svg>
+        </span>
+
         <!-- Step indicator -->
         <div
           :class="[

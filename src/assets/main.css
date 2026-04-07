@@ -230,6 +230,30 @@ select:focus {
   transform: scale(0.98);
 }
 
+/* ─── Section drag-and-drop (VueDraggable) ───────────────────────────────── */
+
+/* Original slot while the user is dragging the section */
+.section-chosen {
+  opacity: 0.4;
+  transform: scale(0.99);
+  box-shadow: 0 0 0 2px var(--accent);
+  border-radius: 12px;
+  /* Include box-shadow so it fades out smoothly on drop instead of snapping off */
+  transition: opacity 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  /* Promote to compositor layer so the browser animates on the GPU */
+  will-change: transform, opacity;
+}
+
+/* The ghost/mirror element that follows the cursor */
+.section-ghost {
+  opacity: 0.88;
+  background: var(--bg-surface);
+  border: 2px dashed var(--accent);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(8, 145, 178, 0.22);
+  will-change: transform;
+}
+
 /* ─── Stagger reveal (auto-fires on load — used in builder + hero) ───────── */
 .stagger-item {
   opacity: 0;

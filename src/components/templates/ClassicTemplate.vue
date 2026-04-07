@@ -1,17 +1,29 @@
 <script setup lang="ts">
-  import { computed } from 'vue'
+  import { computed, type Component } from 'vue'
   import type { CVData, SectionKey } from '@/types/cv.types'
+  import ExperienceSection from './classic/sections/ExperienceSection.vue'
+  import EducationSection from './classic/sections/EducationSection.vue'
+  import SkillsSection from './classic/sections/SkillsSection.vue'
+  import ProjectsSection from './classic/sections/ProjectsSection.vue'
+  import CertificationsSection from './classic/sections/CertificationsSection.vue'
 
   const props = defineProps<{
     cvData: CVData
     isPulsed: (section: SectionKey) => boolean
+    sectionOrder: SectionKey[]
   }>()
 
-  const hasExperience = computed(() => props.cvData.experience.length > 0)
-  const hasEducation = computed(() => props.cvData.education.length > 0)
-  const hasSkills = computed(() => props.cvData.skills.length > 0)
-  const hasProjects = computed(() => props.cvData.projects.length > 0)
-  const hasCertifications = computed(() => props.cvData.certifications.length > 0)
+  const sectionMap: Partial<Record<SectionKey, Component>> = {
+    experience: ExperienceSection,
+    education: EducationSection,
+    skills: SkillsSection,
+    projects: ProjectsSection,
+    certifications: CertificationsSection,
+  }
+
+  const orderedSections = computed(() =>
+    props.sectionOrder.filter((key) => key in sectionMap),
+  )
 
   const socialLinks = computed(() => {
     const p = props.cvData.personal
@@ -74,132 +86,14 @@
       </p>
     </section>
 
-    <!-- ── Work Experience ───────────────────────────────────────── -->
-    <section
-      v-if="hasExperience"
-      :class="isPulsed('experience') ? 'section-pulse' : ''"
-      style="margin-bottom: 12px;"
-    >
-      <h2 class="cv-section-heading">Work Experience</h2>
-      <div
-        v-for="(exp, index) in cvData.experience"
-        :key="exp.id"
-        :style="index > 0 ? 'margin-top: 10px;' : ''"
-      >
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <div>
-            <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ exp.position }}</p>
-            <p style="font-size: 10.5px; color: #4b5563; margin: 1px 0 0 0;">
-              {{ exp.company }}<span v-if="exp.location"> · {{ exp.location }}</span>
-            </p>
-          </div>
-          <p style="font-size: 10px; color: #6b7280; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
-            {{ exp.startDate }} – {{ exp.endDate || 'Present' }}
-          </p>
-        </div>
-        <ul style="margin: 4px 0 0 0; padding-left: 14px;" aria-label="Responsibilities">
-          <li
-            v-for="(bullet, bIdx) in exp.bullets.filter((b) => b.trim())"
-            :key="bIdx"
-            style="font-size: 10.5px; color: #374151; line-height: 1.55; margin-bottom: 1px;"
-          >
-            {{ bullet }}
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- ── Education ─────────────────────────────────────────────── -->
-    <section
-      v-if="hasEducation"
-      :class="isPulsed('education') ? 'section-pulse' : ''"
-      style="margin-bottom: 12px;"
-    >
-      <h2 class="cv-section-heading">Education</h2>
-      <div
-        v-for="(edu, index) in cvData.education"
-        :key="edu.id"
-        :style="index > 0 ? 'margin-top: 8px;' : ''"
-      >
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <div>
-            <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ edu.institution }}</p>
-            <p style="font-size: 10.5px; color: #4b5563; margin: 1px 0 0 0;">
-              {{ edu.degree }} in {{ edu.field }}<span v-if="edu.gpa"> · GPA: {{ edu.gpa }}</span>
-            </p>
-          </div>
-          <p style="font-size: 10px; color: #6b7280; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
-            {{ edu.startDate }} – {{ edu.endDate }}
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Skills ────────────────────────────────────────────────── -->
-    <section
-      v-if="hasSkills"
-      :class="isPulsed('skills') ? 'section-pulse' : ''"
-      style="margin-bottom: 12px;"
-    >
-      <h2 class="cv-section-heading">Skills</h2>
-      <div
-        v-for="(skill, index) in cvData.skills"
-        :key="skill.id"
-        :style="index > 0 ? 'margin-top: 3px;' : ''"
-        style="font-size: 10.5px;"
-      >
-        <span style="font-weight: 700; color: #111827;">{{ skill.category }}: </span>
-        <span style="color: #374151;">{{ skill.items.join(', ') }}</span>
-      </div>
-    </section>
-
-    <!-- ── Projects ──────────────────────────────────────────────── -->
-    <section
-      v-if="hasProjects"
-      :class="isPulsed('projects') ? 'section-pulse' : ''"
-      style="margin-bottom: 12px;"
-    >
-      <h2 class="cv-section-heading">Projects</h2>
-      <div
-        v-for="(project, index) in cvData.projects"
-        :key="project.id"
-        :style="index > 0 ? 'margin-top: 10px;' : ''"
-      >
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ project.name }}</p>
-          <p v-if="project.link" style="font-size: 10px; color: #4f46e5; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
-            {{ project.link.replace('https://', '') }}
-          </p>
-        </div>
-        <p style="font-size: 10.5px; color: #374151; margin: 3px 0 2px 0; line-height: 1.55;">{{ project.description }}</p>
-        <p v-if="project.techStack.length" style="font-size: 10px; color: #4b5563; margin: 0;">
-          <span style="font-weight: 600; color: #111827;">Stack: </span>{{ project.techStack.join(', ') }}
-        </p>
-      </div>
-    </section>
-
-    <!-- ── Certifications ────────────────────────────────────────── -->
-    <section
-      v-if="hasCertifications"
-      :class="isPulsed('certifications') ? 'section-pulse' : ''"
-    >
-      <h2 class="cv-section-heading">Certifications</h2>
-      <div
-        v-for="(cert, index) in cvData.certifications"
-        :key="cert.id"
-        :style="index > 0 ? 'margin-top: 5px;' : ''"
-        style="display: flex; justify-content: space-between; align-items: baseline; font-size: 10.5px;"
-      >
-        <div>
-          <span style="font-weight: 700; color: #111827;">{{ cert.name }}</span>
-          <span style="color: #4b5563;"> · {{ cert.issuer }}</span>
-          <span v-if="cert.credentialId" style="color: #6b7280;"> · ID: {{ cert.credentialId }}</span>
-        </div>
-        <span style="font-size: 10px; color: #6b7280; white-space: nowrap; margin-left: 12px; flex-shrink: 0;">
-          {{ cert.date }}
-        </span>
-      </div>
-    </section>
+    <!-- ── Ordered Sections ──────────────────────────────────────── -->
+    <template v-for="key in orderedSections" :key="key">
+      <component
+        :is="sectionMap[key]"
+        :cv-data="cvData"
+        :is-pulsed="isPulsed"
+      />
+    </template>
 
   </div>
 </template>

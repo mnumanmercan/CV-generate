@@ -4,6 +4,7 @@ import {
   type CVData,
   type SectionKey,
   createEmptyCVData,
+  DRAGGABLE_SECTION_KEYS,
 } from '@/types/cv.types'
 import { localStorageService } from '@/services/storageService'
 
@@ -54,6 +55,11 @@ export const useCVStore = defineStore('cv', () => {
     loadingData.value = true
     const stored = await localStorageService.load()
     if (stored) {
+      // Migration: legacy blobs have no sectionOrder — set default while loadingData
+      // is still true so useAutoSave ignores this synthetic write.
+      if (!stored.meta.sectionOrder || stored.meta.sectionOrder.length === 0) {
+        stored.meta.sectionOrder = [...DRAGGABLE_SECTION_KEYS]
+      }
       cvData.value = stored
     }
     // Wait for Vue to flush the queued watchers (triggered by the cvData
@@ -98,6 +104,10 @@ export const useCVStore = defineStore('cv', () => {
     cvData.value.meta.templateId = templateId
   }
 
+  function setSectionOrder(order: SectionKey[]): void {
+    cvData.value.meta.sectionOrder = order
+  }
+
   async function clearData(): Promise<void> {
     cvData.value = createEmptyCVData()
     await localStorageService.clear()
@@ -123,6 +133,7 @@ export const useCVStore = defineStore('cv', () => {
     setActiveSection,
     triggerSectionHighlight,
     setTemplate,
+    setSectionOrder,
     clearData,
   }
 })

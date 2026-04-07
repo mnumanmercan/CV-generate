@@ -2,12 +2,12 @@
   import { reactive, computed } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
-  import { useUserStore } from '@/stores/userStore'
+  // import { useUserStore } from '@/stores/userStore' // re-enable with Profile Photo section
   import FormField from './FormField.vue'
   import { validateEmail, validatePhone, validateUrl } from '@/services/atsFormatter'
 
   const cvStore = useCVStore()
-  const userStore = useUserStore()
+  // const userStore = useUserStore() // re-enable with Profile Photo section
   const { cvData } = storeToRefs(cvStore)
 
   const errors = reactive<Record<string, string>>({})
@@ -54,11 +54,12 @@
       cvData.value.personal.jobTitle,
   )
 
-  function handlePhotoUploadClick(): void {
-    if (!userStore.canUploadPhoto) {
-      userStore.openUpgradeModal('Profile Photo Upload')
-    }
-  }
+  // handlePhotoUploadClick — kept for when the Profile Photo section is re-enabled
+  // function handlePhotoUploadClick(): void {
+  //   if (!userStore.canUploadPhoto) {
+  //     userStore.openUpgradeModal('Profile Photo Upload')
+  //   }
+  // }
 </script>
 
 <template>

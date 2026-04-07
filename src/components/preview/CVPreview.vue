@@ -3,6 +3,7 @@
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
   import { getTemplate } from '@/components/templates/registry'
+  import { DRAGGABLE_SECTION_KEYS } from '@/types/cv.types'
   import type { SectionKey } from '@/types/cv.types'
 
   const cvStore = useCVStore()
@@ -24,6 +25,12 @@
   }
 
   const activeTemplate = computed(() => getTemplate(cvData.value.meta.templateId))
+
+  const sectionOrder = computed<SectionKey[]>(() => {
+    const order = cvData.value.meta.sectionOrder
+    if (order && order.length > 0) return order
+    return [...DRAGGABLE_SECTION_KEYS]
+  })
 </script>
 
 <template>
@@ -59,6 +66,7 @@
       :is="activeTemplate.component"
       :cv-data="cvData"
       :is-pulsed="isPulsed"
+      :section-order="sectionOrder"
     />
   </article>
 </template>
