@@ -161,6 +161,7 @@ body {
 [type='tel'],
 [type='url'],
 [type='date'],
+[type='password'],
 textarea,
 select {
   background-color: var(--input-bg) !important;
@@ -179,6 +180,7 @@ select {
 [type='tel']:focus,
 [type='url']:focus,
 [type='date']:focus,
+[type='password']:focus,
 textarea:focus,
 select:focus {
   border-color: var(--accent) !important;
