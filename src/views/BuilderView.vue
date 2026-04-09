@@ -5,6 +5,7 @@
   import { useAutoSave } from '@/composables/useAutoSave'
   import { usePDFExport } from '@/composables/usePDFExport'
   import AppHeader from '@/components/ui/AppHeader.vue'
+  import BuilderToolSwitcher from '@/components/ui/BuilderToolSwitcher.vue'
   import SplitLayout from '@/components/ui/SplitLayout.vue'
   import ToastNotification from '@/components/ui/ToastNotification.vue'
   import UpgradePrompt from '@/components/ui/UpgradePrompt.vue'
@@ -168,6 +169,7 @@
 <template>
   <div class="flex flex-col h-screen overflow-hidden" style="background: var(--bg-shell)">
     <AppHeader />
+    <BuilderToolSwitcher />
 
     <!-- Builder body -->
     <div class="flex-1 overflow-hidden">

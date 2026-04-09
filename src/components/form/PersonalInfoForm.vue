@@ -2,12 +2,12 @@
   import { reactive, computed } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
-  // import { useUserStore } from '@/stores/userStore' // re-enable with Profile Photo section
+  import { useUserStore } from '@/stores/userStore'
   import FormField from './FormField.vue'
   import { validateEmail, validatePhone, validateUrl } from '@/services/atsFormatter'
 
   const cvStore = useCVStore()
-  // const userStore = useUserStore() // re-enable with Profile Photo section
+  const userStore = useUserStore()
   const { cvData } = storeToRefs(cvStore)
 
   const errors = reactive<Record<string, string>>({})
@@ -54,27 +54,33 @@
       cvData.value.personal.jobTitle,
   )
 
-  // handlePhotoUploadClick — kept for when the Profile Photo section is re-enabled
-  // function handlePhotoUploadClick(): void {
-  //   if (!userStore.canUploadPhoto) {
-  //     userStore.openUpgradeModal('Profile Photo Upload')
-  //   }
-  // }
+  function handlePhotoUploadClick(): void {
+    if (!userStore.canUploadPhoto) {
+      userStore.openUpgradeModal('Profile Photo Upload')
+    }
+    // Phase 2: trigger file input when user has Pro access
+  }
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
-    <!-- Profile photo (premium-gated) — temporarily hidden -->
-    <!--
+    <!-- Profile photo (Pro-gated) -->
     <div>
-      <span class="text-xs font-medium text-secondary font-mono uppercase tracking-wider">
+      <span class="text-xs font-medium text-secondary font-mono uppercase tracking-wider flex items-center gap-1.5">
         Profile Photo
-        <span class="ml-1 px-1.5 py-0.5 rounded text-xs bg-accent/20 text-accent font-mono">PRO</span>
+        <span
+          v-if="!userStore.canUploadPhoto"
+          class="text-[9px] font-bold px-1.5 py-px rounded-full text-white leading-none"
+          style="background: linear-gradient(135deg, #0891B2, #0D9488)"
+        >Pro</span>
       </span>
       <button
         type="button"
-        class="mt-1.5 w-full h-20 rounded-xl border-2 border-dashed border-overlay/10 flex flex-col items-center justify-center gap-1 text-secondary hover:border-accent/50 hover:text-accent transition-colors cursor-pointer"
-        aria-label="Upload profile photo (Pro feature)"
+        class="mt-1.5 w-full h-20 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors"
+        :class="userStore.canUploadPhoto
+          ? 'border-overlay/10 text-secondary hover:border-accent/50 hover:text-accent cursor-pointer'
+          : 'border-overlay/5 text-secondary/40 hover:border-accent/30 hover:text-secondary/60 cursor-pointer'"
+        :aria-label="userStore.canUploadPhoto ? 'Upload profile photo' : 'Upload profile photo (Pro feature)'"
         @click="handlePhotoUploadClick"
       >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -82,10 +88,9 @@
             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
           />
         </svg>
-        <span class="text-xs">Click to upload (Pro)</span>
+        <span class="text-xs">{{ userStore.canUploadPhoto ? 'Click to upload' : 'Upgrade to Pro to upload' }}</span>
       </button>
     </div>
-    -->
 
     <!-- Required fields -->
     <div class="grid grid-cols-1 gap-3">

@@ -21,10 +21,14 @@
     errorMsg.value = ''
     isLoading.value = true
 
-    // Phase 2: replace with real auth call
-    await new Promise(resolve => setTimeout(resolve, 900))
-    userStore.login({ name: 'User', email: email.value.trim() })
+    await new Promise(resolve => setTimeout(resolve, 700))
+    const ok = userStore.loginWithCredentials(email.value, password.value)
     isLoading.value = false
+
+    if (!ok) {
+      errorMsg.value = 'Invalid email or password.'
+      return
+    }
     router.push('/')
   }
 </script>

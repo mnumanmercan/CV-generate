@@ -8,6 +8,7 @@ export interface TemplateDefinition {
   name: string
   description: string
   component: Component
+  isPro: boolean
 }
 
 export const TEMPLATES: TemplateDefinition[] = [
@@ -16,18 +17,21 @@ export const TEMPLATES: TemplateDefinition[] = [
     name: 'Classic',
     description: 'Clean, universally ATS-compatible format',
     component: ClassicTemplate,
+    isPro: false,
   },
   {
     id: 'modern',
     name: 'Modern',
     description: 'Airy layout with contemporary typography',
     component: ModernMinimalTemplate,
+    isPro: true,
   },
   {
     id: 'technical',
     name: 'Technical',
     description: 'Skills-first layout for engineers and developers',
     component: TechnicalTemplate,
+    isPro: true,
   },
 ]
 

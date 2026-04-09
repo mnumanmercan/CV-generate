@@ -36,7 +36,13 @@ const routes: RouteRecordRaw[] = [
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
-    meta: { title: 'Dashboard — Resumark', requiresPremium: true },
+    meta: { title: 'Dashboard — Resumark', requiresAuth: true },
+  },
+  {
+    path: '/cover-letter',
+    name: 'cover-letter',
+    component: () => import('@/views/CoverLetterView.vue'),
+    meta: { title: 'Cover Letter — Resumark', requiresAuth: true },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -50,12 +56,15 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 }),
 })
 
-// Route guard — Phase 2: gate /dashboard behind real auth
 router.beforeEach((to) => {
   const userStore = useUserStore()
 
   if (to.meta.guestOnly && userStore.isLoggedIn) {
     return { name: 'home' }
+  }
+
+  if (to.meta.requiresAuth && !userStore.isLoggedIn) {
+    return { name: 'login' }
   }
 
   if (to.meta.requiresPremium && !userStore.isPremium) {
