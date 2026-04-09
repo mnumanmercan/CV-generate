@@ -22,11 +22,22 @@
       :key="project.id"
       :style="index > 0 ? 'margin-top: 10px;' : ''"
     >
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="display: flex; align-items: center; gap: 6px;">
         <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ project.name }}</p>
-        <p v-if="project.link" style="font-size: 10px; color: #4f46e5; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
-          {{ project.link.replace('https://', '') }}
-        </p>
+        <a
+          v-if="project.link"
+          :href="project.link"
+          target="_blank"
+          rel="noopener noreferrer"
+          :title="project.link"
+          style="display: inline-flex; align-items: center; flex-shrink: 0; color: #4f46e5; text-decoration: none; line-height: 1;"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
       </div>
       <p style="font-size: 10.5px; color: #374151; margin: 3px 0 2px 0; line-height: 1.55;">{{ project.description }}</p>
       <p v-if="project.techStack.length" style="font-size: 10px; color: #4b5563; margin: 0;">
