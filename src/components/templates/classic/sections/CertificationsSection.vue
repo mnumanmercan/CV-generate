@@ -23,8 +23,22 @@
       :style="index > 0 ? 'margin-top: 5px;' : ''"
       style="display: flex; justify-content: space-between; align-items: baseline; font-size: 10.5px;"
     >
-      <div>
+      <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
         <span style="font-weight: 700; color: #111827;">{{ cert.name }}</span>
+        <a
+          v-if="cert.credentialUrl"
+          :href="cert.credentialUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          :title="cert.credentialUrl"
+          style="display: inline-flex; align-items: center; flex-shrink: 0; color: #4f46e5; text-decoration: none; line-height: 1;"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
         <span style="color: #4b5563;"> · {{ cert.issuer }}</span>
         <span v-if="cert.credentialId" style="color: #6b7280;"> · ID: {{ cert.credentialId }}</span>
       </div>

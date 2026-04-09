@@ -85,14 +85,19 @@
           required
           :error="getDateError(cert.date)"
         />
-        <div class="col-span-2">
-          <FormField
-            :id="`cert-id-${cert.id}`"
-            v-model="cert.credentialId"
-            label="Credential ID (optional)"
-            placeholder="ABC-12345"
-          />
-        </div>
+        <FormField
+          :id="`cert-id-${cert.id}`"
+          v-model="cert.credentialId"
+          label="Credential ID (optional)"
+          placeholder="ABC-12345"
+        />
+        <FormField
+          :id="`cert-url-${cert.id}`"
+          v-model="cert.credentialUrl"
+          label="Certificate URL (optional)"
+          type="url"
+          placeholder="https://www.credly.com/badges/…"
+        />
       </div>
     </div>
 
