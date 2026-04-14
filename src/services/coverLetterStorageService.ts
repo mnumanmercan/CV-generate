@@ -50,5 +50,19 @@ class LocalCoverLetterStorageService implements CoverLetterStorageService {
   }
 }
 
-export const coverLetterStorageService: CoverLetterStorageService =
-  new LocalCoverLetterStorageService()
+// ─── Delegating proxy ────────────────────────────────────────────────────────
+// Same pattern as DelegatingStorageService — coverLetterStore.ts requires zero changes.
+export class DelegatingCoverLetterStorageService implements CoverLetterStorageService {
+  private _impl: CoverLetterStorageService = new LocalCoverLetterStorageService()
+
+  setDelegate(impl: CoverLetterStorageService): void {
+    this._impl = impl
+  }
+
+  async save(data: CoverLetterData): Promise<void>   { return this._impl.save(data) }
+  async load(): Promise<CoverLetterData | null>       { return this._impl.load() }
+  async clear(): Promise<void>                        { return this._impl.clear() }
+}
+
+export { LocalCoverLetterStorageService }
+export const coverLetterStorageService = new DelegatingCoverLetterStorageService()

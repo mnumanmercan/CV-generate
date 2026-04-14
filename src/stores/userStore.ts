@@ -1,56 +1,138 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { apiClient, setAccessToken } from '@/services/apiClient'
+import { localStorageService, LocalStorageService } from '@/services/storageService'
+import { coverLetterStorageService, LocalCoverLetterStorageService } from '@/services/coverLetterStorageService'
+import { ApiCVStorageService, ApiCoverLetterStorageService } from '@/services/apiStorageService'
 
 export interface AuthUser {
-  name: string
+  id:    string
+  name:  string
   email: string
 }
 
-// Hardcoded dummy accounts — Phase 2: replace with real auth backend
-const DUMMY_ACCOUNTS: Record<string, { name: string; isPremium: boolean }> = {
-  'test_pro@gmail.com:Pro123':   { name: 'Pro User',  isPremium: true  },
-  'test_free@gmail.com:Free123': { name: 'Free User', isPremium: false },
+interface MeResponse {
+  id:        string
+  name:      string
+  email:     string
+  plan:      'FREE' | 'PRO' | 'ENTERPRISE'
+  isPremium: boolean
+  avatarUrl: string | null
 }
 
 export const useUserStore = defineStore('user', () => {
-  // Auth state — Phase 2: replace with real auth
-  const isLoggedIn = ref(false)
-  const user = ref<AuthUser | null>(null)
+  const isLoggedIn  = ref(false)
+  const user        = ref<AuthUser | null>(null)
+  const isPremium   = ref(false)
 
-  const isPremium = ref(false)
-  const showUpgradeModal = ref(false)
+  const isAuthenticating = ref(false)
+  const authError        = ref<string | null>(null)
+
+  const showUpgradeModal    = ref(false)
   const upgradeModalTrigger = ref<string>('')
 
-  const canUploadPhoto = computed(() => isPremium.value)
+  const canUploadPhoto      = computed(() => isPremium.value)
   const canUseExtraTemplates = computed(() => isPremium.value)
 
-  function login(userData: AuthUser, premium = false): void {
-    user.value = userData
+  // ── Storage delegate wiring ──────────────────────────────────────────────
+
+  function _switchToCloudStorage(): void {
+    localStorageService.setDelegate(new ApiCVStorageService())
+    coverLetterStorageService.setDelegate(new ApiCoverLetterStorageService())
+  }
+
+  function _switchToLocalStorage(): void {
+    localStorageService.setDelegate(new LocalStorageService())
+    coverLetterStorageService.setDelegate(new LocalCoverLetterStorageService())
+  }
+
+  // ── Internal: apply user state after successful auth ──────────────────────
+
+  function _applyUser(me: MeResponse): void {
+    user.value      = { id: me.id, name: me.name, email: me.email }
     isLoggedIn.value = true
-    isPremium.value = premium
+    isPremium.value  = me.isPremium
+    _switchToCloudStorage()
   }
 
-  function loginWithCredentials(email: string, password: string): boolean {
-    const key = `${email.trim().toLowerCase()}:${password}`
-    const account = DUMMY_ACCOUNTS[key]
-    if (!account) return false
-    login({ name: account.name, email: email.trim().toLowerCase() }, account.isPremium)
-    return true
+  // ── Register ──────────────────────────────────────────────────────────────
+
+  async function register(name: string, email: string, password: string): Promise<void> {
+    isAuthenticating.value = true
+    authError.value        = null
+    try {
+      const data = await apiClient.post<{ accessToken: string; user: MeResponse }>(
+        '/auth/register',
+        { name, email, password },
+      )
+      setAccessToken(data.accessToken)
+      _applyUser(data.user)
+    } catch (err) {
+      authError.value = err instanceof Error ? err.message : 'Registration failed. Please try again.'
+      throw err
+    } finally {
+      isAuthenticating.value = false
+    }
   }
 
-  function logout(): void {
-    user.value = null
-    isLoggedIn.value = false
-    isPremium.value = false
+  // ── Login ─────────────────────────────────────────────────────────────────
+
+  async function loginWithCredentials(email: string, password: string): Promise<void> {
+    isAuthenticating.value = true
+    authError.value        = null
+    try {
+      const data = await apiClient.post<{ accessToken: string; user: MeResponse }>(
+        '/auth/login',
+        { email, password },
+      )
+      setAccessToken(data.accessToken)
+      _applyUser(data.user)
+    } catch (err) {
+      authError.value = err instanceof Error ? err.message : 'Invalid email or password.'
+      throw err
+    } finally {
+      isAuthenticating.value = false
+    }
   }
+
+  // ── Restore session on page load (silent) ─────────────────────────────────
+
+  async function restoreSession(): Promise<void> {
+    try {
+      const refreshRes = await apiClient.post<{ accessToken: string }>('/auth/refresh')
+      setAccessToken(refreshRes.accessToken)
+      const me = await apiClient.get<{ data: MeResponse }>('/user/me')
+      _applyUser(me.data)
+    } catch {
+      // No valid session — remain as guest. This is expected on first visit.
+    }
+  }
+
+  // ── Logout ────────────────────────────────────────────────────────────────
+
+  async function logout(): Promise<void> {
+    try {
+      await apiClient.post('/auth/logout')
+    } catch {
+      // Best-effort
+    } finally {
+      setAccessToken(null)
+      user.value       = null
+      isLoggedIn.value = false
+      isPremium.value  = false
+      _switchToLocalStorage()
+    }
+  }
+
+  // ── Upgrade modal ─────────────────────────────────────────────────────────
 
   function openUpgradeModal(featureName: string): void {
     upgradeModalTrigger.value = featureName
-    showUpgradeModal.value = true
+    showUpgradeModal.value    = true
   }
 
   function closeUpgradeModal(): void {
-    showUpgradeModal.value = false
+    showUpgradeModal.value    = false
     upgradeModalTrigger.value = ''
   }
 
@@ -58,13 +140,16 @@ export const useUserStore = defineStore('user', () => {
     isLoggedIn,
     user,
     isPremium,
+    isAuthenticating,
+    authError,
     showUpgradeModal,
     upgradeModalTrigger,
     canUploadPhoto,
     canUseExtraTemplates,
-    login,
+    register,
     loginWithCredentials,
     logout,
+    restoreSession,
     openUpgradeModal,
     closeUpgradeModal,
   }

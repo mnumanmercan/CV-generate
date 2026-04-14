@@ -2,6 +2,7 @@
   import { ref } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
+  import { apiClient } from '@/services/apiClient'
 
   const router = useRouter()
   const userStore = useUserStore()
@@ -21,15 +22,31 @@
     errorMsg.value = ''
     isLoading.value = true
 
-    await new Promise(resolve => setTimeout(resolve, 700))
-    const ok = userStore.loginWithCredentials(email.value, password.value)
-    isLoading.value = false
+    try {
+      await userStore.loginWithCredentials(email.value.trim(), password.value)
 
-    if (!ok) {
-      errorMsg.value = 'Invalid email or password.'
-      return
+      // Migrate any existing localStorage data to cloud (last-write-wins)
+      const localCVRaw = localStorage.getItem('cv_generate_data')
+      const localCLRaw = localStorage.getItem('cover_letter_data')
+      if (localCVRaw || localCLRaw) {
+        try {
+          await apiClient.post('/auth/migrate-local-data', {
+            ...(localCVRaw ? { cvData: JSON.parse(localCVRaw) } : {}),
+            ...(localCLRaw ? { coverLetterData: JSON.parse(localCLRaw) } : {}),
+          })
+          if (localCVRaw) localStorage.removeItem('cv_generate_data')
+          if (localCLRaw) localStorage.removeItem('cover_letter_data')
+        } catch {
+          // Non-fatal — cloud data already exists or parse failed
+        }
+      }
+
+      router.push('/dashboard')
+    } catch {
+      errorMsg.value = userStore.authError ?? 'Invalid email or password.'
+    } finally {
+      isLoading.value = false
     }
-    router.push('/')
   }
 </script>
 

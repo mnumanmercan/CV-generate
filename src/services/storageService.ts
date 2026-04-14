@@ -54,6 +54,21 @@ class LocalStorageService implements StorageService {
   }
 }
 
-// ─── Exported singleton ──────────────────────────────────────────────────────
-// To switch to MongoDB in Phase 2, replace this with MongoDBService instance.
-export const localStorageService: StorageService = new LocalStorageService()
+// ─── Delegating proxy ────────────────────────────────────────────────────────
+// Wraps the active implementation so that cvStore.ts requires zero changes.
+// Call setDelegate(new ApiCVStorageService()) on login to switch to cloud sync.
+// Call setDelegate(new LocalStorageService()) on logout to revert to local.
+export class DelegatingStorageService implements StorageService {
+  private _impl: StorageService = new LocalStorageService()
+
+  setDelegate(impl: StorageService): void {
+    this._impl = impl
+  }
+
+  async save(data: CVData): Promise<void>   { return this._impl.save(data) }
+  async load(): Promise<CVData | null>       { return this._impl.load() }
+  async clear(): Promise<void>               { return this._impl.clear() }
+}
+
+export { LocalStorageService }
+export const localStorageService = new DelegatingStorageService()

@@ -76,4 +76,13 @@ router.beforeEach((to) => {
   }
 })
 
+// Handle session expiry events dispatched by apiClient on persistent 401 responses
+if (typeof window !== 'undefined') {
+  window.addEventListener('resumark:session-expired', () => {
+    const userStore = useUserStore()
+    userStore.logout()
+    router.push({ name: 'login' })
+  })
+}
+
 export default router

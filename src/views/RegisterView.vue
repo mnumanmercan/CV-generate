@@ -2,6 +2,7 @@
   import { ref, computed } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
+  import { apiClient } from '@/services/apiClient'
 
   const router = useRouter()
   const userStore = useUserStore()
@@ -60,11 +61,31 @@
     errorMsg.value = ''
     isLoading.value = true
 
-    // Phase 2: replace with real auth call
-    await new Promise(resolve => setTimeout(resolve, 900))
-    userStore.login({ name: name.value.trim(), email: email.value.trim() })
-    isLoading.value = false
-    router.push('/')
+    try {
+      await userStore.register(name.value.trim(), email.value.trim(), password.value)
+
+      // Migrate any existing localStorage data to cloud after registration
+      const localCVRaw = localStorage.getItem('cv_generate_data')
+      const localCLRaw = localStorage.getItem('cover_letter_data')
+      if (localCVRaw || localCLRaw) {
+        try {
+          await apiClient.post('/auth/migrate-local-data', {
+            ...(localCVRaw ? { cvData: JSON.parse(localCVRaw) } : {}),
+            ...(localCLRaw ? { coverLetterData: JSON.parse(localCLRaw) } : {}),
+          })
+          if (localCVRaw) localStorage.removeItem('cv_generate_data')
+          if (localCLRaw) localStorage.removeItem('cover_letter_data')
+        } catch {
+          // Non-fatal
+        }
+      }
+
+      router.push('/dashboard')
+    } catch {
+      errorMsg.value = userStore.authError ?? 'Registration failed. Please try again.'
+    } finally {
+      isLoading.value = false
+    }
   }
 </script>
 

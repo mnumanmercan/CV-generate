@@ -2,6 +2,7 @@
   import { ref, onMounted, onUnmounted } from 'vue'
   import { RouterLink } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
+  import { apiClient } from '@/services/apiClient'
 
   const userStore = useUserStore()
 
@@ -15,13 +16,14 @@
 
   const email = ref('')
   const submitted = ref(false)
+  const isSubmitting = ref(false)
   const emailError = ref('')
 
   function validateEmail(value: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
   }
 
-  function handleNotify(): void {
+  async function handleNotify(): Promise<void> {
     if (!email.value.trim()) {
       emailError.value = 'Please enter your email address.'
       return
@@ -31,9 +33,18 @@
       return
     }
     emailError.value = ''
-    // Phase 2: POST email to waitlist API
-    console.info('[Waitlist] Email registered:', email.value)
-    submitted.value = true
+    isSubmitting.value = true
+    try {
+      await apiClient.post('/waitlist', {
+        email:  email.value.trim(),
+        source: 'upgrade_modal',
+      })
+      submitted.value = true
+    } catch {
+      emailError.value = 'Something went wrong. Please try again.'
+    } finally {
+      isSubmitting.value = false
+    }
   }
 
   function handleClose(): void {
@@ -138,10 +149,11 @@
             </p>
             <button
               type="button"
-              class="shimmer-btn w-full py-2.5 rounded-xl text-white text-sm font-semibold"
+              :disabled="isSubmitting"
+              class="shimmer-btn w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
               @click="handleNotify"
             >
-              Notify Me When Pro Launches
+              {{ isSubmitting ? 'Registering…' : 'Notify Me When Pro Launches' }}
             </button>
           </div>
 
