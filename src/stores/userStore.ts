@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { apiClient, setAccessToken } from '@/services/apiClient'
+import { apiClient, setAccessToken, BASE_URL } from '@/services/apiClient'
 import { localStorageService, LocalStorageService } from '@/services/storageService'
 import { coverLetterStorageService, LocalCoverLetterStorageService } from '@/services/coverLetterStorageService'
 import { ApiCVStorageService, ApiCoverLetterStorageService } from '@/services/apiStorageService'
@@ -99,12 +99,20 @@ export const useUserStore = defineStore('user', () => {
 
   async function restoreSession(): Promise<void> {
     try {
-      const refreshRes = await apiClient.post<{ accessToken: string }>('/auth/refresh')
-      setAccessToken(refreshRes.accessToken)
+      // Use raw fetch — NOT apiClient — so that a missing/expired refresh token
+      // (normal for guests and first-time visitors) does NOT trigger the
+      // resumark:session-expired event, which would redirect everyone to /login.
+      const res = await fetch(`${BASE_URL}/auth/refresh`, {
+        method:      'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) return // no valid session — silently remain as guest
+      const { accessToken } = await res.json() as { accessToken: string }
+      setAccessToken(accessToken)
       const me = await apiClient.get<{ data: MeResponse }>('/user/me')
       _applyUser(me.data)
     } catch {
-      // No valid session — remain as guest. This is expected on first visit.
+      // Network error or server down — remain as guest
     }
   }
 

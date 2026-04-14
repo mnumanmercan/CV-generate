@@ -9,11 +9,11 @@ const app = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
-app.use(router)
 
-// Silently restore session on page load using the HttpOnly refresh token cookie.
-// This runs before mount so authenticated state is ready before the first render.
+// Restore session BEFORE the router activates so that guestOnly/requiresAuth
+// guards have the correct isLoggedIn state on the very first navigation.
 const userStore = useUserStore(pinia)
 await userStore.restoreSession()
 
+app.use(router)
 app.mount('#app')

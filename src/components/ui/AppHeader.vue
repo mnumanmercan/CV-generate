@@ -1,10 +1,9 @@
 <script setup lang="ts">
   import { ref } from 'vue'
-  import { RouterLink, useRoute, useRouter } from 'vue-router'
+  import { RouterLink, useRoute } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
 
   const route = useRoute()
-  const router = useRouter()
   const userStore = useUserStore()
 
   const navLinks = [
@@ -14,10 +13,11 @@
 
   const showUserMenu = ref(false)
 
-  function handleLogout(): void {
-    userStore.logout()
+  async function handleLogout(): Promise<void> {
     showUserMenu.value = false
-    router.push('/')
+    await userStore.logout()
+    // Hard reload — clears all in-memory state (Pinia stores, access token, CV cache)
+    window.location.href = '/'
   }
 </script>
 

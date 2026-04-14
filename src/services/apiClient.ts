@@ -9,7 +9,7 @@ export function getAccessToken(): string | null {
   return _accessToken
 }
 
-const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000/api/v1'
+export const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000/api/v1'
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
@@ -24,8 +24,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers,
   })
 
-  // Transparent token refresh on 401
-  if (res.status === 401) {
+  // Transparent token refresh on 401.
+  // Skip for /auth/refresh itself — calling refresh-on-refresh is circular
+  // and would falsely fire the session-expired event for guests.
+  if (res.status === 401 && !path.endsWith('/auth/refresh')) {
     const refreshed = await tryRefresh()
     if (!refreshed) {
       window.dispatchEvent(new CustomEvent('resumark:session-expired'))
