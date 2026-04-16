@@ -65,6 +65,11 @@ export const useCVStore = defineStore('cv', () => {
       // Run all pending migrations while loadingData is still true so
       // useAutoSave ignores this synthetic write.
       cvData.value = migrateCVData(stored)
+    } else {
+      // Storage is empty (e.g. after logout when the cloud user had no local
+      // data). Reset to blank so stale in-memory data from the previous
+      // session doesn't leak into the UI.
+      cvData.value = createEmptyCVData()
     }
     // Wait for Vue to flush the queued watchers (triggered by the cvData
     // replacement above) BEFORE clearing the flag — this lets every watcher

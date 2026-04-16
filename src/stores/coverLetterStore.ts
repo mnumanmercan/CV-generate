@@ -35,6 +35,8 @@ export const useCoverLetterStore = defineStore('coverLetter', () => {
     const stored = await coverLetterStorageService.load()
     if (stored) {
       clData.value = stored
+    } else {
+      clData.value = createEmptyCoverLetterData()
     }
     await nextTick()
     loadingData.value = false
