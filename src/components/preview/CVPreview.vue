@@ -54,7 +54,7 @@
       width: 794px;
       min-height: 1123px;
       background: #ffffff;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
       font-size: 11px;
       line-height: 1.5;
       color: #1a1a1a;

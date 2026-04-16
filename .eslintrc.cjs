@@ -18,6 +18,6 @@ module.exports = {
     'prettier/prettier': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-    'vue/multi-word-component-names': 'off',
+    'vue/multi-word-component-names': ['error', { ignores: ['App'] }],
   },
 }

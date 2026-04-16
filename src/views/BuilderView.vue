@@ -4,11 +4,13 @@
   import { useCVStore } from '@/stores/cvStore'
   import { useAutoSave } from '@/composables/useAutoSave'
   import { usePDFExport } from '@/composables/usePDFExport'
+  import { usePreviewZoom } from '@/composables/usePreviewZoom'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import BuilderToolSwitcher from '@/components/ui/BuilderToolSwitcher.vue'
   import SplitLayout from '@/components/ui/SplitLayout.vue'
   import ToastNotification from '@/components/ui/ToastNotification.vue'
   import UpgradePrompt from '@/components/ui/UpgradePrompt.vue'
+  import ConfirmModal from '@/components/ui/ConfirmModal.vue'
   import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
   import FormSection from '@/components/form/FormSection.vue'
   import PersonalInfoForm from '@/components/form/PersonalInfoForm.vue'
@@ -35,7 +37,8 @@
     isProjectsComplete,
     isCertificationsComplete,
   } = storeToRefs(cvStore)
-  const { status: pdfStatus, errorMessage: pdfError, exportPDF } = usePDFExport()
+  const { status: pdfStatus, errorMessage: pdfError, overflowWarning: pdfOverflow, exportPDF } = usePDFExport()
+  const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } = usePreviewZoom()
 
   // Start auto-save watcher
   useAutoSave()
@@ -45,65 +48,41 @@
   })
 
   // Watch each section for changes and trigger preview highlight.
-  // Guard with cvStore.loadingData so the initial data load (which replaces the
-  // entire cvData object and fires all deep watchers) does not flash every
+  // Guard with cvStore.loadingData so the initial data load does not flash every
   // section in the preview on page load.
-  watch(
-    () => cvData.value.personal,
-    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('personal') },
-    { deep: true },
-  )
-  watch(
-    () => cvData.value.summary,
-    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('summary') },
-  )
-  watch(
-    () => cvData.value.experience,
-    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('experience') },
-    { deep: true },
-  )
-  watch(
-    () => cvData.value.education,
-    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('education') },
-    { deep: true },
-  )
-  watch(
-    () => cvData.value.skills,
-    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('skills') },
-    { deep: true },
-  )
-  watch(
-    () => cvData.value.projects,
-    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('projects') },
-    { deep: true },
-  )
-  watch(
-    () => cvData.value.certifications,
-    () => { if (!cvStore.loadingData) cvStore.triggerSectionHighlight('certifications') },
-    { deep: true },
-  )
+  // A single watcher with a snapshot comparison replaces 7 separate deep watchers,
+  // reducing the number of traversals Vue performs on each keystroke.
+  const SECTION_KEYS: SectionKey[] = ['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications']
+  const sectionSnapshots = new Map<SectionKey, string>()
 
-  // A4 preview scale — CSS-only zoom, does NOT resize the element
-  const previewScale = ref(1.0)
-  const ZOOM_MIN = 0.55
-  const ZOOM_MAX = 1.0
-  const ZOOM_STEP = 0.10
-  const previewScrollEl = ref<HTMLElement | null>(null)
-
-  function zoomIn(): void {
-    previewScale.value = Math.min(ZOOM_MAX, Math.round((previewScale.value + ZOOM_STEP) * 100) / 100)
-  }
-
-  function zoomOut(): void {
-    previewScale.value = Math.max(ZOOM_MIN, Math.round((previewScale.value - ZOOM_STEP) * 100) / 100)
-  }
-
-  function fitToPanel(): void {
-    if (!previewScrollEl.value) return
-    const containerWidth = previewScrollEl.value.clientWidth - 32 // account for px-4 on each side
-    const scale = Math.floor((containerWidth / 794) * 10) / 10
-    previewScale.value = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, scale))
-  }
+  watch(
+    () => JSON.stringify([
+      cvData.value.personal,
+      cvData.value.summary,
+      cvData.value.experience,
+      cvData.value.education,
+      cvData.value.skills,
+      cvData.value.projects,
+      cvData.value.certifications,
+    ]),
+    (newJson) => {
+      if (cvStore.loadingData) {
+        // Seed snapshots on initial load so the first real edit triggers correctly.
+        const parsed = JSON.parse(newJson) as unknown[]
+        SECTION_KEYS.forEach((key, i) => sectionSnapshots.set(key, JSON.stringify(parsed[i])))
+        return
+      }
+      const parsed = JSON.parse(newJson) as unknown[]
+      for (let i = 0; i < SECTION_KEYS.length; i++) {
+        const snap = JSON.stringify(parsed[i])
+        if (sectionSnapshots.get(SECTION_KEYS[i]) !== snap) {
+          sectionSnapshots.set(SECTION_KEYS[i], snap)
+          cvStore.triggerSectionHighlight(SECTION_KEYS[i])
+        }
+      }
+    },
+    { deep: false },
+  )
 
   // PDF download
   async function handleDownload(): Promise<void> {
@@ -159,10 +138,11 @@
     cvStore.setSectionOrder(draggableSections.value.map((s) => s.key))
   }
 
+  const showClearConfirm = ref(false)
+
   async function confirmClearData(): Promise<void> {
-    if (window.confirm('Clear all CV data? This cannot be undone.')) {
-      await cvStore.clearData()
-    }
+    showClearConfirm.value = false
+    await cvStore.clearData()
   }
 </script>
 
@@ -237,7 +217,7 @@
             <button
               type="button"
               class="w-full mt-2 py-2 text-xs text-secondary hover:text-red-400 transition-colors"
-              @click="confirmClearData"
+              @click="showClearConfirm = true"
             >
               Clear all data
             </button>
@@ -368,8 +348,23 @@
       :message="pdfError || 'PDF generation failed. Please try again.'"
       type="error"
     />
+    <ToastNotification
+      :visible="pdfOverflow && pdfStatus === 'success'"
+      message="Your CV exceeds one page — some content at the bottom may be cut off in the PDF."
+      type="info"
+    />
 
     <!-- Upgrade modal -->
     <UpgradePrompt />
+
+    <!-- Clear data confirmation -->
+    <ConfirmModal
+      :visible="showClearConfirm"
+      title="Clear all CV data?"
+      message="This will permanently remove all your CV information. This action cannot be undone."
+      confirm-label="Clear data"
+      @confirm="confirmClearData"
+      @cancel="showClearConfirm = false"
+    />
   </div>
 </template>

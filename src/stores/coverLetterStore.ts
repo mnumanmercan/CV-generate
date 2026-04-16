@@ -4,8 +4,7 @@ import { watch, nextTick } from 'vue'
 import { type CoverLetterData, createEmptyCoverLetterData } from '@/types/coverLetter.types'
 import type { PersonalInfo } from '@/types/cv.types'
 import { coverLetterStorageService } from '@/services/coverLetterStorageService'
-
-const DEBOUNCE_MS = 500
+import { AUTOSAVE_DEBOUNCE_MS, SAVE_INDICATOR_MS } from '@/constants/timing'
 
 export const useCoverLetterStore = defineStore('coverLetter', () => {
   const clData = ref<CoverLetterData>(createEmptyCoverLetterData())
@@ -23,7 +22,7 @@ export const useCoverLetterStore = defineStore('coverLetter', () => {
       if (debounceTimer) clearTimeout(debounceTimer)
       debounceTimer = setTimeout(() => {
         saveToStorage()
-      }, DEBOUNCE_MS)
+      }, AUTOSAVE_DEBOUNCE_MS)
     },
     { deep: true },
   )
@@ -41,17 +40,19 @@ export const useCoverLetterStore = defineStore('coverLetter', () => {
 
   /* ── Save ───────────────────────────────────────────────────── */
   async function saveToStorage(): Promise<void> {
+    if (isSaving.value) return
     isSaving.value = true
-    const snapshot: CoverLetterData = {
-      ...clData.value,
-      meta: { ...clData.value.meta, updatedAt: new Date().toISOString() },
+    try {
+      const snapshot: CoverLetterData = JSON.parse(JSON.stringify(clData.value)) as CoverLetterData
+      snapshot.meta.updatedAt = new Date().toISOString()
+      await coverLetterStorageService.save(snapshot)
+      saveIndicatorVisible.value = true
+      setTimeout(() => {
+        saveIndicatorVisible.value = false
+      }, SAVE_INDICATOR_MS)
+    } finally {
+      isSaving.value = false
     }
-    await coverLetterStorageService.save(snapshot)
-    isSaving.value = false
-    saveIndicatorVisible.value = true
-    setTimeout(() => {
-      saveIndicatorVisible.value = false
-    }, 2500)
   }
 
   /* ── Populate from CV personal info ─────────────────────────── */

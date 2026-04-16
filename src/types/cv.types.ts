@@ -93,8 +93,22 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   certifications: 'Certifications',
 }
 
-export const CURRENT_VERSION = '1.0.0'
+export const CURRENT_VERSION = '1.1.0'
 export const DEFAULT_TEMPLATE_ID = 'classic'
+
+/**
+ * Run all pending migrations on a blob loaded from storage.
+ * Add a new `case` here for every schema version bump.
+ */
+export function migrateCVData(stored: CVData): CVData {
+  // v1.0.0 → v1.1.0: populate missing sectionOrder
+  if (!stored.meta.sectionOrder || stored.meta.sectionOrder.length === 0) {
+    stored.meta.sectionOrder = [...DRAGGABLE_SECTION_KEYS]
+  }
+  // Stamp with current version so future migrations can gate on it.
+  stored.meta.version = CURRENT_VERSION
+  return stored
+}
 
 export function createEmptyCVData(): CVData {
   const now = new Date().toISOString()
@@ -133,7 +147,7 @@ export function createWorkExperience(): WorkExperience {
     startDate: '',
     endDate: '',
     location: '',
-    bullets: [''],
+    bullets: [],
   }
 }
 

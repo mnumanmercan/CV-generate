@@ -1,7 +1,6 @@
 import { watch } from 'vue'
 import { useCVStore } from '@/stores/cvStore'
-
-const DEBOUNCE_MS = 500
+import { AUTOSAVE_DEBOUNCE_MS } from '@/constants/timing'
 
 export function useAutoSave() {
   const cvStore = useCVStore()
@@ -16,7 +15,7 @@ export function useAutoSave() {
       if (debounceTimer) clearTimeout(debounceTimer)
       debounceTimer = setTimeout(() => {
         cvStore.saveToStorage()
-      }, DEBOUNCE_MS)
+      }, AUTOSAVE_DEBOUNCE_MS)
     },
     { deep: true },
   )

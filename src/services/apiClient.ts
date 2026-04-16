@@ -11,29 +11,58 @@ export function getAccessToken(): string | null {
 
 export const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000/api/v1'
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+// Guard against accidental HTTP in production — tokens must never travel in plaintext.
+if (import.meta.env.PROD && !BASE_URL.startsWith('https://')) {
+  console.error('[apiClient] VITE_API_URL must use HTTPS in production. Current:', BASE_URL)
+}
+
+/** Default timeout for all API requests (ms). Prevents hung connections. */
+const REQUEST_TIMEOUT_MS = 15_000
+
+interface RequestOptions extends RequestInit {
+  /** Internal flag — prevents a retry from triggering another refresh attempt. */
+  _retried?: boolean
+}
+
+async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(init.headers as Record<string, string> ?? {}),
   }
   if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    credentials: 'include', // send HttpOnly refresh cookie on /auth/* endpoints
-    headers,
-  })
+  // Abort the request after REQUEST_TIMEOUT_MS so a hung server doesn't
+  // leave the app in a permanent loading state.
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+
+  let res: Response
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...init,
+      credentials: 'include', // send HttpOnly refresh cookie on /auth/* endpoints
+      headers,
+      signal: controller.signal,
+    })
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your connection and try again.')
+    }
+    throw err
+  } finally {
+    clearTimeout(timeoutId)
+  }
 
   // Transparent token refresh on 401.
-  // Skip for /auth/refresh itself — calling refresh-on-refresh is circular
-  // and would falsely fire the session-expired event for guests.
-  if (res.status === 401 && !path.endsWith('/auth/refresh')) {
+  // _retried flag ensures we only attempt one refresh per original request —
+  // prevents an infinite loop when the refresh token itself is also invalid.
+  if (res.status === 401 && !init._retried && !path.endsWith('/auth/refresh')) {
     const refreshed = await tryRefresh()
     if (!refreshed) {
       window.dispatchEvent(new CustomEvent('resumark:session-expired'))
       throw new Error('Session expired. Please log in again.')
     }
-    return request<T>(path, init) // retry once with new token
+    return request<T>(path, { ...init, _retried: true })
   }
 
   if (!res.ok) {
@@ -46,10 +75,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 async function tryRefresh(): Promise<boolean> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
   try {
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
       method:      'POST',
       credentials: 'include',
+      signal:      controller.signal,
     })
     if (!res.ok) return false
     const data = await res.json() as { accessToken: string }
@@ -57,6 +89,8 @@ async function tryRefresh(): Promise<boolean> {
     return true
   } catch {
     return false
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 

@@ -5,8 +5,15 @@ import {
   type SectionKey,
   createEmptyCVData,
   DRAGGABLE_SECTION_KEYS,
+  CURRENT_VERSION,
+  migrateCVData,
 } from '@/types/cv.types'
 import { localStorageService } from '@/services/storageService'
+import {
+  AUTOSAVE_DEBOUNCE_MS,
+  SAVE_INDICATOR_MS,
+  SECTION_HIGHLIGHT_MS,
+} from '@/constants/timing'
 
 export const useCVStore = defineStore('cv', () => {
   const cvData = ref<CVData>(createEmptyCVData())
@@ -55,12 +62,9 @@ export const useCVStore = defineStore('cv', () => {
     loadingData.value = true
     const stored = await localStorageService.load()
     if (stored) {
-      // Migration: legacy blobs have no sectionOrder — set default while loadingData
-      // is still true so useAutoSave ignores this synthetic write.
-      if (!stored.meta.sectionOrder || stored.meta.sectionOrder.length === 0) {
-        stored.meta.sectionOrder = [...DRAGGABLE_SECTION_KEYS]
-      }
-      cvData.value = stored
+      // Run all pending migrations while loadingData is still true so
+      // useAutoSave ignores this synthetic write.
+      cvData.value = migrateCVData(stored)
     }
     // Wait for Vue to flush the queued watchers (triggered by the cvData
     // replacement above) BEFORE clearing the flag — this lets every watcher
@@ -71,22 +75,25 @@ export const useCVStore = defineStore('cv', () => {
   }
 
   async function saveToStorage(): Promise<void> {
+    // Guard against concurrent saves (auto-save + manual save firing simultaneously).
+    if (isSaving.value) return
     isSaving.value = true
-    // Build a snapshot with the updated timestamp instead of mutating cvData
-    // directly — mutating cvData here would re-trigger the deep watcher in
-    // useAutoSave, creating an infinite save loop that causes the indicator
-    // to flicker every 500ms.
-    const snapshot: CVData = {
-      ...cvData.value,
-      meta: { ...cvData.value.meta, updatedAt: new Date().toISOString() },
+    try {
+      // Deep-clone before saving so mutations that happen while the async save is
+      // in flight don't corrupt the snapshot. Shallow spread only copies the top
+      // level — nested arrays (experience, education, bullets…) share references.
+      const snapshot: CVData = JSON.parse(JSON.stringify(cvData.value)) as CVData
+      snapshot.meta.updatedAt = new Date().toISOString()
+      snapshot.meta.version = CURRENT_VERSION
+      await localStorageService.save(snapshot)
+      lastSavedAt.value = new Date()
+      saveIndicatorVisible.value = true
+      setTimeout(() => {
+        saveIndicatorVisible.value = false
+      }, SAVE_INDICATOR_MS)
+    } finally {
+      isSaving.value = false
     }
-    await localStorageService.save(snapshot)
-    isSaving.value = false
-    lastSavedAt.value = new Date()
-    saveIndicatorVisible.value = true
-    setTimeout(() => {
-      saveIndicatorVisible.value = false
-    }, 2500)
   }
 
   function setActiveSection(section: SectionKey | null): void {
@@ -97,7 +104,7 @@ export const useCVStore = defineStore('cv', () => {
     highlightedSection.value = section
     setTimeout(() => {
       highlightedSection.value = null
-    }, 1300)
+    }, SECTION_HIGHLIGHT_MS)
   }
 
   function setTemplate(templateId: string): void {
