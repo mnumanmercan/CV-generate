@@ -1,7 +1,10 @@
 import { ref } from 'vue'
 import { useCVStore } from '@/stores/cvStore'
+import { PDF_SUCCESS_RESET_MS, PDF_ERROR_RESET_MS } from '@/constants/timing'
 
 export type PDFExportStatus = 'idle' | 'generating' | 'success' | 'error'
+
+const A4_HEIGHT_PX = 1123
 
 // ─── Transform neutralization helpers ────────────────────────────────────────
 // html2canvas includes parent CSS transforms in its render context.
@@ -33,7 +36,7 @@ function normalizeForCapture(element: HTMLElement): ElementSnapshot {
     overflow: element.style.overflow,
   }
   element.style.boxShadow = 'none'
-  element.style.height = '1123px'
+  element.style.height = `${A4_HEIGHT_PX}px`
   element.style.overflow = 'hidden'
   return snapshot
 }
@@ -72,10 +75,23 @@ function restoreAncestorTransforms(snapshots: TransformSnapshot[]): void {
 export function usePDFExport() {
   const status = ref<PDFExportStatus>('idle')
   const errorMessage = ref<string>('')
+  const overflowWarning = ref(false)
+  let resetTimer: ReturnType<typeof setTimeout> | null = null
+
+  function scheduleReset(ms: number): void {
+    if (resetTimer !== null) clearTimeout(resetTimer)
+    resetTimer = setTimeout(() => {
+      status.value = 'idle'
+      errorMessage.value = ''
+      resetTimer = null
+    }, ms)
+  }
 
   async function exportPDF(elementId: string): Promise<void> {
     const cvStore = useCVStore()
-    const fullName = cvStore.cvData.personal.fullName || 'CV'
+    const rawName = cvStore.cvData.personal.fullName || 'CV'
+    // Sanitize: strip characters illegal in filenames on all major platforms.
+    const safeName = rawName.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_').trim() || 'CV'
     const element = document.getElementById(elementId)
 
     if (!element) {
@@ -86,20 +102,45 @@ export function usePDFExport() {
 
     status.value = 'generating'
     errorMessage.value = ''
+    // Cancel any pending reset timer from a previous export so it doesn't
+    // overwrite the new status mid-export.
+    if (resetTimer !== null) {
+      clearTimeout(resetTimer)
+      resetTimer = null
+    }
 
-    // Issue 5: reset scroll position on the preview container so capture
-    // starts from the top of the document, not the current scroll offset.
+    // Reset scroll position on the preview container so capture starts from
+    // the top of the document, not the current scroll offset.
     const scrollContainer = element.closest<HTMLElement>('.overflow-auto')
     if (scrollContainer) {
       scrollContainer.scrollTop = 0
     }
 
-    // Issue 3: wait for all fonts (Inter, DM Sans) to be fully rendered
-    // before html2canvas begins rasterising.
+    // Wait for the browser's font loading pipeline to complete.  Google Fonts
+    // loaded via CSS @import may resolve slightly after document.fonts.ready,
+    // so we also poll document.fonts.check() for the primary typeface.
     await document.fonts.ready
+    const fontCheckPromise = new Promise<void>((resolve) => {
+      const check = (): void => {
+        if (document.fonts.check('1em Inter') || document.fonts.check('1em "DM Sans"')) {
+          resolve()
+        } else {
+          requestAnimationFrame(check)
+        }
+      }
+      // Give it at most 1 s; resolve regardless so export isn't blocked forever.
+      const deadline = setTimeout(resolve, 1000)
+      check()
+      void deadline
+    })
+    await fontCheckPromise
 
     // Issue 1: neutralize parent transforms so html2canvas renders at 100%
     const transformSnapshots = neutralizeAncestorTransforms(element)
+
+    // Detect content overflow BEFORE clamping so we can warn the user.
+    overflowWarning.value = element.scrollHeight > A4_HEIGHT_PX
+
     // Issue 6: strip box-shadow and clamp height to exactly one A4 page so
     // html2canvas never captures more than 1123px and no blank second page appears.
     const elementSnapshot = normalizeForCapture(element)
@@ -113,7 +154,7 @@ export function usePDFExport() {
       // content area, distorting proportions.
       const options = {
         margin: [0, 0, 0, 0] as [number, number, number, number],
-        filename: `${fullName.replace(/\s+/g, '_')}_CV.pdf`,
+        filename: `${safeName}_CV.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: {
           scale: 2,
@@ -130,10 +171,7 @@ export function usePDFExport() {
 
       await html2pdf().set(options).from(element).save()
       status.value = 'success'
-
-      setTimeout(() => {
-        status.value = 'idle'
-      }, 3000)
+      scheduleReset(PDF_SUCCESS_RESET_MS)
     } catch (err) {
       console.error('PDF generation failed:', err)
       status.value = 'error'
@@ -141,11 +179,7 @@ export function usePDFExport() {
         err instanceof Error
           ? err.message
           : 'PDF generation failed. Please try again.'
-
-      setTimeout(() => {
-        status.value = 'idle'
-        errorMessage.value = ''
-      }, 4000)
+      scheduleReset(PDF_ERROR_RESET_MS)
     } finally {
       // Always restore — even if export fails
       restoreAfterCapture(element, elementSnapshot)
@@ -156,6 +190,7 @@ export function usePDFExport() {
   return {
     status,
     errorMessage,
+    overflowWarning,
     exportPDF,
   }
 }

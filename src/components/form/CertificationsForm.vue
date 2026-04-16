@@ -45,7 +45,7 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab" aria-hidden="true">⠿</span>
+          <span class="text-secondary cursor-grab" role="img" aria-label="Drag to reorder">⠿</span>
           <span class="text-sm font-semibold text-primary">
             {{ cert.name || `Certification ${index + 1}` }}
           </span>

@@ -63,7 +63,7 @@
       </p>
 
       <!-- Contact row — compact with monospace links -->
-      <div style="display: flex; flex-wrap: wrap; gap: 0; font-size: 9.5px; color: #64748b; font-family: 'Courier New', Courier, monospace;">
+      <div style="display: flex; flex-wrap: wrap; gap: 0; font-size: 9.5px; color: #64748b; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;">
         <span v-if="cvData.personal.email">{{ cvData.personal.email }}</span>
         <span v-if="cvData.personal.email && (cvData.personal.phone || cvData.personal.location || socialLinks.length)" style="margin: 0 7px; color: #cbd5e1;">|</span>
         <span v-if="cvData.personal.phone">{{ cvData.personal.phone }}</span>
@@ -107,7 +107,7 @@
     font-size: 10px;
     font-weight: 700;
     color: #64748b;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
     border-bottom: 1px solid #e2e8f0;
     padding-bottom: 4px;
     margin: 0 0 8px 0;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { reactive, computed } from 'vue'
+  import { ref, reactive, computed } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
   import { useUserStore } from '@/stores/userStore'
@@ -54,11 +54,21 @@
       cvData.value.personal.jobTitle,
   )
 
+  const showPhotoComingSoon = ref(false)
+  let photoComingSoonTimer: ReturnType<typeof setTimeout> | null = null
+
   function handlePhotoUploadClick(): void {
     if (!userStore.canUploadPhoto) {
       userStore.openUpgradeModal('Profile Photo Upload')
+      return
     }
-    // Phase 2: trigger file input when user has Pro access
+    // Phase 2: trigger real file input. For now, acknowledge the click.
+    if (photoComingSoonTimer) clearTimeout(photoComingSoonTimer)
+    showPhotoComingSoon.value = true
+    photoComingSoonTimer = setTimeout(() => {
+      showPhotoComingSoon.value = false
+      photoComingSoonTimer = null
+    }, 3000)
   }
 </script>
 
@@ -90,6 +100,9 @@
         </svg>
         <span class="text-xs">{{ userStore.canUploadPhoto ? 'Click to upload' : 'Upgrade to Pro to upload' }}</span>
       </button>
+      <p v-if="showPhotoComingSoon" class="mt-1.5 text-xs text-center text-secondary/70">
+        Photo upload coming in a future update.
+      </p>
     </div>
 
     <!-- Required fields -->

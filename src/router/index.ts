@@ -74,15 +74,22 @@ router.beforeEach((to) => {
   if (to.meta.title && typeof to.meta.title === 'string') {
     document.title = to.meta.title
   }
+
+  return true
 })
 
-// Handle session expiry events dispatched by apiClient on persistent 401 responses
-if (typeof window !== 'undefined') {
+// Handle session expiry events dispatched by apiClient on persistent 401 responses.
+// Registered inside isReady() so it runs after Pinia is installed — calling
+// useUserStore() at module scope is fragile if import order changes.
+let sessionExpiryListenerRegistered = false
+router.isReady().then(() => {
+  if (sessionExpiryListenerRegistered) return
+  sessionExpiryListenerRegistered = true
   window.addEventListener('resumark:session-expired', () => {
     const userStore = useUserStore()
     userStore.logout()
     router.push({ name: 'login' })
   })
-}
+})
 
 export default router

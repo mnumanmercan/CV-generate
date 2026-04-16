@@ -94,7 +94,8 @@
           <!-- Drag handle -->
           <span
             class="text-secondary cursor-grab active:cursor-grabbing"
-            aria-hidden="true"
+            role="img"
+            aria-label="Drag to reorder"
             title="Drag to reorder"
           >
             ⠿

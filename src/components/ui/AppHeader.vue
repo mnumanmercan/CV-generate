@@ -1,10 +1,15 @@
 <script setup lang="ts">
   import { ref } from 'vue'
-  import { RouterLink, useRoute } from 'vue-router'
+  import { RouterLink, useRoute, useRouter } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
+  import { useCVStore } from '@/stores/cvStore'
+  import { useCoverLetterStore } from '@/stores/coverLetterStore'
 
   const route = useRoute()
+  const router = useRouter()
   const userStore = useUserStore()
+  const cvStore = useCVStore()
+  const coverLetterStore = useCoverLetterStore()
 
   const navLinks = [
     { name: 'builder',  label: 'Builder'  },
@@ -16,8 +21,11 @@
   async function handleLogout(): Promise<void> {
     showUserMenu.value = false
     await userStore.logout()
-    // Hard reload — clears all in-memory state (Pinia stores, access token, CV cache)
-    window.location.href = '/'
+    // Reload from localStorage (logout() switched the storage delegate back to local).
+    // Clear cover letter store so stale cloud data doesn't persist in memory.
+    cvStore.loadFromStorage()
+    coverLetterStore.clearData()
+    router.push('/')
   }
 </script>
 

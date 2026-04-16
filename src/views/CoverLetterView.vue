@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
+  import { onMounted } from 'vue'
   import { storeToRefs } from 'pinia'
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
@@ -14,6 +14,7 @@
   import { useCVStore } from '@/stores/cvStore'
   import { useUserStore } from '@/stores/userStore'
   import { usePDFExport } from '@/composables/usePDFExport'
+  import { usePreviewZoom } from '@/composables/usePreviewZoom'
 
   onMounted(() => {
     document.title = 'Cover Letter — Resumark'
@@ -24,38 +25,22 @@
   const userStore = useUserStore()
   const { clData, saveIndicatorVisible } = storeToRefs(coverLetterStore)
   const { status: pdfStatus, errorMessage: pdfError, exportPDF } = usePDFExport()
+  const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } = usePreviewZoom()
 
   /* ── Load stored data ─────────────────────────────────────── */
   onMounted(async () => {
-    await coverLetterStore.loadFromStorage()
+    // Load both stores in parallel — user may navigate directly to /cover-letter
+    // without visiting /builder first, so cvStore may not have loaded yet.
+    await Promise.all([
+      coverLetterStore.loadFromStorage(),
+      cvStore.loadFromStorage(),
+    ])
     // Auto-populate from CV if sender fields are empty
     const isEmpty = !clData.value.fullName && !clData.value.email
     if (isEmpty) {
       coverLetterStore.populateFromCV(cvStore.cvData.personal)
     }
   })
-
-  /* ── Preview zoom ─────────────────────────────────────────── */
-  const previewScale = ref(1.0)
-  const ZOOM_MIN = 0.55
-  const ZOOM_MAX = 1.0
-  const ZOOM_STEP = 0.10
-  const previewScrollEl = ref<HTMLElement | null>(null)
-
-  function zoomIn(): void {
-    previewScale.value = Math.min(ZOOM_MAX, Math.round((previewScale.value + ZOOM_STEP) * 100) / 100)
-  }
-
-  function zoomOut(): void {
-    previewScale.value = Math.max(ZOOM_MIN, Math.round((previewScale.value - ZOOM_STEP) * 100) / 100)
-  }
-
-  function fitToPanel(): void {
-    if (!previewScrollEl.value) return
-    const containerWidth = previewScrollEl.value.clientWidth - 32
-    const scale = Math.floor((containerWidth / 794) * 10) / 10
-    previewScale.value = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, scale))
-  }
 
   async function handleDownload(): Promise<void> {
     await exportPDF('cover-letter-preview')

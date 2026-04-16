@@ -55,7 +55,8 @@
         <span
           v-if="draggable"
           class="drag-handle shrink-0 cursor-grab active:cursor-grabbing text-secondary hover:text-primary transition-colors"
-          aria-hidden="true"
+          role="img"
+          aria-label="Drag to reorder"
           @click.stop
         >
           <svg width="12" height="20" viewBox="0 0 12 20" fill="currentColor" aria-hidden="true">

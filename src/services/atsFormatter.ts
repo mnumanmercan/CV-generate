@@ -48,8 +48,10 @@ export function normalizeHeading(raw: string): string {
 }
 
 // ─── Strip ATS-unfriendly special characters from section headers ────────────
+// Uses Unicode property escapes (\p{L}\p{N}) so accented and non-Latin
+// characters (é, ñ, ü, 中文) are preserved instead of being stripped.
 export function stripSpecialChars(text: string): string {
-  return text.replace(/[^\w\s\-.,()&/]/g, '').trim()
+  return text.replace(/[^\p{L}\p{N}\s\-.,()&/]/gu, '').trim()
 }
 
 // ─── Summary analysis ───────────────────────────────────────────────────────

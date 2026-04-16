@@ -32,12 +32,15 @@
     if (skill) {
       if (skill.items.includes(input)) {
         duplicateWarnings.value.add(skillId)
-        setTimeout(() => duplicateWarnings.value.delete(skillId), 2000)
         return
       }
       skill.items.push(input)
     }
     tagInputs.value[skillId] = ''
+  }
+
+  function clearDuplicateWarning(skillId: string): void {
+    duplicateWarnings.value.delete(skillId)
   }
 
   function removeTag(skillIndex: number, tagIndex: number): void {
@@ -75,7 +78,7 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab" aria-hidden="true">⠿</span>
+          <span class="text-secondary cursor-grab" role="img" aria-label="Drag to reorder">⠿</span>
           <span class="text-sm font-semibold text-primary">
             {{ skill.category || `Category ${index + 1}` }}
           </span>
@@ -131,6 +134,7 @@
             class="flex-1 px-3 py-2 text-sm rounded-lg"
             :aria-label="`Add skill to ${skill.category || 'category'}`"
             @keydown="onTagKeydown($event, skill.id, index)"
+            @focus="clearDuplicateWarning(skill.id)"
           />
           <button
             type="button"

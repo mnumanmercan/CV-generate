@@ -18,20 +18,44 @@
     }
     cvStore.setTemplate(id)
   }
+
+  function onKeydown(event: KeyboardEvent): void {
+    const idx = TEMPLATES.findIndex((t) => t.id === activeId.value)
+    let next = idx
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      event.preventDefault()
+      next = (idx + 1) % TEMPLATES.length
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      next = (idx - 1 + TEMPLATES.length) % TEMPLATES.length
+    } else {
+      return
+    }
+    const t = TEMPLATES[next]
+    select(t.id, t.isPro)
+    // Move focus to the newly active button.
+    const group = (event.currentTarget as HTMLElement)
+    const buttons = group.querySelectorAll<HTMLElement>('[role="radio"]')
+    buttons[next]?.focus()
+  }
 </script>
 
 <template>
   <div
     class="flex items-center justify-center gap-1 px-4 py-2 border-b border-overlay/5 shrink-0"
     style="background: var(--bg-surface)"
-    role="group"
+    role="radiogroup"
     aria-label="Resume template"
+    @keydown="onKeydown"
   >
     <button
-      v-for="template in TEMPLATES"
+      v-for="(template, tIdx) in TEMPLATES"
       :key="template.id"
       type="button"
-      :aria-pressed="activeId === template.id"
+      role="radio"
+      :aria-checked="activeId === template.id"
+      :tabindex="activeId === template.id ? 0 : -1"
+      :aria-label="template.isPro && !userStore.isPremium ? `${template.name} (Pro plan required)` : template.name"
       :title="template.isPro && !userStore.isPremium ? `${template.description} (Pro plan required)` : template.description"
       :class="[
         'relative flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all',

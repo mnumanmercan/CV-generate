@@ -60,7 +60,7 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab active:cursor-grabbing" aria-hidden="true">⠿</span>
+          <span class="text-secondary cursor-grab active:cursor-grabbing" role="img" aria-label="Drag to reorder">⠿</span>
           <span class="text-sm font-semibold text-primary">
             {{ edu.institution || `Education ${index + 1}` }}
           </span>
