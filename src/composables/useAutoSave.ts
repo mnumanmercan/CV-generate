@@ -14,7 +14,12 @@ export function useAutoSave() {
       if (cvStore.loadingData) return
       if (debounceTimer) clearTimeout(debounceTimer)
       debounceTimer = setTimeout(() => {
-        cvStore.saveToStorage()
+        cvStore.saveToStorage().catch((err) => {
+          // Storage errors (API validation, network) are logged but not re-thrown —
+          // an auto-save failure should not crash the app. The user can still
+          // continue editing and the next auto-save cycle will retry.
+          console.warn('[useAutoSave] save failed:', err)
+        })
       }, AUTOSAVE_DEBOUNCE_MS)
     },
     { deep: true },

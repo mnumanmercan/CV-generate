@@ -23,8 +23,9 @@
     await userStore.logout()
     // Reload from localStorage (logout() switched the storage delegate back to local).
     // Clear cover letter store so stale cloud data doesn't persist in memory.
-    cvStore.loadFromStorage()
-    coverLetterStore.clearData()
+    // Await loadFromStorage so the store is up-to-date before navigation/watchers fire.
+    await cvStore.loadFromStorage()
+    await coverLetterStore.clearData()
     router.push('/')
   }
 </script>

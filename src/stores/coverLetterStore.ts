@@ -21,7 +21,9 @@ export const useCoverLetterStore = defineStore('coverLetter', () => {
       if (loadingData.value) return
       if (debounceTimer) clearTimeout(debounceTimer)
       debounceTimer = setTimeout(() => {
-        saveToStorage()
+        saveToStorage().catch((err) => {
+          console.warn('[coverLetterStore] auto-save failed:', err)
+        })
       }, AUTOSAVE_DEBOUNCE_MS)
     },
     { deep: true },

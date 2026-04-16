@@ -1,12 +1,15 @@
 <script setup lang="ts">
-  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import AppFooter from '@/components/ui/AppFooter.vue'
   import FeatureIcon from '@/components/ui/FeatureIcon.vue'
   import { useScrollReveal } from '@/composables/useScrollReveal'
+  import { useUserStore } from '@/stores/userStore'
   import { localStorageService } from '@/services/storageService'
   import type { CVData } from '@/types/cv.types'
+
+  const userStore = useUserStore()
 
   /* ── Per-page title ───────────────────────────────────────────────────── */
   onMounted(() => {
@@ -25,11 +28,17 @@
 
   function onMouseMove(e: MouseEvent): void {
     if (rafId !== null) return
+    // Capture target and coordinates synchronously — e.currentTarget is nulled
+    // after the event handler returns (browser reuses the event object), so
+    // reading it inside requestAnimationFrame would throw.
+    const target = e.currentTarget as HTMLElement | null
+    if (!target) return
+    const rect = target.getBoundingClientRect()
+    const clientX = e.clientX
+    const clientY = e.clientY
     rafId = requestAnimationFrame(() => {
-      const target = e.currentTarget as HTMLElement
-      const rect = target.getBoundingClientRect()
-      cursorX.value = ((e.clientX - rect.left) / rect.width) * 100
-      cursorY.value = ((e.clientY - rect.top) / rect.height) * 100
+      cursorX.value = ((clientX - rect.left) / rect.width) * 100
+      cursorY.value = ((clientY - rect.top) / rect.height) * 100
       rafId = null
     })
   }
@@ -59,12 +68,16 @@
   /* ── Personalized mockup ──────────────────────────────────────────────── */
   const storedCV = ref<CVData | null>(null)
 
-  onMounted(async () => {
+  async function refreshStoredCV(): Promise<void> {
     const data = await localStorageService.load()
-    if (data?.personal?.fullName?.trim()) {
-      storedCV.value = data
-    }
-  })
+    storedCV.value = data?.personal?.fullName?.trim() ? data : null
+  }
+
+  onMounted(refreshStoredCV)
+
+  // Re-read when auth state changes (e.g. logout while already on homepage —
+  // router.push('/') won't re-mount the component, so onMounted won't re-fire).
+  watch(() => userStore.isLoggedIn, refreshStoredCV)
 
   function trunc(s: string | undefined, len: number): string {
     if (!s) return ''
