@@ -21,6 +21,7 @@ export const useCVStore = defineStore('cv', () => {
   const highlightedSection = ref<SectionKey | null>(null)
   const isSaving = ref(false)
   const loadingData = ref(false)
+  const isLoaded = ref(false)
   const lastSavedAt = ref<Date | null>(null)
   const saveIndicatorVisible = ref(false)
 
@@ -76,6 +77,7 @@ export const useCVStore = defineStore('cv', () => {
     // see loadingData === true and bail out, preventing spurious auto-saves
     // and preview-section flashes on initial page load.
     await nextTick()
+    isLoaded.value = true
     loadingData.value = false
   }
 
@@ -121,6 +123,7 @@ export const useCVStore = defineStore('cv', () => {
   }
 
   async function clearData(): Promise<void> {
+    isLoaded.value = false
     cvData.value = createEmptyCVData()
     await localStorageService.clear()
   }
@@ -131,6 +134,7 @@ export const useCVStore = defineStore('cv', () => {
     highlightedSection,
     isSaving,
     loadingData,
+    isLoaded,
     lastSavedAt,
     saveIndicatorVisible,
     isPersonalComplete,

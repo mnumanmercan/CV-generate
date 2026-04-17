@@ -1,15 +1,13 @@
 <script setup lang="ts">
-  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import AppFooter from '@/components/ui/AppFooter.vue'
   import FeatureIcon from '@/components/ui/FeatureIcon.vue'
   import { useScrollReveal } from '@/composables/useScrollReveal'
-  import { useUserStore } from '@/stores/userStore'
-  import { localStorageService } from '@/services/storageService'
-  import type { CVData } from '@/types/cv.types'
+  import { useCVStore } from '@/stores/cvStore'
 
-  const userStore = useUserStore()
+  const cvStore = useCVStore()
 
   /* ── Per-page title ───────────────────────────────────────────────────── */
   onMounted(() => {
@@ -66,18 +64,22 @@
   const { vReveal } = useScrollReveal()
 
   /* ── Personalized mockup ──────────────────────────────────────────────── */
-  const storedCV = ref<CVData | null>(null)
+  // Load the store if this is the user's first landing (e.g. they navigate
+  // directly to '/' before ever visiting BuilderView).  The guard prevents a
+  // redundant API call if BuilderView or a prior HomeView visit already loaded.
+  onMounted(async () => {
+    if (!cvStore.isLoaded) {
+      await cvStore.loadFromStorage()
+    }
+  })
 
-  async function refreshStoredCV(): Promise<void> {
-    const data = await localStorageService.load()
-    storedCV.value = data?.personal?.fullName?.trim() ? data : null
-  }
-
-  onMounted(refreshStoredCV)
-
-  // Re-read when auth state changes (e.g. logout while already on homepage —
-  // router.push('/') won't re-mount the component, so onMounted won't re-fire).
-  watch(() => userStore.isLoggedIn, refreshStoredCV)
+  // storedCV reads directly from the authoritative Pinia store — no
+  // independent localStorage fetch needed.  When logout clears cvData
+  // synchronously via clearData(), this computed immediately becomes null and
+  // the personalized mockup disappears without any race condition.
+  const storedCV = computed(() =>
+    cvStore.cvData.personal?.fullName?.trim() ? cvStore.cvData : null,
+  )
 
   function trunc(s: string | undefined, len: number): string {
     if (!s) return ''

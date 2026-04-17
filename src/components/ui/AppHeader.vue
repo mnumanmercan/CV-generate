@@ -21,10 +21,11 @@
   async function handleLogout(): Promise<void> {
     showUserMenu.value = false
     await userStore.logout()
-    // Reload from localStorage (logout() switched the storage delegate back to local).
-    // Clear cover letter store so stale cloud data doesn't persist in memory.
-    // Await loadFromStorage so the store is up-to-date before navigation/watchers fire.
-    await cvStore.loadFromStorage()
+    // clearData() resets cvData to empty SYNCHRONOUSLY then clears localStorage.
+    // This is safe: the sync reset fires before any Vue watcher callbacks, so
+    // all reactive views (HomeView mockup, DashboardView, etc.) update to empty
+    // immediately — no race condition, no stale cloud data visible after logout.
+    await cvStore.clearData()
     await coverLetterStore.clearData()
     router.push('/')
   }
