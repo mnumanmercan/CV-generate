@@ -5,8 +5,9 @@
   import AppFooter from '@/components/ui/AppFooter.vue'
   import FeatureIcon from '@/components/ui/FeatureIcon.vue'
   import { useScrollReveal } from '@/composables/useScrollReveal'
-  import { localStorageService } from '@/services/storageService'
-  import type { CVData } from '@/types/cv.types'
+  import { useCVStore } from '@/stores/cvStore'
+
+  const cvStore = useCVStore()
 
   /* ── Per-page title ───────────────────────────────────────────────────── */
   onMounted(() => {
@@ -25,11 +26,17 @@
 
   function onMouseMove(e: MouseEvent): void {
     if (rafId !== null) return
+    // Capture target and coordinates synchronously — e.currentTarget is nulled
+    // after the event handler returns (browser reuses the event object), so
+    // reading it inside requestAnimationFrame would throw.
+    const target = e.currentTarget as HTMLElement | null
+    if (!target) return
+    const rect = target.getBoundingClientRect()
+    const clientX = e.clientX
+    const clientY = e.clientY
     rafId = requestAnimationFrame(() => {
-      const target = e.currentTarget as HTMLElement
-      const rect = target.getBoundingClientRect()
-      cursorX.value = ((e.clientX - rect.left) / rect.width) * 100
-      cursorY.value = ((e.clientY - rect.top) / rect.height) * 100
+      cursorX.value = ((clientX - rect.left) / rect.width) * 100
+      cursorY.value = ((clientY - rect.top) / rect.height) * 100
       rafId = null
     })
   }
@@ -57,14 +64,22 @@
   const { vReveal } = useScrollReveal()
 
   /* ── Personalized mockup ──────────────────────────────────────────────── */
-  const storedCV = ref<CVData | null>(null)
-
+  // Load the store if this is the user's first landing (e.g. they navigate
+  // directly to '/' before ever visiting BuilderView).  The guard prevents a
+  // redundant API call if BuilderView or a prior HomeView visit already loaded.
   onMounted(async () => {
-    const data = await localStorageService.load()
-    if (data?.personal?.fullName?.trim()) {
-      storedCV.value = data
+    if (!cvStore.isLoaded) {
+      await cvStore.loadFromStorage()
     }
   })
+
+  // storedCV reads directly from the authoritative Pinia store — no
+  // independent localStorage fetch needed.  When logout clears cvData
+  // synchronously via clearData(), this computed immediately becomes null and
+  // the personalized mockup disappears without any race condition.
+  const storedCV = computed(() =>
+    cvStore.cvData.personal?.fullName?.trim() ? cvStore.cvData : null,
+  )
 
   function trunc(s: string | undefined, len: number): string {
     if (!s) return ''

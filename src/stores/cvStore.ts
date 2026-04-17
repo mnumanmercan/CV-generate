@@ -21,6 +21,7 @@ export const useCVStore = defineStore('cv', () => {
   const highlightedSection = ref<SectionKey | null>(null)
   const isSaving = ref(false)
   const loadingData = ref(false)
+  const isLoaded = ref(false)
   const lastSavedAt = ref<Date | null>(null)
   const saveIndicatorVisible = ref(false)
 
@@ -65,12 +66,18 @@ export const useCVStore = defineStore('cv', () => {
       // Run all pending migrations while loadingData is still true so
       // useAutoSave ignores this synthetic write.
       cvData.value = migrateCVData(stored)
+    } else {
+      // Storage is empty (e.g. after logout when the cloud user had no local
+      // data). Reset to blank so stale in-memory data from the previous
+      // session doesn't leak into the UI.
+      cvData.value = createEmptyCVData()
     }
     // Wait for Vue to flush the queued watchers (triggered by the cvData
     // replacement above) BEFORE clearing the flag — this lets every watcher
     // see loadingData === true and bail out, preventing spurious auto-saves
     // and preview-section flashes on initial page load.
     await nextTick()
+    isLoaded.value = true
     loadingData.value = false
   }
 
@@ -116,6 +123,7 @@ export const useCVStore = defineStore('cv', () => {
   }
 
   async function clearData(): Promise<void> {
+    isLoaded.value = false
     cvData.value = createEmptyCVData()
     await localStorageService.clear()
   }
@@ -126,6 +134,7 @@ export const useCVStore = defineStore('cv', () => {
     highlightedSection,
     isSaving,
     loadingData,
+    isLoaded,
     lastSavedAt,
     saveIndicatorVisible,
     isPersonalComplete,
