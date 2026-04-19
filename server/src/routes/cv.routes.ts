@@ -17,11 +17,11 @@ const router = Router()
 // All CV routes require authentication
 router.use(authenticate)
 
-router.get('/',      apiReadLimiter,  listCVs)
-router.post('/',     apiWriteLimiter, validate(CreateCVSchema), createCV)
-router.get('/:id',   apiReadLimiter,  getCV)
-router.put('/:id',   apiWriteLimiter, validate(UpdateCVSchema), updateCV)
-router.patch('/:id', apiWriteLimiter, validate(PatchCVSchema),  patchCV)
-router.delete('/:id', authenticate,  deleteCV)
+router.get('/',       apiReadLimiter,  listCVs)
+router.post('/',      apiWriteLimiter, validate(CreateCVSchema), createCV)
+router.get('/:id',    apiReadLimiter,  getCV)
+router.put('/:id',    apiWriteLimiter, validate(UpdateCVSchema), updateCV)
+router.patch('/:id',  apiWriteLimiter, validate(PatchCVSchema),  patchCV)
+router.delete('/:id', apiWriteLimiter, deleteCV)
 
 export default router

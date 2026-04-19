@@ -5,7 +5,7 @@
   import AppFooter from '@/components/ui/AppFooter.vue'
   import { useUserStore } from '@/stores/userStore'
   import { useScrollReveal } from '@/composables/useScrollReveal'
-  import { PLANS, type SubscriptionTier } from '@/composables/useSubscription'
+  import { PLANS, useSubscription, type SubscriptionTier } from '@/composables/useSubscription'
 
   /* ── Per-page title ───────────────────────────────────────────────────── */
   onMounted(() => {
@@ -18,11 +18,23 @@
   /* ── Store ────────────────────────────────────────────────────────────── */
   const userStore = useUserStore()
 
+  /* ── Subscription / Stripe checkout ───────────────────────────────────── */
+  const { subscribe, isCheckingOut, checkoutError } = useSubscription()
+
   /* ── Reactive current tier ────────────────────────────────────────────── */
   const currentTier = computed(() => (userStore.isPremium ? 'pro' : 'free'))
 
   /* ── Billing period toggle ────────────────────────────────────────────── */
   const billingPeriod = ref<'monthly' | 'annual'>('monthly')
+
+  /**
+   * Click handler for the plan CTA. Delegates to useSubscription which will
+   * either redirect to Stripe Checkout (logged-in Pro upgrade) or open the
+   * upgrade modal (anonymous user needs to sign up first).
+   */
+  async function handleUpgrade(tier: SubscriptionTier): Promise<void> {
+    await subscribe(tier, billingPeriod.value)
+  }
 
   function displayedPrice(price: number): string {
     if (price === 0) return 'Free'
@@ -150,6 +162,24 @@
         </div>
       </section>
 
+      <!-- ── Checkout error banner ───────────────────────────────── -->
+      <div
+        v-if="checkoutError"
+        class="max-w-3xl mx-auto px-6 mb-4"
+      >
+        <div
+          class="flex items-center gap-2.5 px-4 py-3 rounded-lg text-sm"
+          style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); color: #ef4444"
+          role="alert"
+        >
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+          {{ checkoutError }}
+        </div>
+      </div>
+
       <!-- ── Pricing cards ──────────────────────────────────────── -->
       <section
         v-reveal
@@ -239,15 +269,27 @@
               <button
                 v-else
                 type="button"
+                :disabled="isCheckingOut"
                 :class="[
-                  'w-full py-3 rounded-xl text-sm font-semibold transition-all',
+                  'w-full py-3 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2',
                   tierHighlight[plan.id]
                     ? 'shimmer-btn text-white shadow-lg shadow-accent/20'
                     : 'border border-overlay/10 text-primary hover:border-accent/40 hover:bg-accent/5',
                 ]"
-                @click="userStore.openUpgradeModal(`${plan.name} Plan`)"
+                @click="handleUpgrade(plan.id)"
               >
-                Upgrade to {{ plan.name }}
+                <svg
+                  v-if="isCheckingOut"
+                  class="w-4 h-4 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                {{ isCheckingOut ? 'Starting checkout…' : `Upgrade to ${plan.name}` }}
               </button>
             </div>
 

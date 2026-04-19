@@ -28,6 +28,19 @@ export const useUserStore = defineStore('user', () => {
   const isAuthenticating = ref(false)
   const authError        = ref<string | null>(null)
 
+  /**
+   * True once `restoreSession()` has resolved (regardless of outcome).
+   * Route guards for `requiresAuth` routes should wait on this so the guard
+   * does not redirect a logged-in user to /login just because the session
+   * probe hasn't finished yet.
+   *
+   * `main.ts` fires `restoreSession()` after mount (no top-level await), so
+   * this starts as `false` and flips to `true` as soon as the refresh probe
+   * returns. Public routes (/, /pricing, /login, /register) don't need to
+   * wait — they render immediately.
+   */
+  const isSessionRestored = ref(false)
+
   const showUpgradeModal    = ref(false)
   const upgradeModalTrigger = ref<string>('')
 
@@ -77,13 +90,23 @@ export const useUserStore = defineStore('user', () => {
 
   // ── Login ─────────────────────────────────────────────────────────────────
 
-  async function loginWithCredentials(email: string, password: string): Promise<void> {
+  async function loginWithCredentials(
+    email: string,
+    password: string,
+    rememberMe = false,
+  ): Promise<void> {
     isAuthenticating.value = true
     authError.value        = null
     try {
+      // rememberMe is forwarded to the server which extends the refresh
+      // cookie + DB token from 7 days to 30. We only send the flag when
+      // it's true so the request body stays minimal on the default path.
+      const payload: { email: string; password: string; rememberMe?: boolean } = { email, password }
+      if (rememberMe) payload.rememberMe = true
+
       const data = await apiClient.post<{ accessToken: string; user: MeResponse }>(
         '/auth/login',
-        { email, password },
+        payload,
       )
       setAccessToken(data.accessToken)
       _applyUser(data.user)
@@ -95,7 +118,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // ── Restore session on page load (silent) ─────────────────────────────────
+  // ── Restore session on page load (silent, non-blocking) ──────────────────
 
   async function restoreSession(): Promise<void> {
     try {
@@ -113,6 +136,9 @@ export const useUserStore = defineStore('user', () => {
       _applyUser(me.data)
     } catch {
       // Network error or server down — remain as guest
+    } finally {
+      // Flip regardless of outcome so router guards unblock.
+      isSessionRestored.value = true
     }
   }
 
@@ -150,6 +176,7 @@ export const useUserStore = defineStore('user', () => {
     isPremium,
     isAuthenticating,
     authError,
+    isSessionRestored,
     showUpgradeModal,
     upgradeModalTrigger,
     canUploadPhoto,

@@ -5,17 +5,45 @@ import { stripeService } from '../services/stripe.service.js'
 import { AppError } from '../utils/apiError.js'
 import { env } from '../config/env.js'
 
+/**
+ * Accept a short symbolic plan identifier from the client instead of a raw
+ * Stripe price ID. The server resolves it to the configured price ID.
+ *
+ * Why: accepting arbitrary `priceId` strings from the frontend is a privilege
+ * escalation risk. A user could pass any price ID that exists in the Stripe
+ * account (e.g. a legacy enterprise price, an internal test price) and Stripe
+ * would happily create a checkout session at that price against their account.
+ * By resolving on the server we guarantee only sanctioned prices are usable.
+ */
 const CheckoutSchema = z.object({
-  priceId:    z.string().min(1),
+  plan:       z.enum(['pro_monthly', 'pro_annual']),
   successUrl: z.string().url().optional(),
   cancelUrl:  z.string().url().optional(),
 })
 
+function resolvePriceId(plan: 'pro_monthly' | 'pro_annual'): string {
+  const priceId = plan === 'pro_monthly'
+    ? env.STRIPE_PRICE_ID_PRO_MONTHLY
+    : env.STRIPE_PRICE_ID_PRO_ANNUAL
+  if (!priceId) {
+    throw new AppError(
+      `Plan "${plan}" is not configured on the server.`,
+      503,
+      'PLAN_NOT_CONFIGURED',
+    )
+  }
+  return priceId
+}
+
 export const createCheckout = asyncHandler(async (req: Request, res: Response) => {
   const result = CheckoutSchema.safeParse(req.body)
-  if (!result.success) throw new AppError('Validation failed', 422, 'VALIDATION_ERROR')
+  if (!result.success) {
+    throw new AppError('Validation failed', 422, 'VALIDATION_ERROR')
+  }
 
-  const { priceId, successUrl, cancelUrl } = result.data
+  const { plan, successUrl, cancelUrl } = result.data
+  const priceId = resolvePriceId(plan)
+
   const data = await stripeService.createCheckoutSession(
     req.user.sub,
     priceId,

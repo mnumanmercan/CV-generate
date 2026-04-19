@@ -39,6 +39,10 @@
   } = storeToRefs(cvStore)
   const { status: pdfStatus, errorMessage: pdfError, overflowWarning: pdfOverflow, exportPDF } = usePDFExport()
   const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } = usePreviewZoom()
+  // previewScrollEl is bound in the template via `ref="previewScrollEl"` but
+  // vue-tsc's noUnusedLocals doesn't trace template-ref usage through a
+  // composable destructure, so acknowledge the read explicitly.
+  void previewScrollEl
 
   // Start auto-save watcher
   useAutoSave()

@@ -26,6 +26,10 @@
   const { clData, saveIndicatorVisible } = storeToRefs(coverLetterStore)
   const { status: pdfStatus, errorMessage: pdfError, exportPDF } = usePDFExport()
   const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } = usePreviewZoom()
+  // previewScrollEl is bound via `ref="previewScrollEl"` in the template;
+  // vue-tsc doesn't trace that through the composable destructure, so nudge
+  // noUnusedLocals with an explicit read.
+  void previewScrollEl
 
   /* ── Load stored data ─────────────────────────────────────── */
   onMounted(async () => {
