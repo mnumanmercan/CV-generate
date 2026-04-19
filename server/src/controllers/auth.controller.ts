@@ -13,6 +13,7 @@ import {
   verifyEmail,
   buildUserResponse,
   COOKIE_OPTIONS,
+  buildCookieOptions,
 } from '../services/auth.service.js'
 import { emailService } from '../services/email.service.js'
 import { CVDataSchema, CoverLetterDataSchema } from '@resumark/shared'
@@ -29,7 +30,14 @@ export const registerHandler = asyncHandler(async (req: Request, res: Response) 
     throw new AppError(e.message, e.statusCode ?? 500, e.code)
   }
 
-  const { user, accessToken, refreshTokenRaw } = result
+  const { user, accessToken, refreshTokenRaw, verifyTokenRaw } = result
+
+  // Fire-and-forget verification email — we don't block registration on SMTP
+  // latency. If Resend is unconfigured (local dev) or down, log and move on;
+  // the user can re-request verification later.
+  emailService.sendEmailVerification(user.email, user.name, verifyTokenRaw).catch((err) => {
+    console.warn('[auth.register] verification email failed:', err)
+  })
 
   res.cookie('refreshToken', refreshTokenRaw, COOKIE_OPTIONS)
   res.status(201).json({
@@ -41,11 +49,12 @@ export const registerHandler = asyncHandler(async (req: Request, res: Response) 
 
 // POST /auth/login
 export const loginHandler = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password } = req.body
+  const { email, password, rememberMe } = req.body as { email: string; password: string; rememberMe?: boolean }
+  const remember = rememberMe === true
 
   let result: Awaited<ReturnType<typeof login>>
   try {
-    result = await login(email, password)
+    result = await login(email, password, remember)
   } catch (err: unknown) {
     const e = err as { statusCode?: number; code?: string; message: string }
     throw new AppError(e.message, e.statusCode ?? 500, e.code)
@@ -53,7 +62,9 @@ export const loginHandler = asyncHandler(async (req: Request, res: Response) => 
 
   const { user, accessToken, refreshTokenRaw } = result
 
-  res.cookie('refreshToken', refreshTokenRaw, COOKIE_OPTIONS)
+  // Cookie TTL must match the DB token TTL (30d if rememberMe, else 7d) so
+  // the browser doesn't forget the token while the DB row is still valid.
+  res.cookie('refreshToken', refreshTokenRaw, buildCookieOptions(remember))
   res.json({
     success:     true,
     accessToken,

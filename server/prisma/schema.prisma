@@ -131,6 +131,24 @@ model CoverLetter {
   @@index([updatedAt])
 }
 
+// ─── StripeEvent ──────────────────────────────────────────────────────────────
+// Idempotency table for Stripe webhooks. Stripe delivers events at-least-once
+// (retries on 5xx for up to 3 days, and occasional duplicate deliveries under
+// normal conditions). Inserting the event ID before processing — and aborting
+// on unique-constraint violation — guarantees each event mutates state once.
+//
+// Retention: rows are only needed for the duration of Stripe's retry window
+// (~3 days). A periodic job can delete rows older than 14 days; for now we
+// keep them indefinitely for audit purposes.
+
+model StripeEvent {
+  id          String   @id // Stripe event ID, e.g. "evt_1A2B3C..."
+  type        String // e.g. "checkout.session.completed"
+  processedAt DateTime @default(now())
+
+  @@index([processedAt])
+}
+
 // ─── Waitlist ─────────────────────────────────────────────────────────────────
 
 model WaitlistEntry {

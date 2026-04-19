@@ -6,27 +6,50 @@ import { env } from '../config/env.js'
 import { signAccessToken } from '../utils/jwt.js'
 import { sha256 } from '../utils/hash.js'
 
-const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+// Default refresh TTL: 7 days. When the user opts in to "remember me" at
+// login time, we extend to 30 days (both the DB token expiry and the cookie
+// maxAge). Keep these as named constants so the doubled-up 30d semantics
+// stay aligned between the DB row and the browser cookie.
+const REFRESH_TOKEN_TTL_MS          = 7  * 24 * 60 * 60 * 1000 // 7 days
+const REFRESH_TOKEN_REMEMBER_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
 
 type PrismaTransaction = Omit<
   Prisma.TransactionClient,
   '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
 >
 
-export const COOKIE_OPTIONS = {
-  httpOnly:  true,
-  secure:    env.NODE_ENV === 'production',
-  sameSite:  'strict' as const,
-  maxAge:    REFRESH_TOKEN_TTL_MS,
-  path:      '/api/v1/auth',
+/**
+ * Build cookie options for the refresh token. `remember = true` extends the
+ * cookie lifetime to 30 days so a user on their own device isn't kicked out
+ * weekly. Defaults to 7 days, which also matches the DB token expiry when
+ * `issueRefreshToken` is called without `remember`.
+ */
+export function buildCookieOptions(remember = false) {
+  return {
+    httpOnly: true,
+    secure:   env.NODE_ENV === 'production',
+    sameSite: 'strict' as const,
+    maxAge:   remember ? REFRESH_TOKEN_REMEMBER_TTL_MS : REFRESH_TOKEN_TTL_MS,
+    path:     '/api/v1/auth',
+  }
 }
+
+// Preserved for backwards compatibility with any caller that doesn't pass
+// the `remember` flag (e.g. the register handler, which never offers the
+// checkbox). Equivalent to `buildCookieOptions(false)`.
+export const COOKIE_OPTIONS = buildCookieOptions(false)
 
 // ─── Issue a new opaque refresh token ─────────────────────────────────────────
 
-async function issueRefreshToken(userId: string, tx: PrismaTransaction): Promise<string> {
+async function issueRefreshToken(
+  userId: string,
+  tx: PrismaTransaction,
+  remember = false,
+): Promise<string> {
   const raw       = crypto.randomBytes(32).toString('hex')
   const tokenHash = sha256(raw)
-  const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_MS)
+  const ttlMs     = remember ? REFRESH_TOKEN_REMEMBER_TTL_MS : REFRESH_TOKEN_TTL_MS
+  const expiresAt = new Date(Date.now() + ttlMs)
 
   await tx.token.create({
     data: { userId, tokenHash, type: 'REFRESH', expiresAt },
@@ -59,7 +82,7 @@ export async function register(name: string, email: string, password: string) {
 
   const passwordHash = await bcrypt.hash(password, env.BCRYPT_ROUNDS)
 
-  const { user, accessToken, refreshTokenRaw } = await prisma.$transaction(async (tx) => {
+  const { user, accessToken, refreshTokenRaw, verifyTokenRaw } = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: { name, email, passwordHash },
     })
@@ -67,7 +90,9 @@ export async function register(name: string, email: string, password: string) {
     const refreshTokenRaw = await issueRefreshToken(user.id, tx)
     const accessToken = signAccessToken({ sub: user.id, email: user.email, plan: user.plan })
 
-    // Send email verification in background (non-blocking)
+    // Create email-verification token — actual sending is the controller's
+    // responsibility (fire-and-forget) so registration doesn't block on SMTP
+    // latency or fail if Resend is temporarily down.
     const verifyRaw   = crypto.randomBytes(32).toString('hex')
     const verifyHash  = sha256(verifyRaw)
     const verifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -78,12 +103,12 @@ export async function register(name: string, email: string, password: string) {
     return { user, accessToken, refreshTokenRaw, verifyTokenRaw: verifyRaw }
   })
 
-  return { user, accessToken, refreshTokenRaw }
+  return { user, accessToken, refreshTokenRaw, verifyTokenRaw }
 }
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
-export async function login(email: string, password: string) {
+export async function login(email: string, password: string, rememberMe = false) {
   const user = await prisma.user.findUnique({ where: { email } })
   if (!user) {
     throw Object.assign(new Error('Invalid email or password.'), { statusCode: 401, code: 'INVALID_CREDENTIALS' })
@@ -95,12 +120,12 @@ export async function login(email: string, password: string) {
   }
 
   const { accessToken, refreshTokenRaw } = await prisma.$transaction(async (tx) => {
-    const refreshTokenRaw = await issueRefreshToken(user.id, tx)
+    const refreshTokenRaw = await issueRefreshToken(user.id, tx, rememberMe)
     const accessToken = signAccessToken({ sub: user.id, email: user.email, plan: user.plan })
     return { accessToken, refreshTokenRaw }
   })
 
-  return { user, accessToken, refreshTokenRaw }
+  return { user, accessToken, refreshTokenRaw, rememberMe }
 }
 
 // ─── Refresh ──────────────────────────────────────────────────────────────────

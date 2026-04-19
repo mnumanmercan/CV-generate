@@ -49,7 +49,7 @@
     @keydown="onKeydown"
   >
     <button
-      v-for="(template, tIdx) in TEMPLATES"
+      v-for="template in TEMPLATES"
       :key="template.id"
       type="button"
       role="radio"

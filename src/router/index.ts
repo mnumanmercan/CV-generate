@@ -56,8 +56,37 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 }),
 })
 
-router.beforeEach((to) => {
+/**
+ * Wait for the in-flight session-restore probe to finish before deciding
+ * auth-gated navigation. Public routes don't call this — they render
+ * immediately regardless of session state.
+ *
+ * Resolves as soon as `isSessionRestored` is true, or after a hard 2s cap
+ * so a hung backend can't lock the user out of every protected route.
+ */
+function awaitSessionRestore(userStore: ReturnType<typeof useUserStore>): Promise<void> {
+  if (userStore.isSessionRestored) return Promise.resolve()
+  return new Promise((resolve) => {
+    const cap = setTimeout(resolve, 2000)
+    const unwatch = userStore.$subscribe(() => {
+      if (userStore.isSessionRestored) {
+        clearTimeout(cap)
+        unwatch()
+        resolve()
+      }
+    })
+  })
+}
+
+router.beforeEach(async (to) => {
   const userStore = useUserStore()
+
+  // Protected routes wait for the session probe so a refresh into /dashboard
+  // doesn't briefly bounce to /login while the /auth/refresh call is in flight.
+  // Public routes skip the wait — they render immediately.
+  if (to.meta.requiresAuth || to.meta.requiresPremium || to.meta.guestOnly) {
+    await awaitSessionRestore(userStore)
+  }
 
   if (to.meta.guestOnly && userStore.isLoggedIn) {
     return { name: 'home' }

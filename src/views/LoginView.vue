@@ -14,6 +14,43 @@
   const isLoading = ref(false)
   const errorMsg = ref('')
 
+  // ─── Forgot-password modal ─────────────────────────────────────────────────
+  // The endpoint always returns 200 (to prevent account enumeration), so
+  // "sent" here means "the request completed", not "the account exists".
+  const showForgotModal = ref(false)
+  const forgotEmail     = ref('')
+  const forgotLoading   = ref(false)
+  const forgotSent      = ref(false)
+  const forgotError     = ref('')
+
+  function openForgotModal(): void {
+    forgotEmail.value   = email.value.trim() // pre-fill from login form
+    forgotSent.value    = false
+    forgotError.value   = ''
+    showForgotModal.value = true
+  }
+
+  function closeForgotModal(): void {
+    showForgotModal.value = false
+  }
+
+  async function submitForgotPassword(): Promise<void> {
+    if (!forgotEmail.value.trim()) {
+      forgotError.value = 'Please enter your email address.'
+      return
+    }
+    forgotError.value   = ''
+    forgotLoading.value = true
+    try {
+      await apiClient.post('/auth/forgot-password', { email: forgotEmail.value.trim() })
+      forgotSent.value = true
+    } catch (err) {
+      forgotError.value = err instanceof Error ? err.message : 'Could not send reset link. Please try again.'
+    } finally {
+      forgotLoading.value = false
+    }
+  }
+
   async function handleSubmit(): Promise<void> {
     if (!email.value.trim() || !password.value) {
       errorMsg.value = 'Please fill in all fields.'
@@ -23,7 +60,7 @@
     isLoading.value = true
 
     try {
-      await userStore.loginWithCredentials(email.value.trim(), password.value)
+      await userStore.loginWithCredentials(email.value.trim(), password.value, rememberMe.value)
 
       // Migrate any existing localStorage data to cloud (last-write-wins)
       const localCVRaw = localStorage.getItem('cv_generate_data')
@@ -169,12 +206,12 @@
                   <label class="text-sm font-medium text-primary" for="login-password">
                     Password
                   </label>
-                  <a
-                    href="#"
+                  <button
+                    type="button"
                     class="text-xs font-medium transition-colors hover:opacity-80"
-                    style="color: var(--accent)"
-                    @click.prevent
-                  >Forgot password?</a>
+                    style="color: var(--accent); background: transparent"
+                    @click="openForgotModal"
+                  >Forgot password?</button>
                 </div>
                 <div class="relative">
                   <input
@@ -286,5 +323,113 @@
         </p>
       </div>
     </main>
+
+    <!-- ─── Forgot password modal ──────────────────────────────────────── -->
+    <div
+      v-if="showForgotModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="forgot-title"
+      @click.self="closeForgotModal"
+    >
+      <!-- Backdrop -->
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        aria-hidden="true"
+        @click="closeForgotModal"
+      />
+
+      <!-- Dialog -->
+      <div
+        class="relative w-full max-w-md rounded-2xl border border-overlay/10 shadow-2xl overflow-hidden"
+        style="background: var(--bg-surface)"
+      >
+        <div
+          class="h-1 w-full"
+          style="background: linear-gradient(90deg, #0891B2 0%, #06B6D4 50%, #0D9488 100%)"
+        />
+
+        <div class="p-7">
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <div>
+              <h2 id="forgot-title" class="text-lg font-bold text-primary">Reset your password</h2>
+              <p class="text-xs text-secondary mt-1">We'll email you a secure link to set a new one.</p>
+            </div>
+            <button
+              type="button"
+              class="text-secondary hover:text-primary transition-colors shrink-0"
+              aria-label="Close"
+              @click="closeForgotModal"
+            >
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Success state -->
+          <div
+            v-if="forgotSent"
+            class="flex items-start gap-3 px-4 py-3 rounded-lg"
+            style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.22); color: #10b981"
+            role="status"
+          >
+            <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+            <p class="text-sm">
+              If an account exists for <strong>{{ forgotEmail }}</strong>, a reset link is on its way.
+              Check your inbox (and spam folder).
+            </p>
+          </div>
+
+          <!-- Request form -->
+          <form v-else novalidate class="space-y-4" @submit.prevent="submitForgotPassword">
+            <div
+              v-if="forgotError"
+              class="flex items-center gap-2.5 px-4 py-3 rounded-lg text-sm"
+              style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); color: #ef4444"
+              role="alert"
+            >
+              {{ forgotError }}
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-primary mb-1.5" for="forgot-email">
+                Email address
+              </label>
+              <input
+                id="forgot-email"
+                v-model="forgotEmail"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                class="w-full px-4 py-2.5 text-sm"
+              />
+            </div>
+
+            <button
+              type="submit"
+              :disabled="forgotLoading"
+              class="shimmer-btn w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-white text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <svg
+                v-if="forgotLoading"
+                class="w-4 h-4 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {{ forgotLoading ? 'Sending…' : 'Send reset link' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

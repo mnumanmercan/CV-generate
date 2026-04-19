@@ -80,11 +80,32 @@ export const stripeService = {
 
   // ── Process Stripe webhook ──────────────────────────────────────────────────
   async handleWebhook(rawBody: Buffer, signature: string) {
+    const secret = env.STRIPE_WEBHOOK_SECRET
+    if (!secret) {
+      throw Object.assign(
+        new Error('Stripe webhook not configured: set STRIPE_WEBHOOK_SECRET in .env'),
+        { statusCode: 503, code: 'WEBHOOK_NOT_CONFIGURED' },
+      )
+    }
+
     let event: Stripe.Event
     try {
-      event = stripe.webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET)
+      event = getStripe().webhooks.constructEvent(rawBody, signature, secret)
     } catch {
       throw Object.assign(new Error('Webhook signature verification failed.'), { statusCode: 400, code: 'INVALID_SIGNATURE' })
+    }
+
+    // ── Idempotency: skip events we've already processed ─────────────────────
+    // Stripe retries failed deliveries for up to 3 days and also delivers the
+    // same event ID more than once under normal conditions (at-least-once).
+    // A unique-constrained StripeEvent row makes re-delivery a no-op.
+    try {
+      await prisma.stripeEvent.create({ data: { id: event.id, type: event.type } })
+    } catch (err: unknown) {
+      // P2002 = unique constraint violation → already processed, exit silently
+      const e = err as { code?: string }
+      if (e.code === 'P2002') return
+      throw err
     }
 
     switch (event.type) {

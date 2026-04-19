@@ -4,13 +4,11 @@ import {
   type CVData,
   type SectionKey,
   createEmptyCVData,
-  DRAGGABLE_SECTION_KEYS,
   CURRENT_VERSION,
   migrateCVData,
 } from '@/types/cv.types'
 import { localStorageService } from '@/services/storageService'
 import {
-  AUTOSAVE_DEBOUNCE_MS,
   SAVE_INDICATOR_MS,
   SECTION_HIGHLIGHT_MS,
 } from '@/constants/timing'

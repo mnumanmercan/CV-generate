@@ -19,6 +19,42 @@ if (import.meta.env.PROD && !BASE_URL.startsWith('https://')) {
 /** Default timeout for all API requests (ms). Prevents hung connections. */
 const REQUEST_TIMEOUT_MS = 15_000
 
+/**
+ * Typed API error. Carries the HTTP status and backend error code so callers
+ * can branch on them without fragile message-substring matching.
+ *
+ * Example:
+ *   try { await apiClient.get('/cv') }
+ *   catch (err) {
+ *     if (err instanceof ApiError && err.status === 404) { ... }
+ *   }
+ */
+export class ApiError extends Error {
+  // Declared as plain fields (not constructor-parameter properties) because
+  // tsconfig.app.json has `erasableSyntaxOnly: true` — parameter-property
+  // shorthand emits runtime assignments TS can't erase.
+  readonly status: number
+  readonly code:   string | undefined
+
+  constructor(status: number, code: string | undefined, message: string) {
+    super(message)
+    this.status = status
+    this.code   = code
+    this.name   = 'ApiError'
+  }
+}
+
+/**
+ * Thrown when the request aborts because it exceeded REQUEST_TIMEOUT_MS.
+ * Distinct from a generic network error so UI can show a retry hint.
+ */
+export class TimeoutError extends Error {
+  constructor() {
+    super('Request timed out. Please check your connection and try again.')
+    this.name = 'TimeoutError'
+  }
+}
+
 interface RequestOptions extends RequestInit {
   /** Internal flag — prevents a retry from triggering another refresh attempt. */
   _retried?: boolean
@@ -46,7 +82,7 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
     })
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new Error('Request timed out. Please check your connection and try again.')
+      throw new TimeoutError()
     }
     throw err
   } finally {
@@ -60,14 +96,18 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
     const refreshed = await tryRefresh()
     if (!refreshed) {
       window.dispatchEvent(new CustomEvent('resumark:session-expired'))
-      throw new Error('Session expired. Please log in again.')
+      throw new ApiError(401, 'SESSION_EXPIRED', 'Session expired. Please log in again.')
     }
     return request<T>(path, { ...init, _retried: true })
   }
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: { message?: string } }
-    throw new Error(body.error?.message ?? `HTTP ${res.status}`)
+    const body = await res.json().catch(() => ({})) as { error?: { message?: string; code?: string } }
+    throw new ApiError(
+      res.status,
+      body.error?.code,
+      body.error?.message ?? `HTTP ${res.status}`,
+    )
   }
 
   if (res.status === 204) return undefined as T
