@@ -39,8 +39,8 @@
             <line x1="10" y1="14" x2="21" y2="3"/>
           </svg>
         </a>
-        <span style="color: #4b5563;"> · {{ cert.issuer }}</span>
-        <span v-if="cert.credentialId" style="color: #6b7280;"> · ID: {{ cert.credentialId }}</span>
+        <span style="color: #4b5563;"> | {{ cert.issuer }}</span>
+        <span v-if="cert.credentialId" style="color: #6b7280;"> | ID: {{ cert.credentialId }}</span>
       </div>
       <span style="font-size: 10px; color: #6b7280; white-space: nowrap; margin-left: 12px; flex-shrink: 0;">
         {{ cert.date }}
@@ -54,7 +54,7 @@
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.10em;
+    letter-spacing: 0.04em;
     color: #111827;
     border-bottom: 1.5px solid #d1d5db;
     padding-bottom: 3px;

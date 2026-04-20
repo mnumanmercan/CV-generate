@@ -92,7 +92,16 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
   // Transparent token refresh on 401.
   // _retried flag ensures we only attempt one refresh per original request —
   // prevents an infinite loop when the refresh token itself is also invalid.
-  if (res.status === 401 && !init._retried && !path.endsWith('/auth/refresh')) {
+  //
+  // /auth/refresh is excluded because refreshing inside a refresh is nonsense.
+  // /auth/logout is excluded because logout IS the session-expiry pathway:
+  // if the server 401s the logout (stale/revoked token) we should treat it as
+  // "already logged out", NOT chase a refresh and dispatch session-expired —
+  // the listener re-enters logout and creates an infinite dispatch loop.
+  if (res.status === 401
+      && !init._retried
+      && !path.endsWith('/auth/refresh')
+      && !path.endsWith('/auth/logout')) {
     const refreshed = await tryRefresh()
     if (!refreshed) {
       window.dispatchEvent(new CustomEvent('resumark:session-expired'))

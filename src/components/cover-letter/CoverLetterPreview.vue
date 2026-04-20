@@ -5,12 +5,12 @@
 </script>
 
 <template>
-  <!-- A4 at 96dpi: 794 × 1123px. Inline styles only for PDF fidelity. -->
+  <!-- A4 at 96dpi: 794 × 1122px (floor of 297mm × 96/25.4). Inline styles only for PDF fidelity. -->
   <article
     id="cover-letter-preview"
     style="
       width: 794px;
-      min-height: 1123px;
+      min-height: 1122px;
       background: #ffffff;
       font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
       color: #1a1a2e;

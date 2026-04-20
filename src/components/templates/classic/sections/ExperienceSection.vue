@@ -26,7 +26,7 @@
         <div>
           <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ exp.position }}</p>
           <p style="font-size: 10.5px; color: #4b5563; margin: 1px 0 0 0;">
-            {{ exp.company }}<span v-if="exp.location"> · {{ exp.location }}</span>
+            {{ exp.company }}<span v-if="exp.location"> | {{ exp.location }}</span>
           </p>
         </div>
         <p style="font-size: 10px; color: #6b7280; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
@@ -51,7 +51,7 @@
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.10em;
+    letter-spacing: 0.04em;
     color: #111827;
     border-bottom: 1.5px solid #d1d5db;
     padding-bottom: 3px;
