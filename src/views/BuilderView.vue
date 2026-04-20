@@ -252,7 +252,7 @@
                 :style="{
                   transform: `scale(${previewScale})`,
                   transformOrigin: 'top center',
-                  height: `${1123 * previewScale}px`,
+                  height: `${1122 * previewScale}px`,
                   width: `${794 * previewScale}px`,
                   flexShrink: '0',
                 }"

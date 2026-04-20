@@ -144,17 +144,32 @@ export const useUserStore = defineStore('user', () => {
 
   // ── Logout ────────────────────────────────────────────────────────────────
 
+  /**
+   * Local-only session teardown. No network call. Safe to call from the
+   * `resumark:session-expired` listener where the server has ALREADY told us
+   * the session is gone — calling `/auth/logout` again in that path would
+   * just 401 and re-dispatch the event, creating an infinite loop.
+   *
+   * Synchronous so that any code following the call (e.g. `router.push`) can
+   * rely on the storage delegate having been swapped back to LocalStorage
+   * before the next view mounts.
+   */
+  function clearLocalSession(): void {
+    setAccessToken(null)
+    user.value       = null
+    isLoggedIn.value = false
+    isPremium.value  = false
+    _switchToLocalStorage()
+  }
+
   async function logout(): Promise<void> {
     try {
       await apiClient.post('/auth/logout')
     } catch {
-      // Best-effort
+      // Best-effort — a 401 here (stale token) is expected and handled by
+      // apiClient, which no longer dispatches session-expired for /auth/logout.
     } finally {
-      setAccessToken(null)
-      user.value       = null
-      isLoggedIn.value = false
-      isPremium.value  = false
-      _switchToLocalStorage()
+      clearLocalSession()
     }
   }
 
@@ -184,6 +199,7 @@ export const useUserStore = defineStore('user', () => {
     register,
     loginWithCredentials,
     logout,
+    clearLocalSession,
     restoreSession,
     openUpgradeModal,
     closeUpgradeModal,
