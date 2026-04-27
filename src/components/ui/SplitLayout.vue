@@ -148,7 +148,7 @@
         class="hidden md:flex relative flex-none w-[7px] z-20 items-center justify-center cursor-col-resize"
         :style="{
           background: isDragging
-            ? 'rgba(8,145,178,0.18)'
+            ? 'rgba(184,83,42,0.18)'
             : 'var(--drag-handle-bg)',
           transition: 'background 0.15s',
         }"
@@ -160,7 +160,7 @@
         <div
           class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px pointer-events-none"
           :style="{
-            background: isDragging ? 'rgba(8,145,178,0.55)' : 'var(--drag-center-line)',
+            background: isDragging ? 'rgba(184,83,42,0.55)' : 'var(--drag-center-line)',
             transition: 'background 0.15s',
           }"
         />
@@ -176,12 +176,12 @@
             v-for="i in 5"
             :key="i"
             class="w-[3px] h-[3px] rounded-full"
-            :style="{ background: isDragging ? '#0891B2' : '#94A3B8' }"
+            :style="{ background: isDragging ? 'var(--accent)' : '#94A3B8' }"
           />
         </div>
         <!-- Hover overlay (CSS group-hover alternative) -->
         <div class="absolute inset-0 opacity-0 hover:opacity-100 pointer-events-none"
-          style="background: rgba(8,145,178,0.08); transition: opacity 0.15s"
+          style="background: rgba(184,83,42,0.08); transition: opacity 0.15s"
         />
       </div>
 

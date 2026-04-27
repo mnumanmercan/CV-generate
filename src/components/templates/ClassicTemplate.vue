@@ -56,7 +56,7 @@
       <p
         :style="{
           fontSize: '12px', fontWeight: '600',
-          color: cvData.personal.jobTitle ? '#4f46e5' : '#c4b5fd',
+          color: cvData.personal.jobTitle ? '#B8532A' : '#D5916F',
           margin: '0 0 6px 0'
         }"
       >

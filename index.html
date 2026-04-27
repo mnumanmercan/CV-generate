@@ -32,19 +32,34 @@
       content="Create ATS-compliant professional resumes in minutes."
     />
 
-    <!-- Google Fonts: DM Sans (UI) + Inter (CV preview) + JetBrains Mono (labels) -->
+    <!-- Google Fonts:
+         - Instrument Serif (roman + italic) — display headings
+         - DM Sans (UI) with italic + optical sizing
+         - Inter (CV preview, locked by PDF pipeline)
+         - JetBrains Mono (eyebrows + metadata) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
   </head>
-  <!-- Anti-flash: apply saved theme class before Vue mounts so there's no white flash -->
+  <!-- Anti-flash: apply saved theme class before Vue mounts so there's no white flash.
+       Reads the v2 key (`resumark-theme`) first, falls back to the legacy v1 key
+       (`cv-generate-theme`) and migrates it so subsequent toggles use the new key. -->
   <script>
     ;(function () {
       try {
-        var saved = localStorage.getItem('cv-generate-theme')
+        var NEW_KEY = 'resumark-theme'
+        var LEGACY_KEY = 'cv-generate-theme'
+        var saved = localStorage.getItem(NEW_KEY)
+        if (!saved) {
+          var legacy = localStorage.getItem(LEGACY_KEY)
+          if (legacy) {
+            saved = legacy
+            localStorage.setItem(NEW_KEY, legacy)
+          }
+        }
         var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
         var isDark = saved ? saved === 'dark' : prefersDark
         if (isDark) document.documentElement.classList.add('dark')

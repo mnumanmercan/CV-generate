@@ -71,7 +71,7 @@
         <span v-if="cvData.personal.location">{{ cvData.personal.location }}</span>
         <template v-for="(link, i) in socialLinks" :key="link.label">
           <span v-if="cvData.personal.location || i > 0" style="margin: 0 7px; color: #cbd5e1;">|</span>
-          <a :href="link.href" target="_blank" rel="noopener noreferrer" style="color: #0891b2; text-decoration: none;">
+          <a :href="link.href" target="_blank" rel="noopener noreferrer" style="color: #B8532A; text-decoration: none;">
             <span style="color: #94a3b8;">{{ link.prefix }}</span>{{ link.value }}
           </a>
         </template>

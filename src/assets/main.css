@@ -2,160 +2,137 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Light theme (default) ──────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────
+   Resumark v2 — Paper & Ink
+   -------------------------------------------------------------------
+   Design language: warm newsprint paper, near-black ink, single sienna
+   accent. Editorial voice. No gradients beyond faint paper noise.
+   No emoji. Typography-first — Instrument Serif display + DM Sans +
+   JetBrains Mono eyebrows.
+   ───────────────────────────────────────────────────────────────────── */
+
+/* ─── Light theme (default) ──────────────────────────────────────────── */
 :root {
-  /* Backgrounds */
-  --bg-shell: #f1f5f9;
-  --bg-surface: #ffffff;
+  /* Paper + card + ink */
+  --paper:       #F6F2EA;  /* page background (warm cream)               */
+  --paper-2:     #EFEADF;  /* subtle section tint                        */
+  --card:        #FCF8F0;  /* surface / card bg                          */
+  --ink:         #12110F;  /* near-black primary text                    */
+  --ink-2:       #2A2824;  /* secondary headings                         */
+  --muted:       #6B645A;  /* body copy / supporting text                */
+  --rule:        rgba(0, 0, 0, 0.10);   /* hairline dividers + borders   */
+  --rule-strong: rgba(0, 0, 0, 0.22);
 
-  /* Accent colours (same in both themes) */
-  --accent: #0891B2;
-  --accent-light: #06B6D4;
-  --accent-teal: #0D9488;
-  --accent-emerald: #059669;
+  /* Single accent: sienna */
+  --accent:       #B8532A;
+  --accent-hover: #A2461F;
+  --accent-soft:  #F3D9C4;  /* tint wash (pricing column, pill bg, etc.) */
 
-  /* CV document background — always white */
-  --cv-bg: #ffffff;
+  /* Legacy aliases — existing components reference these. Point them at
+     the new semantic tokens so progressive migration just works. */
+  --bg-shell:        var(--paper);
+  --bg-surface:      var(--card);
+  --text-primary:    var(--ink);
+  --text-secondary:  var(--muted);
+  --header-bg:       rgba(246, 242, 234, 0.88);
+  --preview-bg:      var(--paper-2);
+  --mockup-bg:       var(--card);
+  --mockup-chrome:   var(--paper-2);
+  --input-bg:        var(--card);
+  --input-border:    var(--rule);
+  --scrollbar-thumb: #C9C0AD;
+  --dot-color:       rgba(18, 17, 15, 0.07);
+  --drag-handle-bg:  rgba(0, 0, 0, 0.035);
+  --drag-center-line:rgba(0, 0, 0, 0.10);
+  --overlay-rgb:     18 17 15;          /* ink-tinted overlays in light */
 
-  /* Text */
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-
-  /* A4 dimensions at 96dpi */
-  --a4-width: 794px;
-  --a4-height: 1122px;
-
-  /* Shimmer gradient */
-  --shimmer-from: #0891B2;
-  --shimmer-mid: #06B6D4;
-  --shimmer-to: #0D9488;
-
-  /* Overlay channel: 0 0 0 in light, 255 255 255 in dark.
-     Used for Tailwind overlay/N utilities (border-overlay/5 etc.) */
-  --overlay-rgb: 0 0 0;
-
-  /* Specific one-off colours that inline styles reference */
-  --header-bg: rgba(248, 250, 252, 0.92);
-  --preview-bg: #dde3ea;         /* builder preview panel bg     */
-  --mockup-bg: #f8fafc;          /* homepage product mockup body  */
-  --mockup-chrome: #f1f5f9;      /* homepage browser chrome bar   */
-  --drag-handle-bg: rgba(0, 0, 0, 0.04);
-  --drag-center-line: rgba(0, 0, 0, 0.10);
-
-  /* Form inputs */
-  --input-bg: #ffffff;
-  --input-border: rgba(0, 0, 0, 0.12);
-
-  /* Scrollbar */
-  --scrollbar-thumb: #cbd5e1;
-
-  /* Dot-grid dot colour */
-  --dot-color: rgba(15, 23, 42, 0.10);
-
-  /* Feature-card gradient stops */
-  --fc-from: rgba(8, 145, 178, 0.06);
-  --fc-mid: rgba(255, 255, 255, 0.96);
-  --fc-to: rgba(13, 148, 136, 0.03);
-  --fc-border: rgba(0, 0, 0, 0.07);
-  --fc-hover-from: rgba(8, 145, 178, 0.09);
-  --fc-hover-mid: rgba(255, 255, 255, 1);
-  --fc-hover-to: rgba(13, 148, 136, 0.06);
-  --fc-hover-border: rgba(8, 145, 178, 0.36);
+  /* CV document + A4 dimensions (always paper-white) */
+  --cv-bg:      #FFFFFF;
+  --a4-width:   794px;
+  --a4-height:  1122px;
 }
 
-/* ─── Dark theme ─────────────────────────────────────────────────────────── */
+/* ─── Dark theme ─────────────────────────────────────────────────────── */
 .dark {
-  --bg-shell: #070D16;
-  --bg-surface: #0C1523;
-  --text-primary: #E2E8F0;
-  --text-secondary: #94A3B8;
-  --overlay-rgb: 255 255 255;
-  --header-bg: rgba(7, 13, 22, 0.88);
-  --preview-bg: #18181f;
-  --mockup-bg: #0d1117;
-  --mockup-chrome: #0a0e14;
-  --drag-handle-bg: rgba(255, 255, 255, 0.025);
-  --drag-center-line: rgba(255, 255, 255, 0.07);
-  --input-bg: #0C1523;
-  --input-border: rgba(255, 255, 255, 0.08);
-  --scrollbar-thumb: #1a2a3d;
-  --dot-color: rgba(30, 58, 82, 0.19);
-  --fc-from: rgba(8, 145, 178, 0.07);
-  --fc-mid: rgba(12, 21, 35, 0.92);
-  --fc-to: rgba(13, 148, 136, 0.04);
-  --fc-border: rgba(255, 255, 255, 0.06);
-  --fc-hover-from: rgba(8, 145, 178, 0.11);
-  --fc-hover-mid: rgba(12, 21, 35, 0.95);
-  --fc-hover-to: rgba(13, 148, 136, 0.07);
-  --fc-hover-border: rgba(8, 145, 178, 0.38);
+  --paper:       #12110F;
+  --paper-2:     #1A1917;
+  --card:        #1C1B17;
+  --ink:         #F5EFE2;
+  --ink-2:       #DCD6C7;
+  --muted:       #A69F92;
+  --rule:        rgba(255, 255, 255, 0.10);
+  --rule-strong: rgba(255, 255, 255, 0.22);
+
+  --accent:       #D97E4F;              /* warmer sienna — better contrast */
+  --accent-hover: #E19066;
+  --accent-soft:  rgba(217, 126, 79, 0.18);
+
+  --bg-shell:        var(--paper);
+  --bg-surface:      var(--card);
+  --text-primary:    var(--ink);
+  --text-secondary:  var(--muted);
+  --header-bg:       rgba(18, 17, 15, 0.88);
+  --preview-bg:      var(--paper-2);
+  --mockup-bg:       var(--card);
+  --mockup-chrome:   var(--paper-2);
+  --input-bg:        var(--card);
+  --input-border:    var(--rule);
+  --scrollbar-thumb: #3A3632;
+  --dot-color:       rgba(245, 239, 226, 0.06);
+  --drag-handle-bg:  rgba(255, 255, 255, 0.03);
+  --drag-center-line:rgba(255, 255, 255, 0.09);
+  --overlay-rgb:     245 239 226;
 }
 
-/* ─── Smooth theme transition (only active during toggle) ────────────────── */
+/* ─── Theme transition (only active during toggle) ───────────────────── */
 html.theme-transitioning,
 html.theme-transitioning *,
 html.theme-transitioning *::before,
 html.theme-transitioning *::after {
   transition:
     background-color 0.3s ease,
-    border-color 0.3s ease,
-    color 0.3s ease,
-    box-shadow 0.3s ease,
-    opacity 0.3s ease !important;
+    border-color     0.3s ease,
+    color            0.3s ease,
+    box-shadow       0.3s ease,
+    opacity          0.3s ease !important;
   transition-delay: 0s !important;
 }
 
-/* ─── Base reset ──────────────────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* ─── Base reset ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-shell);
-  color: var(--text-primary);
-  font-family: 'DM Sans', sans-serif;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-feature-settings: 'ss01', 'cv11';
   min-height: 100vh;
 }
 
-#app {
-  min-height: 100vh;
-}
+#app { min-height: 100vh; }
 
-/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+/* ─── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar         { width: 6px; height: 6px; }
+::-webkit-scrollbar-track   { background: var(--paper); }
+::-webkit-scrollbar-thumb   { background: var(--scrollbar-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-shell);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
-}
-
-/* ─── Focus ring ─────────────────────────────────────────────────────────── */
+/* ─── Focus ring ─────────────────────────────────────────────────────── */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* ─── Form inputs ────────────────────────────────────────────────────────── */
+/* ─── Form inputs ────────────────────────────────────────────────────── */
 [type='text'],
 [type='email'],
 [type='tel'],
@@ -168,11 +145,9 @@ select {
   border-width: 1px !important;
   border-style: solid !important;
   border-color: var(--input-border) !important;
-  color: var(--text-primary) !important;
+  color: var(--ink) !important;
   border-radius: 8px !important;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 [type='text']:focus,
@@ -184,44 +159,113 @@ select {
 textarea:focus,
 select:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.18) !important;
+  /* color-mix w/ fallback — older Safari falls back to rgba */
+  box-shadow: 0 0 0 3px rgba(184, 83, 42, 0.18) !important;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent) !important;
   outline: none !important;
 }
 
-/* ─── Shimmer button  ───────────────────────────────────────── */
-.shimmer-btn {
-  background: linear-gradient(
-    90deg,
-    var(--shimmer-from) 0%,
-    var(--shimmer-mid) 35%,
-    var(--shimmer-to) 55%,
-    var(--shimmer-from) 100%
-  );
-  background-size: 200% auto;
-  transition: background-position 0.4s ease;
+/* ─── Editorial typography utilities ─────────────────────────────────── */
+
+/* Instrument Serif — applied to display headings via `.font-display` or
+   `font-display` Tailwind utility. */
+.font-display {
+  font-family: 'Instrument Serif', 'Cambria', 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-feature-settings: 'liga', 'dlig';
 }
 
-.shimmer-btn:hover {
-  animation: shimmer 1.6s linear infinite;
+/* The italicised sienna emphasis word inside a display heading.
+   Example:  <span class="font-display">Write your résumé,<br>
+                    <span class="accent-italic">not</span> a template.</span> */
+.accent-italic {
+  font-style: italic;
+  color: var(--accent);
+  font-feature-settings: 'liga', 'dlig';
 }
 
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
+/* Mono eyebrow — uppercase, tracked, small. Sits above every serif hero. */
+.mono-eyebrow {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
 }
 
-/* ─── Section highlight pulse ────────────────────────────────────────────── */
-.section-pulse {
-  animation: pulseBg 1.3s ease;
+/* ─── Surface primitives ─────────────────────────────────────────────── */
+
+.paper-card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
 }
 
-@keyframes pulseBg {
-  0%   { background-color: transparent; }
-  30%  { background-color: rgba(8, 145, 178, 0.18); }
-  100% { background-color: transparent; }
+/* ─── Buttons ────────────────────────────────────────────────────────── */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 10px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.btn-primary:hover {
+  background: var(--ink-2);
+  transform: translateY(-1px);
+}
+.btn-primary:disabled,
+.btn-primary[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-primary:disabled:hover,
+.btn-primary[aria-disabled='true']:hover {
+  background: var(--ink);
+  transform: none;
 }
 
-/* ─── Drag placeholder ───────────────────────────────────────────────────── */
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  background: var(--accent);
+  color: #FFFFFF;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.btn-accent:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
+  color: var(--ink);
+  border-radius: 10px;
+  font-weight: 500;
+  transition: background 0.18s ease;
+}
+.btn-ghost:hover {
+  background: rgba(18, 17, 15, 0.06);
+  background: color-mix(in oklab, var(--ink) 6%, transparent);
+}
+
+/* ─── Drag placeholder ───────────────────────────────────────────────── */
 .drag-over {
   border: 2px dashed var(--accent) !important;
   opacity: 0.6;
@@ -232,7 +276,7 @@ select:focus {
   transform: scale(0.98);
 }
 
-/* ─── Section drag-and-drop (VueDraggable) ───────────────────────────────── */
+/* ─── Section drag-and-drop (VueDraggable) ──────────────────────────── */
 
 /* Original slot while the user is dragging the section */
 .section-chosen {
@@ -240,28 +284,39 @@ select:focus {
   transform: scale(0.99);
   box-shadow: 0 0 0 2px var(--accent);
   border-radius: 12px;
-  /* Include box-shadow so it fades out smoothly on drop instead of snapping off */
+  /* Transitions box-shadow so it fades out smoothly on drop */
   transition: opacity 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
-  /* Promote to compositor layer so the browser animates on the GPU */
   will-change: transform, opacity;
 }
 
 /* The ghost/mirror element that follows the cursor */
 .section-ghost {
   opacity: 0.88;
-  background: var(--bg-surface);
+  background: var(--card);
   border: 2px dashed var(--accent);
   border-radius: 12px;
-  box-shadow: 0 8px 28px rgba(8, 145, 178, 0.22);
+  box-shadow: 0 8px 28px rgba(184, 83, 42, 0.26);
+  box-shadow: 0 8px 28px color-mix(in oklab, var(--accent) 26%, transparent);
   will-change: transform;
 }
 
-/* ─── Stagger reveal (auto-fires on load — used in builder + hero) ───────── */
+/* ─── Section pulse (on re-order / save) ─────────────────────────────── */
+.section-pulse {
+  animation: pulseBg 1.3s ease;
+}
+
+@keyframes pulseBg {
+  0%   { background-color: transparent; }
+  30%  { background-color: rgba(184, 83, 42, 0.14); }
+  30%  { background-color: color-mix(in oklab, var(--accent) 14%, transparent); }
+  100% { background-color: transparent; }
+}
+
+/* ─── Stagger reveal (hero + builder) ────────────────────────────────── */
 .stagger-item {
   opacity: 0;
   animation: slideUp 0.45s ease forwards;
 }
-
 .stagger-item:nth-child(1)  { animation-delay:   0ms; }
 .stagger-item:nth-child(2)  { animation-delay:  55ms; }
 .stagger-item:nth-child(3)  { animation-delay: 110ms; }
@@ -281,12 +336,10 @@ select:focus {
   opacity: 0;
   transform: translateY(18px);
 }
-
 .section-visible .reveal-item {
   animation: slideUp 0.5s ease forwards;
 }
 
-/* Cascade delays for reveal-item children */
 .section-visible .reveal-item:nth-child(1)  { animation-delay:   0ms; }
 .section-visible .reveal-item:nth-child(2)  { animation-delay:  70ms; }
 .section-visible .reveal-item:nth-child(3)  { animation-delay: 140ms; }
@@ -296,71 +349,13 @@ select:focus {
 .section-visible .reveal-item:nth-child(7)  { animation-delay: 420ms; }
 .section-visible .reveal-item:nth-child(8)  { animation-delay: 490ms; }
 
-/* ─── Aurora glow (homepage — mouse-tracking layers) ────────────────────── */
-.aurora-glow {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  transition: opacity 0.6s ease;
-}
-
-/* ─── Aurora ambient layer (autonomous CSS animation) ────────────────────── */
-.aurora-ambient {
-  pointer-events: none;
-  position: absolute;
-  inset: -20%;
-  background:
-    radial-gradient(900px circle at 25% 45%, rgba(8, 145, 178, 0.10) 0%, transparent 68%),
-    radial-gradient(700px circle at 78% 55%, rgba(13, 148, 136, 0.08) 0%, transparent 60%),
-    radial-gradient(500px circle at 55% 80%, rgba(5, 150, 105, 0.06) 0%, transparent 55%);
-  animation: auroraFloat 14s ease-in-out infinite;
-}
-
-/* Reduce aurora opacity in light mode so it doesn't overwhelm the lighter bg */
-:root .aurora-ambient {
-  opacity: 0.55;
-}
-.dark .aurora-ambient {
-  opacity: 1;
-}
-
-@keyframes auroraFloat {
-  0%,  100% { transform: scale(1)    translate(0%,   0%);   }
-  25%        { transform: scale(1.04) translate(1.5%, -1%);  }
-  50%        { transform: scale(1.07) translate(-1%,  1.5%); }
-  75%        { transform: scale(1.03) translate(0.5%, 1%);   }
-}
-
-/* ─── Grid dot pattern (homepage) ───────────────────────────────────────── */
-.dot-grid {
-  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
-  background-size: 28px 28px;
-}
-
-/* ─── Feature card (gradient bg + animated border hover) ────────────────── */
-.feature-card {
-  background: linear-gradient(
-    140deg,
-    var(--fc-from)  0%,
-    var(--fc-mid)  55%,
-    var(--fc-to)  100%
-  );
-  border: 1px solid var(--fc-border);
-  transition:
-    border-color  0.35s ease,
-    box-shadow    0.35s ease,
-    background    0.35s ease;
-}
-
-.feature-card:hover {
-  border-color: var(--fc-hover-border);
-  box-shadow:
-    0 0 28px rgba(8, 145, 178, 0.09),
-    inset 0 0 28px rgba(8, 145, 178, 0.04);
-  background: linear-gradient(
-    140deg,
-    var(--fc-hover-from)  0%,
-    var(--fc-hover-mid)  55%,
-    var(--fc-hover-to)  100%
-  );
+/* ─── Reduced motion ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .stagger-item,
+  .section-visible .reveal-item,
+  .section-pulse {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

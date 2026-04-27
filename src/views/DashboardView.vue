@@ -12,7 +12,7 @@
   })
 
   const userStore = useUserStore()
-  const cvStore = useCVStore()
+  const cvStore   = useCVStore()
   const { cvData } = storeToRefs(cvStore)
   const { status: pdfStatus, exportPDF } = usePDFExport()
 
@@ -45,8 +45,8 @@
 
   const templateLabel = computed(() => {
     const id = cvData.value.meta.templateId
-    if (id === 'classic') return 'Classic'
-    if (id === 'modern') return 'Modern'
+    if (id === 'classic')   return 'Classic'
+    if (id === 'modern')    return 'Modern'
     if (id === 'technical') return 'Technical'
     return 'Classic'
   })
@@ -54,19 +54,19 @@
   /* ── Locked Pro features (Free) ───────────────────────────── */
   const lockedFeatures = [
     {
-      icon: '✍️',
+      glyph: '✎',
       title: 'Cover Letter Generator',
       desc: 'Write targeted cover letters for each application',
       route: '/cover-letter',
     },
     {
-      icon: '☁️',
+      glyph: '◊',
       title: 'Cloud Sync',
       desc: 'Access your CV from any device, anytime',
       route: '/pricing',
     },
     {
-      icon: '📄',
+      glyph: '▦',
       title: 'Multiple CVs',
       desc: 'Create tailored CVs for different roles',
       route: '/pricing',
@@ -75,103 +75,100 @@
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col" style="background: var(--bg-shell)">
+  <div class="min-h-screen flex flex-col" style="background: var(--paper)">
     <AppHeader />
 
-    <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
+    <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-12">
 
       <!-- ── Welcome row ──────────────────────────────────────── -->
-      <div class="flex items-center gap-3 mb-8 stagger-item">
-        <div>
-          <h1 class="text-2xl font-bold text-primary flex items-center gap-2.5">
-            Welcome back, {{ userStore.user?.name ?? 'there' }}
-            <span
-              v-if="userStore.isPremium"
-              class="text-xs font-bold px-2 py-0.5 rounded-full text-white"
-              style="background: linear-gradient(135deg, #0891B2, #0D9488)"
-            >Pro</span>
-          </h1>
-          <p class="text-secondary text-sm mt-0.5">
-            {{ userStore.isPremium ? 'You have full access to all Pro features.' : 'You\'re on the Free plan. Upgrade to unlock more.' }}
-          </p>
-        </div>
+      <div class="mb-10 stagger-item">
+        <p class="mono-eyebrow mb-3">
+          {{ userStore.isPremium ? 'Pro Member' : 'Free Plan' }}
+        </p>
+        <h1
+          class="font-display leading-[1.05] tracking-editorial text-ink mb-2 flex items-baseline flex-wrap gap-x-3"
+          :style="{ fontSize: 'clamp(36px, 5vw, 52px)' }"
+        >
+          <span>Welcome back,</span>
+          <span class="accent-italic">{{ userStore.user?.name?.split(' ')[0] ?? 'there' }}</span>
+          <span class="text-ink">.</span>
+        </h1>
+        <p class="text-muted text-[14.5px] leading-[1.55] max-w-xl">
+          {{ userStore.isPremium
+            ? 'Full access to every Pro feature — cover letters, cloud sync, premium templates, and more.'
+            : 'You\'re on the Free plan. Build, polish, and export — upgrade when you need more.' }}
+        </p>
       </div>
 
       <!-- ══════════════ FREE PLAN ══════════════ -->
       <template v-if="!userStore.isPremium">
 
-        <!-- CV card + quick actions -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 stagger-item">
+        <!-- CV card + Upgrade teaser -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10 stagger-item">
 
           <!-- CV card -->
-          <div
-            class="rounded-2xl border border-overlay/10 p-6"
-            style="background: var(--bg-surface)"
-          >
+          <div class="paper-card p-6">
             <div class="flex items-start justify-between mb-4">
-              <div
-                class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
-                style="background: rgba(8,145,178,0.12)"
+              <span
+                class="font-display text-[26px] leading-none"
+                :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
-              >📄</div>
-              <span class="text-xs text-secondary">{{ lastSavedLabel }}</span>
+              >◉</span>
+              <span class="mono-eyebrow text-[10.5px]">{{ lastSavedLabel }}</span>
             </div>
-            <h2 class="text-base font-semibold text-primary mb-1">
+            <h2 class="font-display text-[22px] leading-[1.15] tracking-editorial text-ink mb-1">
               {{ cvData.personal.fullName || 'Your CV' }}
             </h2>
-            <p class="text-xs text-secondary mb-4">
-              Template: {{ templateLabel }} · {{ completedSections }}/7 sections filled
+            <p class="mono-eyebrow text-[10.5px] mb-5">
+              {{ templateLabel }} · {{ completedSections }}/7 sections filled
             </p>
             <!-- Progress bar -->
-            <div class="h-1.5 rounded-full bg-overlay/10 mb-5 overflow-hidden">
+            <div class="h-[3px] rounded-full mb-6" style="background: rgba(0,0,0,0.08)">
               <div
                 class="h-full rounded-full transition-all duration-500"
-                style="background: linear-gradient(90deg, #0891B2, #0D9488)"
-                :style="{ width: `${Math.round((completedSections / 7) * 100)}%` }"
+                :style="{ width: `${Math.round((completedSections / 7) * 100)}%`, background: 'var(--accent)' }"
               />
             </div>
             <div class="flex gap-2">
               <RouterLink
                 to="/builder"
-                class="flex-1 text-center px-3 py-2 rounded-lg text-sm font-medium border border-overlay/10 text-secondary hover:text-primary hover:border-overlay/20 transition-all"
+                class="btn-ghost flex-1 justify-center text-[13px]"
               >Edit CV</RouterLink>
               <button
                 type="button"
                 :disabled="pdfStatus === 'generating'"
-                class="flex-1 shimmer-btn flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-white text-sm font-medium transition-all disabled:opacity-60"
+                class="btn-primary flex-1 justify-center text-[13px]"
                 @click="exportPDF('cv-preview')"
               >
-                <svg v-if="pdfStatus === 'generating'" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <svg v-if="pdfStatus === 'generating'" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
+                <span v-else aria-hidden="true">↓</span>
                 {{ pdfStatus === 'generating' ? 'Generating…' : 'Download PDF' }}
               </button>
             </div>
           </div>
 
           <!-- Upgrade teaser card -->
-          <div
-            class="rounded-2xl border border-overlay/10 p-6 flex flex-col justify-between"
-            style="background: linear-gradient(135deg, rgba(8,145,178,0.07) 0%, var(--bg-surface) 60%, rgba(13,148,136,0.05) 100%)"
-          >
+          <div class="paper-card p-6 flex flex-col justify-between">
             <div>
-              <div
-                class="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-4 shrink-0"
-                style="background: rgba(8,145,178,0.12)"
+              <span
+                class="font-display text-[26px] leading-none block mb-4"
+                :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
-              >✨</div>
-              <h2 class="text-base font-semibold text-primary mb-1">Upgrade to Pro</h2>
-              <p class="text-xs text-secondary mb-4 leading-relaxed">
-                Cover letters, cloud sync, multiple CVs, premium templates, and profile photo upload — all for $9/month.
+              >✦</span>
+              <p class="mono-eyebrow mb-2">Pro plan</p>
+              <h2 class="font-display text-[22px] leading-[1.15] tracking-editorial text-ink mb-2">
+                More room <span class="accent-italic">to grow</span>.
+              </h2>
+              <p class="text-[13.5px] text-muted mb-5 leading-[1.55]">
+                Cover letters, cloud sync, multiple CVs, premium templates, and profile photo upload — for $9 a month.
               </p>
             </div>
-            <RouterLink
-              to="/pricing"
-              class="shimmer-btn flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-white text-sm font-semibold transition-all"
-            >
-              View Pro Plans
-              <svg class="w-3.5 h-3.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <RouterLink to="/pricing" class="btn-primary justify-center text-[13px]">
+              View Pro plans
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
               </svg>
             </RouterLink>
@@ -180,29 +177,32 @@
 
         <!-- Locked Pro features -->
         <div class="stagger-item">
-          <h2 class="text-sm font-semibold text-secondary uppercase tracking-wider mb-3">Unlock with Pro</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <p class="mono-eyebrow mb-4">Unlock with Pro</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
               v-for="feat in lockedFeatures"
               :key="feat.title"
-              class="feature-card rounded-xl p-4 flex flex-col gap-3"
+              class="paper-card p-5 flex flex-col gap-3"
             >
-              <div
-                class="w-9 h-9 rounded-lg flex items-center justify-center text-base shrink-0"
-                style="background: rgba(8,145,178,0.10)"
+              <span
+                class="font-display text-[24px] leading-none"
+                :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
-              >{{ feat.icon }}</div>
+              >{{ feat.glyph }}</span>
               <div>
-                <div class="flex items-center gap-1.5 mb-0.5">
-                  <h3 class="text-sm font-semibold text-primary">{{ feat.title }}</h3>
-                  <span class="text-[9px] font-bold px-1.5 py-px rounded-full text-white leading-none" style="background: linear-gradient(135deg, #0891B2, #0D9488)">Pro</span>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <h3 class="font-display text-[17px] leading-tight text-ink">{{ feat.title }}</h3>
+                  <span
+                    class="mono-eyebrow text-[9px] px-1.5 py-px rounded-full text-white leading-none"
+                    :style="{ background: 'var(--accent)' }"
+                  >Pro</span>
                 </div>
-                <p class="text-xs text-secondary">{{ feat.desc }}</p>
+                <p class="text-[13px] text-muted leading-[1.55]">{{ feat.desc }}</p>
               </div>
               <RouterLink
                 :to="feat.route"
-                class="mt-auto text-xs font-semibold transition-colors hover:opacity-80"
-                style="color: var(--accent)"
+                class="mt-auto mono-eyebrow text-[10.5px] transition-colors hover:opacity-80"
+                :style="{ color: 'var(--accent)' }"
               >Upgrade to unlock →</RouterLink>
             </div>
           </div>
@@ -214,76 +214,71 @@
       <template v-else>
 
         <!-- Two main cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 stagger-item">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10 stagger-item">
 
           <!-- CV card -->
-          <div
-            class="rounded-2xl border border-overlay/10 p-6"
-            style="background: var(--bg-surface)"
-          >
+          <div class="paper-card p-6">
             <div class="flex items-start justify-between mb-4">
-              <div
-                class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
-                style="background: rgba(8,145,178,0.12)"
+              <span
+                class="font-display text-[26px] leading-none"
+                :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
-              >📄</div>
-              <span class="text-xs text-secondary">{{ lastSavedLabel }}</span>
+              >◉</span>
+              <span class="mono-eyebrow text-[10.5px]">{{ lastSavedLabel }}</span>
             </div>
-            <h2 class="text-base font-semibold text-primary mb-1">
+            <h2 class="font-display text-[22px] leading-[1.15] tracking-editorial text-ink mb-1">
               {{ cvData.personal.fullName || 'Your CV' }}
             </h2>
-            <p class="text-xs text-secondary mb-4">
-              Template: {{ templateLabel }} · {{ completedSections }}/7 sections filled
+            <p class="mono-eyebrow text-[10.5px] mb-5">
+              {{ templateLabel }} · {{ completedSections }}/7 sections filled
             </p>
-            <div class="h-1.5 rounded-full bg-overlay/10 mb-5 overflow-hidden">
+            <div class="h-[3px] rounded-full mb-6" style="background: rgba(0,0,0,0.08)">
               <div
                 class="h-full rounded-full transition-all duration-500"
-                style="background: linear-gradient(90deg, #0891B2, #0D9488)"
-                :style="{ width: `${Math.round((completedSections / 7) * 100)}%` }"
+                :style="{ width: `${Math.round((completedSections / 7) * 100)}%`, background: 'var(--accent)' }"
               />
             </div>
             <div class="flex gap-2">
               <RouterLink
                 to="/builder"
-                class="flex-1 text-center px-3 py-2 rounded-lg text-sm font-medium border border-overlay/10 text-secondary hover:text-primary hover:border-overlay/20 transition-all"
+                class="btn-ghost flex-1 justify-center text-[13px]"
               >Edit CV</RouterLink>
               <button
                 type="button"
                 :disabled="pdfStatus === 'generating'"
-                class="flex-1 shimmer-btn flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-white text-sm font-medium transition-all disabled:opacity-60"
+                class="btn-primary flex-1 justify-center text-[13px]"
                 @click="exportPDF('cv-preview')"
               >
-                <svg v-if="pdfStatus === 'generating'" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <svg v-if="pdfStatus === 'generating'" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
+                <span v-else aria-hidden="true">↓</span>
                 {{ pdfStatus === 'generating' ? 'Generating…' : 'Download PDF' }}
               </button>
             </div>
           </div>
 
           <!-- Cover Letter card -->
-          <div
-            class="rounded-2xl border border-overlay/10 p-6 flex flex-col justify-between"
-            style="background: linear-gradient(135deg, rgba(8,145,178,0.07) 0%, var(--bg-surface) 60%, rgba(13,148,136,0.05) 100%)"
-          >
+          <div class="paper-card p-6 flex flex-col justify-between">
             <div>
-              <div
-                class="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-4 shrink-0"
-                style="background: rgba(8,145,178,0.12)"
+              <span
+                class="font-display text-[26px] leading-none block mb-4"
+                :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
-              >✍️</div>
-              <h2 class="text-base font-semibold text-primary mb-1">Cover Letter</h2>
-              <p class="text-xs text-secondary mb-4 leading-relaxed">
-                Craft a tailored cover letter that matches your CV and stands out to hiring managers.
+              >✎</span>
+              <p class="mono-eyebrow mb-2">Cover letter</p>
+              <h2 class="font-display text-[22px] leading-[1.15] tracking-editorial text-ink mb-2">
+                A second page<br />
+                for the <span class="accent-italic">why</span>.
+              </h2>
+              <p class="text-[13.5px] text-muted mb-5 leading-[1.55]">
+                Tailor a letter that matches your CV — same fonts, same tone, same paper.
               </p>
             </div>
-            <RouterLink
-              to="/cover-letter"
-              class="shimmer-btn flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-white text-sm font-semibold transition-all"
-            >
+            <RouterLink to="/cover-letter" class="btn-primary justify-center text-[13px]">
               Open Cover Letter
-              <svg class="w-3.5 h-3.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
               </svg>
             </RouterLink>
@@ -292,20 +287,19 @@
 
         <!-- Stats row -->
         <div class="stagger-item">
-          <h2 class="text-sm font-semibold text-secondary uppercase tracking-wider mb-3">Your Stats</h2>
-          <div class="grid grid-cols-3 gap-3">
+          <p class="mono-eyebrow mb-4">Your stats</p>
+          <div class="grid grid-cols-3 gap-4">
             <div
               v-for="stat in [
-                { label: 'CVs Created', value: '1' },
-                { label: 'Cover Letters', value: '—' },
-                { label: 'PDF Downloads', value: '—' },
+                { label: 'CVs Created',    value: '1' },
+                { label: 'Cover Letters',  value: '—' },
+                { label: 'PDF Downloads',  value: '—' },
               ]"
               :key="stat.label"
-              class="rounded-xl border border-overlay/10 px-5 py-4 text-center"
-              style="background: var(--bg-surface)"
+              class="paper-card px-5 py-5 text-center"
             >
-              <p class="text-2xl font-bold text-primary mb-0.5">{{ stat.value }}</p>
-              <p class="text-xs text-secondary">{{ stat.label }}</p>
+              <p class="font-display text-[36px] leading-none tracking-editorial text-ink mb-1.5">{{ stat.value }}</p>
+              <p class="mono-eyebrow text-[10.5px]">{{ stat.label }}</p>
             </div>
           </div>
         </div>

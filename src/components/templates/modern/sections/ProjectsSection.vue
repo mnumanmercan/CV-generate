@@ -30,7 +30,7 @@
           target="_blank"
           rel="noopener noreferrer"
           :title="project.link"
-          style="display: inline-flex; align-items: center; flex-shrink: 0; color: #0891b2; text-decoration: none; line-height: 1;"
+          style="display: inline-flex; align-items: center; flex-shrink: 0; color: #B8532A; text-decoration: none; line-height: 1;"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
@@ -60,7 +60,7 @@
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: #94a3b8;
-    border-left: 3px solid #0891b2;
+    border-left: 3px solid #B8532A;
     padding-left: 8px;
     margin: 0 0 8px 0;
     line-height: 1.4;
@@ -69,8 +69,8 @@
   .skill-chip {
     display: inline-block;
     font-size: 9.5px;
-    background: #e0f2fe;
-    color: #0369a1;
+    background: #FBE9DC;
+    color: #8B3D1A;
     border-radius: 3px;
     padding: 1px 6px;
   }

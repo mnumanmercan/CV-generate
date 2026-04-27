@@ -46,7 +46,7 @@
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: #94a3b8;
-    border-left: 3px solid #0891b2;
+    border-left: 3px solid #B8532A;
     padding-left: 8px;
     margin: 0 0 8px 0;
     line-height: 1.4;
@@ -55,8 +55,8 @@
   .skill-chip {
     display: inline-block;
     font-size: 9.5px;
-    background: #e0f2fe;
-    color: #0369a1;
+    background: #FBE9DC;
+    color: #8B3D1A;
     border-radius: 3px;
     padding: 1px 6px;
   }
