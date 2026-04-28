@@ -1,7 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-const STORAGE_KEY = 'cv-generate-theme'
+// v2 key. The legacy `cv-generate-theme` is migrated by the anti-flash script
+// in index.html on first load after upgrade, so this store reads/writes the new
+// key exclusively and never has to race with the migration itself.
+const STORAGE_KEY = 'resumark-theme'
 const TRANSITION_DURATION_MS = 350
 
 export const useThemeStore = defineStore('theme', () => {

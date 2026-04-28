@@ -30,7 +30,7 @@
           target="_blank"
           rel="noopener noreferrer"
           :title="project.link"
-          style="display: inline-flex; align-items: center; flex-shrink: 0; color: #4f46e5; text-decoration: none; line-height: 1;"
+          style="display: inline-flex; align-items: center; flex-shrink: 0; color: #B8532A; text-decoration: none; line-height: 1;"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
@@ -52,7 +52,7 @@
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.10em;
+    letter-spacing: 0.04em;
     color: #111827;
     border-bottom: 1.5px solid #d1d5db;
     padding-bottom: 3px;

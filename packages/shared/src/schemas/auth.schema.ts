@@ -9,6 +9,10 @@ export const RegisterSchema = z.object({
 export const LoginSchema = z.object({
   email:    z.string().email().max(254).toLowerCase(),
   password: z.string().min(1).max(128),
+  // When true, the refresh cookie + DB token are extended from the default
+  // 7 days to 30 days. Opt-in per request (not a server-side default) so
+  // a shared/public machine defaults to the short TTL.
+  rememberMe: z.boolean().optional(),
 })
 
 export const ForgotPasswordSchema = z.object({

@@ -4,13 +4,11 @@ import {
   type CVData,
   type SectionKey,
   createEmptyCVData,
-  DRAGGABLE_SECTION_KEYS,
   CURRENT_VERSION,
   migrateCVData,
 } from '@/types/cv.types'
 import { localStorageService } from '@/services/storageService'
 import {
-  AUTOSAVE_DEBOUNCE_MS,
   SAVE_INDICATOR_MS,
   SECTION_HIGHLIGHT_MS,
 } from '@/constants/timing'
@@ -57,6 +55,12 @@ export const useCVStore = defineStore('cv', () => {
     () =>
       cvData.value.certifications.length > 0 &&
       cvData.value.certifications.every((c) => c.name.trim()),
+  )
+
+  const isLanguagesComplete = computed(
+    () =>
+      cvData.value.languages.length > 0 &&
+      cvData.value.languages.every((l) => l.name.trim()),
   )
 
   async function loadFromStorage(): Promise<void> {
@@ -144,6 +148,7 @@ export const useCVStore = defineStore('cv', () => {
     isSkillsComplete,
     isProjectsComplete,
     isCertificationsComplete,
+    isLanguagesComplete,
     loadFromStorage,
     saveToStorage,
     setActiveSection,

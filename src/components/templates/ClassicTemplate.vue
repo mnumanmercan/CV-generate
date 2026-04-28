@@ -6,6 +6,7 @@
   import SkillsSection from './classic/sections/SkillsSection.vue'
   import ProjectsSection from './classic/sections/ProjectsSection.vue'
   import CertificationsSection from './classic/sections/CertificationsSection.vue'
+  import LanguagesSection from './classic/sections/LanguagesSection.vue'
 
   const props = defineProps<{
     cvData: CVData
@@ -19,6 +20,7 @@
     skills: SkillsSection,
     projects: ProjectsSection,
     certifications: CertificationsSection,
+    languages: LanguagesSection,
   }
 
   const orderedSections = computed(() =>
@@ -36,7 +38,8 @@
 </script>
 
 <template>
-  <div style="padding: 40px 44px; box-sizing: border-box;">
+  <!-- 48px 52px ≈ 12.7mm 13.7mm margins — ATS resume guides recommend ≥0.5in (~13mm). -->
+  <div style="padding: 48px 52px; box-sizing: border-box;">
 
     <!-- ── Personal Info ─────────────────────────────────────────── -->
     <header
@@ -55,7 +58,7 @@
       <p
         :style="{
           fontSize: '12px', fontWeight: '600',
-          color: cvData.personal.jobTitle ? '#4f46e5' : '#c4b5fd',
+          color: cvData.personal.jobTitle ? '#B8532A' : '#D5916F',
           margin: '0 0 6px 0'
         }"
       >
@@ -63,12 +66,12 @@
       </p>
       <div style="display: flex; flex-wrap: wrap; gap: 0; font-size: 10px; color: #4b5563;">
         <span v-if="cvData.personal.email">{{ cvData.personal.email }}</span>
-        <span v-if="cvData.personal.email && (cvData.personal.phone || cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">·</span>
+        <span v-if="cvData.personal.email && (cvData.personal.phone || cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">|</span>
         <span v-if="cvData.personal.phone">{{ cvData.personal.phone }}</span>
-        <span v-if="cvData.personal.phone && (cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">·</span>
+        <span v-if="cvData.personal.phone && (cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">|</span>
         <span v-if="cvData.personal.location">{{ cvData.personal.location }}</span>
         <template v-for="(link, i) in socialLinks" :key="link.label">
-          <span v-if="cvData.personal.location || i > 0" style="margin: 0 8px;">·</span>
+          <span v-if="cvData.personal.location || i > 0" style="margin: 0 8px;">|</span>
           <a :href="link.href" target="_blank" rel="noopener noreferrer" style="color: #4b5563; text-decoration: none;">{{ link.value }}</a>
         </template>
       </div>
@@ -103,7 +106,10 @@
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.10em;
+    /* 0.04em — tight enough to preserve the all-caps "section heading" feel
+       without tripping OCR tokenizers that read wide letter-spacing as
+       "S K I L L S" (the old 0.10em frequently broke this on ATS scans). */
+    letter-spacing: 0.04em;
     color: #111827;
     border-bottom: 1.5px solid #d1d5db;
     padding-bottom: 3px;

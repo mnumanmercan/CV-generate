@@ -26,7 +26,7 @@
         <div>
           <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ edu.institution }}</p>
           <p style="font-size: 10.5px; color: #4b5563; margin: 1px 0 0 0;">
-            {{ edu.degree }} in {{ edu.field }}<span v-if="edu.gpa"> · GPA: {{ edu.gpa }}</span>
+            {{ edu.degree }} in {{ edu.field }}<span v-if="edu.gpa"> | GPA: {{ edu.gpa }}</span>
           </p>
         </div>
         <p style="font-size: 10px; color: #6b7280; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
@@ -42,7 +42,7 @@
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.10em;
+    letter-spacing: 0.04em;
     color: #111827;
     border-bottom: 1.5px solid #d1d5db;
     padding-bottom: 3px;

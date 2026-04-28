@@ -40,7 +40,8 @@
     Rules that ensure PDF === preview:
     - Width is fixed at 794px (A4 at 96 dpi). NO overflow-hidden — clipping
       causes silent content loss in both preview and PDF.
-    - min-height: 1123px so an empty CV shows as A4 proportions.
+    - min-height: 1122px so an empty CV shows as A4 proportions.
+      (1122 = floor(297 mm × 96/25.4) — jsPDF's own CSS-px conversion.)
     - No CSS transform on this element or any ancestor at export time
       (usePDFExport neutralizes parent transforms before capture).
     - PDF margin is 0 — internal padding is set per template.
@@ -52,7 +53,7 @@
     aria-label="CV Preview"
     style="
       width: 794px;
-      min-height: 1123px;
+      min-height: 1122px;
       background: #ffffff;
       font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
       font-size: 11px;

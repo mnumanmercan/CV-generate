@@ -14,10 +14,10 @@
   onMounted(() => window.addEventListener('keydown', onWindowKeydown))
   onUnmounted(() => window.removeEventListener('keydown', onWindowKeydown))
 
-  const email = ref('')
-  const submitted = ref(false)
+  const email        = ref('')
+  const submitted    = ref(false)
   const isSubmitting = ref(false)
-  const emailError = ref('')
+  const emailError   = ref('')
 
   function validateEmail(value: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
@@ -32,7 +32,7 @@
       emailError.value = 'Please enter a valid email address.'
       return
     }
-    emailError.value = ''
+    emailError.value   = ''
     isSubmitting.value = true
     try {
       await apiClient.post('/waitlist', {
@@ -51,8 +51,8 @@
     userStore.closeUpgradeModal()
     // Reset state for next open
     setTimeout(() => {
-      email.value = ''
-      submitted.value = false
+      email.value      = ''
+      submitted.value  = false
       emailError.value = ''
     }, 300)
   }
@@ -76,30 +76,35 @@
     >
       <!-- Backdrop -->
       <div
-        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        aria-hidden="true"
         @click="handleClose"
       />
 
       <!-- Modal card -->
-      <div
-        class="relative z-10 w-full max-w-sm rounded-2xl p-7 shadow-2xl border border-overlay/10"
-        style="background: var(--bg-surface)"
-      >
+      <div class="paper-card relative z-10 w-full max-w-md p-7 shadow-2xl">
+
         <!-- ── Success state ── -->
         <template v-if="submitted">
-          <div class="flex flex-col items-center text-center gap-4">
-            <div class="w-14 h-14 rounded-full bg-emerald-500/15 flex items-center justify-center">
-              <svg class="w-7 h-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
+          <div class="flex flex-col items-center text-center gap-5">
+            <span
+              class="font-display leading-none"
+              :style="{ fontSize: '52px', color: 'var(--accent)' }"
+              aria-hidden="true"
+            >✓</span>
             <div>
-              <h2 class="text-lg font-semibold text-primary mb-1">You're on the list!</h2>
-              <p class="text-sm text-secondary">We'll let you know the moment Pro launches. Thanks for your interest.</p>
+              <p class="mono-eyebrow mb-2">You're on the list</p>
+              <h2 class="font-display leading-tight tracking-editorial text-ink mb-2"
+                  style="font-size: 28px">
+                See you <span class="accent-italic">soon</span>.
+              </h2>
+              <p class="text-[13.5px] text-muted leading-[1.55]">
+                We'll let you know the moment Pro launches. Thanks for your interest.
+              </p>
             </div>
             <button
               type="button"
-              class="w-full py-2.5 rounded-xl border border-overlay/10 text-sm font-medium text-secondary hover:text-primary hover:border-overlay/20 transition-colors"
+              class="btn-ghost w-full justify-center"
               @click="handleClose"
             >
               Close
@@ -109,66 +114,97 @@
 
         <!-- ── Default state ── -->
         <template v-else>
-          <!-- Icon -->
-          <div
-            class="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center mb-5 mx-auto"
-            aria-hidden="true"
-          >
-            <svg class="w-6 h-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
-              />
-            </svg>
+          <div class="flex items-start justify-between gap-3 mb-5">
+            <div>
+              <p class="mono-eyebrow mb-2">Pro feature</p>
+              <h2
+                id="upgrade-modal-title"
+                class="font-display leading-tight tracking-editorial text-ink"
+                style="font-size: 26px"
+              >
+                Coming to <span class="accent-italic">Pro</span>.
+              </h2>
+            </div>
+            <button
+              type="button"
+              class="text-muted hover:text-ink transition-colors shrink-0"
+              aria-label="Close"
+              @click="handleClose"
+            >
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
-          <h2
-            id="upgrade-modal-title"
-            class="text-lg font-semibold text-center text-primary mb-1"
-          >
-            Pro Feature
-          </h2>
-          <p class="text-secondary text-center text-sm mb-6 leading-relaxed">
-            <strong class="text-primary">{{ userStore.upgradeModalTrigger }}</strong> is coming to the
-            Pro plan. Be the first to know when it launches.
+          <p class="text-[13.5px] text-muted mb-6 leading-[1.55]">
+            <span class="text-ink font-medium">{{ userStore.upgradeModalTrigger }}</span> is coming to the Pro plan.
+            Drop your email — we'll let you know the moment it launches.
           </p>
 
+          <!-- Error banner -->
+          <div
+            v-if="emailError"
+            class="mb-4 flex items-start gap-2.5 px-4 py-3 rounded-lg text-[13px]"
+            style="background: rgba(180,39,39,0.06); border: 1px solid rgba(180,39,39,0.18); color: #B42727"
+            role="alert"
+          >
+            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+            {{ emailError }}
+          </div>
+
           <!-- Email waitlist -->
-          <div class="flex flex-col gap-2 mb-4">
-            <input
-              v-model="email"
-              type="email"
-              placeholder="your@email.com"
-              autocomplete="email"
-              class="w-full px-3.5 py-2.5 text-sm rounded-xl"
-              :class="emailError ? 'border-red-500/50' : ''"
-              aria-label="Email address for Pro waitlist"
-              @keydown.enter="handleNotify"
-            />
-            <p v-if="emailError" class="text-xs text-red-400 flex items-center gap-1" role="alert">
-              <span aria-hidden="true">⚠</span> {{ emailError }}
-            </p>
+          <div class="flex flex-col gap-3 mb-5">
+            <div>
+              <label class="mono-eyebrow block mb-1.5" for="upgrade-email">Email address</label>
+              <input
+                id="upgrade-email"
+                v-model="email"
+                type="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                class="w-full px-4 py-2.5 text-sm"
+                aria-label="Email address for Pro waitlist"
+                @keydown.enter="handleNotify"
+              />
+            </div>
             <button
               type="button"
               :disabled="isSubmitting"
-              class="shimmer-btn w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+              class="btn-primary w-full justify-center"
               @click="handleNotify"
             >
-              {{ isSubmitting ? 'Registering…' : 'Notify Me When Pro Launches' }}
+              <svg
+                v-if="isSubmitting"
+                class="w-4 h-4 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {{ isSubmitting ? 'Registering…' : 'Notify me when Pro launches' }}
             </button>
           </div>
 
           <!-- Footer actions -->
-          <div class="flex items-center justify-between pt-3 border-t border-overlay/5">
+          <div class="flex items-center justify-between pt-4 border-t border-overlay/8">
             <button
               type="button"
-              class="text-xs text-secondary hover:text-primary transition-colors"
+              class="mono-eyebrow text-[10.5px] text-muted hover:text-ink transition-colors"
               @click="handleClose"
             >
               Maybe later
             </button>
             <RouterLink
               to="/pricing"
-              class="text-xs text-accent hover:text-accent/80 transition-colors"
+              class="mono-eyebrow text-[10.5px] transition-colors hover:opacity-80"
+              :style="{ color: 'var(--accent)' }"
               @click="handleClose"
             >
               View plans →

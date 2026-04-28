@@ -38,8 +38,17 @@
 </script>
 
 <template>
+  <!--
+    Editorial accordion: rounded card with a hairline rule, paper background.
+    Open state lifts to var(--card) so the focused section stands out without
+    needing a separate accent — the paper-and-ink palette does the work.
+  -->
   <div
-    :class="['border border-overlay/5 rounded-xl overflow-hidden mb-3', staggerDone ? 'opacity-100' : 'stagger-item']"
+    :class="[
+      'border border-overlay/8 rounded-xl overflow-hidden mb-3 transition-colors',
+      isOpen ? 'bg-card' : '',
+      staggerDone ? 'opacity-100' : 'stagger-item',
+    ]"
     :style="staggerDone ? undefined : { animationDelay: `${stepIndex * 60}ms` }"
   >
     <!-- Section header / toggle -->
@@ -54,7 +63,7 @@
         <!-- Drag handle — only for draggable sections -->
         <span
           v-if="draggable"
-          class="drag-handle shrink-0 cursor-grab active:cursor-grabbing text-secondary hover:text-primary transition-colors"
+          class="drag-handle shrink-0 cursor-grab active:cursor-grabbing text-muted hover:text-ink transition-colors"
           role="img"
           aria-label="Drag to reorder"
           @click.stop
@@ -69,28 +78,45 @@
           </svg>
         </span>
 
-        <!-- Step indicator -->
+        <!--
+          Step indicator. Three states, three palette tiers:
+            ✓ completed → sienna fill (the only celebratory mark)
+            • open      → ink fill, paper text (current focus)
+            · closed    → soft overlay, muted text (idle)
+        -->
         <div
           :class="[
             'w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 transition-all',
             completed
-              ? 'bg-emerald-500 text-white'
+              ? 'text-white'
               : isOpen
-                ? 'bg-accent text-white'
-                : 'bg-overlay/10 text-secondary',
+                ? 'text-paper'
+                : 'text-muted',
           ]"
+          :style="completed
+            ? { background: 'var(--accent)' }
+            : isOpen
+              ? { background: 'var(--ink)' }
+              : { background: 'rgba(0,0,0,0.06)' }"
           aria-hidden="true"
         >
           <span v-if="completed">✓</span>
           <span v-else>{{ stepIndex + 1 }}</span>
         </div>
 
-        <!-- Icon + Title -->
-        <span v-if="icon" class="text-base" aria-hidden="true">{{ icon }}</span>
+        <!-- Decorative editorial glyph (◉ § ▦ ◊ ✦ ⎔ √) -->
+        <span
+          v-if="icon"
+          class="font-display text-[19px] leading-none shrink-0"
+          :style="{ color: 'var(--accent)' }"
+          aria-hidden="true"
+        >{{ icon }}</span>
+
+        <!-- Title -->
         <span
           :class="[
-            'text-sm font-semibold transition-colors',
-            isOpen ? 'text-primary' : 'text-secondary group-hover:text-primary',
+            'text-[14px] font-medium transition-colors',
+            isOpen ? 'text-ink' : 'text-muted group-hover:text-ink',
           ]"
         >
           {{ title }}
@@ -99,7 +125,10 @@
 
       <!-- Chevron -->
       <svg
-        :class="['w-4 h-4 text-secondary transition-transform duration-200', isOpen ? 'rotate-180' : '']"
+        :class="[
+          'w-4 h-4 transition-transform duration-200',
+          isOpen ? 'rotate-180 text-ink' : 'text-muted',
+        ]"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -121,7 +150,7 @@
       <div
         v-show="isOpen"
         :id="`section-content-${title.replace(/\s+/g, '-').toLowerCase()}`"
-        class="px-4 pb-4 pt-1"
+        class="px-4 pb-4 pt-2 border-t border-overlay/8"
       >
         <slot />
       </div>

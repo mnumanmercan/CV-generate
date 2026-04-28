@@ -5,12 +5,12 @@
 </script>
 
 <template>
-  <!-- A4 at 96dpi: 794 × 1123px. Inline styles only for PDF fidelity. -->
+  <!-- A4 at 96dpi: 794 × 1122px (floor of 297mm × 96/25.4). Inline styles only for PDF fidelity. -->
   <article
     id="cover-letter-preview"
     style="
       width: 794px;
-      min-height: 1123px;
+      min-height: 1122px;
       background: #ffffff;
       font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
       color: #1a1a2e;
@@ -21,7 +21,7 @@
     "
   >
     <!-- ── Sender header ────────────────────────────────────── -->
-    <header style="margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #0891B2;">
+    <header style="margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #B8532A;">
       <p
         style="
           font-size: 22px;
@@ -107,11 +107,11 @@
         opacity: 0.25;
       "
     >
-      <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#0891B2">
+      <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#B8532A">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <p style="font-size: 14px; color: #0891B2; margin-top: 12px; text-align: center;">
+      <p style="font-size: 14px; color: #B8532A; margin-top: 12px; text-align: center;">
         Fill in the form to see your cover letter
       </p>
     </div>

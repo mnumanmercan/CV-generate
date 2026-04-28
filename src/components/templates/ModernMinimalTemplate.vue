@@ -6,6 +6,7 @@
   import SkillsSection from './modern/sections/SkillsSection.vue'
   import ProjectsSection from './modern/sections/ProjectsSection.vue'
   import CertificationsSection from './modern/sections/CertificationsSection.vue'
+  import LanguagesSection from './modern/sections/LanguagesSection.vue'
 
   const props = defineProps<{
     cvData: CVData
@@ -19,6 +20,7 @@
     skills: SkillsSection,
     projects: ProjectsSection,
     certifications: CertificationsSection,
+    languages: LanguagesSection,
   }
 
   const orderedSections = computed(() =>
@@ -41,7 +43,7 @@
     <!-- ── Personal Info ─────────────────────────────────────────── -->
     <header
       :class="['cv-header', isPulsed('personal') ? 'section-pulse' : '']"
-      style="margin-bottom: 20px; padding-bottom: 14px; border-bottom: 3px solid #0891b2;"
+      style="margin-bottom: 20px; padding-bottom: 14px; border-bottom: 3px solid #B8532A;"
     >
       <h1
         :style="{
@@ -55,7 +57,7 @@
       <p
         :style="{
           fontSize: '12.5px', fontWeight: '600',
-          color: cvData.personal.jobTitle ? '#0891b2' : '#7dd3fc',
+          color: cvData.personal.jobTitle ? '#B8532A' : '#D5916F',
           margin: '0 0 8px 0', letterSpacing: '0.01em'
         }"
       >
@@ -69,7 +71,7 @@
         <span v-if="cvData.personal.location">{{ cvData.personal.location }}</span>
         <template v-for="(link, i) in socialLinks" :key="link.label">
           <span v-if="cvData.personal.location || i > 0" style="margin: 0 8px;">·</span>
-          <a :href="link.href" target="_blank" rel="noopener noreferrer" style="color: #0891b2; text-decoration: none;">{{ link.value }}</a>
+          <a :href="link.href" target="_blank" rel="noopener noreferrer" style="color: #B8532A; text-decoration: none;">{{ link.value }}</a>
         </template>
       </div>
     </header>
@@ -105,7 +107,7 @@
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: #94a3b8;
-    border-left: 3px solid #0891b2;
+    border-left: 3px solid #B8532A;
     padding-left: 8px;
     margin: 0 0 8px 0;
     line-height: 1.4;

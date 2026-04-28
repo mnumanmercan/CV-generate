@@ -2,7 +2,7 @@ import type { CVData } from '@/types/cv.types'
 import type { CoverLetterData } from '@/types/coverLetter.types'
 import type { StorageService } from './storageService'
 import type { CoverLetterStorageService } from './coverLetterStorageService'
-import { apiClient } from './apiClient'
+import { apiClient, ApiError, TimeoutError } from './apiClient'
 
 // ─── Typed storage error ──────────────────────────────────────────────────────
 // Callers can distinguish between error types to show appropriate UI feedback.
@@ -10,24 +10,42 @@ import { apiClient } from './apiClient'
 export type StorageErrorReason = 'not_found' | 'unauthorized' | 'network' | 'unknown'
 
 export class StorageError extends Error {
-  constructor(
-    public readonly reason: StorageErrorReason,
-    message: string,
-  ) {
+  // Plain field instead of the constructor-parameter shorthand because the
+  // app tsconfig enables `erasableSyntaxOnly` (which forbids emitted runtime
+  // assignments from parameter properties).
+  readonly reason: StorageErrorReason
+
+  constructor(reason: StorageErrorReason, message: string) {
     super(message)
-    this.name = 'StorageError'
+    this.reason = reason
+    this.name   = 'StorageError'
   }
 }
 
+/**
+ * Map transport-layer errors to storage-domain reasons.
+ *
+ * Previously this did `err.message.includes('HTTP 404')`, but the backend
+ * returns a typed error envelope (`{ success: false, error: { code, message } }`)
+ * and apiClient now surfaces the human `message` rather than a synthetic
+ * "HTTP 404" string — so the substring match silently failed and everything
+ * got classified as `unknown`. We now discriminate on `ApiError.status`,
+ * which is tamper-proof and language-agnostic.
+ */
 function classifyError(err: unknown): StorageError {
-  if (err instanceof Error) {
-    if (err.message.includes('HTTP 404')) return new StorageError('not_found', err.message)
-    if (err.message.includes('HTTP 401') || err.message.includes('HTTP 403'))
+  if (err instanceof ApiError) {
+    if (err.status === 404) return new StorageError('not_found', err.message)
+    if (err.status === 401 || err.status === 403)
       return new StorageError('unauthorized', err.message)
-    if (err.message.includes('timed out') || err.message.includes('fetch'))
-      return new StorageError('network', err.message)
+    if (err.status >= 500) return new StorageError('network', err.message)
     return new StorageError('unknown', err.message)
   }
+  if (err instanceof TimeoutError) return new StorageError('network', err.message)
+  if (err instanceof TypeError && /fetch/i.test(err.message)) {
+    // fetch() throws TypeError for DNS failures, CORS rejections, etc.
+    return new StorageError('network', err.message)
+  }
+  if (err instanceof Error) return new StorageError('unknown', err.message)
   return new StorageError('unknown', 'An unexpected storage error occurred.')
 }
 

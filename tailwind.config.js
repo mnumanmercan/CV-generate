@@ -5,72 +5,74 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'sans-serif'],
-        cv: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        // Display serif — hero headlines, price numerals, process numerals
+        display: ['"Instrument Serif"', 'Cambria', '"Times New Roman"', 'serif'],
+        // UI sans — body, nav, forms
+        sans:    ['"DM Sans"', 'system-ui', 'sans-serif'],
+        // CV document font (locked — preview + PDF ATS layer depend on this)
+        cv:      ['Inter', 'sans-serif'],
+        // Eyebrows, metadata, mono chips
+        mono:    ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
-        shell: '#070D16',
-        surface: '#0C1523',
+        // Paper-and-ink semantic palette (CSS-var-backed → switches with theme)
+        paper:   'var(--paper)',
+        paper2:  'var(--paper-2)',
+        card:    'var(--card)',
+        ink:     'var(--ink)',
+        ink2:    'var(--ink-2)',
+        muted:   'var(--muted)',
+        rule:    'var(--rule)',
+
+        // Single accent — sienna (light #B8532A, dark #D97E4F)
         accent: {
-          DEFAULT: '#0891B2',   // Cyan-600
-          hover: '#0E7490',     // Cyan-700
-          light: '#06B6D4',     // Cyan-500
-          muted: '#0891B215',
+          DEFAULT: 'var(--accent)',
+          hover:   'var(--accent-hover)',
+          soft:    'var(--accent-soft)',
         },
-        teal: {
-          accent: '#0D9488',
-        },
-        cv: '#FFFFFF',
-        // These reference CSS vars so they switch automatically with the theme.
-        // Light:  primary = #0f172a (slate-900), secondary = #64748b (slate-500)
-        // Dark:   primary = #E2E8F0 (slate-200), secondary = #94A3B8 (slate-400)
-        primary: 'var(--text-primary)',
+
+        // Legacy aliases — preserved during progressive migration so existing
+        // templates and views keep rendering. Remove in Wave 3 cleanup once
+        // every reference has moved to paper/ink/accent.
+        primary:   'var(--text-primary)',
         secondary: 'var(--text-secondary)',
-        shell: 'var(--bg-shell)',
-        surface: 'var(--bg-surface)',
-        // Theme-aware overlay — light: rgb(0 0 0 / N), dark: rgb(255 255 255 / N)
-        // Replaces border-white/N, bg-white/N etc. so they adapt to both themes.
-        overlay: 'rgb(var(--overlay-rgb) / <alpha-value>)',
+        shell:     'var(--bg-shell)',
+        surface:   'var(--bg-surface)',
+        cv:        'var(--cv-bg)',
+        overlay:   'rgb(var(--overlay-rgb) / <alpha-value>)',
+      },
+      letterSpacing: {
+        editorial: '-0.015em',
+        eyebrow:   '0.14em',
       },
       animation: {
-        'fade-in': 'fadeIn 0.4s ease forwards',
-        'slide-up': 'slideUp 0.4s ease forwards',
-        'pulse-section': 'pulseBg 0.6s ease',
-        shimmer: 'shimmer 1.5s infinite',
-        'chip-in': 'chipIn 0.25s ease forwards',
+        'fade-in':      'fadeIn 0.4s ease forwards',
+        'slide-up':     'slideUp 0.4s ease forwards',
+        'pulse-section':'pulseBg 0.6s ease',
+        'chip-in':      'chipIn 0.25s ease forwards',
         'panel-reveal': 'panelReveal 0.5s ease forwards',
-        'float': 'float 6s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
           from: { opacity: '0' },
-          to: { opacity: '1' },
+          to:   { opacity: '1' },
         },
         slideUp: {
           from: { opacity: '0', transform: 'translateY(20px)' },
-          to: { opacity: '1', transform: 'translateY(0)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
         },
         pulseBg: {
-          '0%': { backgroundColor: 'transparent' },
-          '40%': { backgroundColor: '#0891B218' },
+          '0%':   { backgroundColor: 'transparent' },
+          '40%':  { backgroundColor: 'rgba(184, 83, 42, 0.14)' },
           '100%': { backgroundColor: 'transparent' },
-        },
-        shimmer: {
-          '0%': { backgroundPosition: '-200% center' },
-          '100%': { backgroundPosition: '200% center' },
         },
         chipIn: {
           from: { opacity: '0', transform: 'scale(0.8)' },
-          to: { opacity: '1', transform: 'scale(1)' },
+          to:   { opacity: '1', transform: 'scale(1)' },
         },
         panelReveal: {
           from: { opacity: '0', transform: 'translateX(-16px)' },
-          to: { opacity: '1', transform: 'translateX(0)' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
+          to:   { opacity: '1', transform: 'translateX(0)' },
         },
       },
     },

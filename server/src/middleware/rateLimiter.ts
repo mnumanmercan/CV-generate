@@ -1,8 +1,13 @@
-import rateLimit from 'express-rate-limit'
+import rateLimit, { type Options } from 'express-rate-limit'
+import { UpstashRateLimitStore } from './rateLimitStore.js'
+import { isRedisConfigured } from '../config/redis.js'
 
-// Uses the default in-memory store — correct for a single Railway dyno.
-// If you scale to multiple dynos, swap to @upstash/ratelimit (native Upstash SDK).
-// Token blacklisting (the security-critical part) still uses Upstash Redis via REST.
+// When Upstash is configured, counters live in Redis and are shared across
+// all dynos. Otherwise we fall through to express-rate-limit's built-in
+// MemoryStore (per-process) — fine for local dev / single-dyno deploys.
+function makeStore(prefix: string): Options['store'] | undefined {
+  return isRedisConfigured ? new UpstashRateLimitStore(prefix) : undefined
+}
 
 // Strict: auth brute-force protection
 export const authLimiter = rateLimit({
@@ -11,6 +16,7 @@ export const authLimiter = rateLimit({
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many attempts. Please try again in 15 minutes.' } },
   standardHeaders: true,
   legacyHeaders: false,
+  store: makeStore('auth'),
 })
 
 // Strict: password reset — prevent email enumeration
@@ -20,6 +26,7 @@ export const passwordResetLimiter = rateLimit({
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many password reset requests. Please try again in 1 hour.' } },
   standardHeaders: true,
   legacyHeaders: false,
+  store: makeStore('pwreset'),
 })
 
 // Moderate: refresh tokens
@@ -29,6 +36,7 @@ export const refreshLimiter = rateLimit({
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many refresh requests.' } },
   standardHeaders: true,
   legacyHeaders: false,
+  store: makeStore('refresh'),
 })
 
 // Write: auto-save fires frequently but is debounced on the client (500ms)
@@ -38,6 +46,7 @@ export const apiWriteLimiter = rateLimit({
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many save requests. Please slow down.' } },
   standardHeaders: true,
   legacyHeaders: false,
+  store: makeStore('write'),
 })
 
 // Read: general API reads
@@ -47,6 +56,7 @@ export const apiReadLimiter = rateLimit({
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many requests.' } },
   standardHeaders: true,
   legacyHeaders: false,
+  store: makeStore('read'),
 })
 
 // Waitlist: anti-abuse
@@ -56,4 +66,5 @@ export const waitlistLimiter = rateLimit({
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'Already registered. Please check your email.' } },
   standardHeaders: true,
   legacyHeaders: false,
+  store: makeStore('waitlist'),
 })

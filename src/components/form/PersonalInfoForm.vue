@@ -81,7 +81,7 @@
         <span
           v-if="!userStore.canUploadPhoto"
           class="text-[9px] font-bold px-1.5 py-px rounded-full text-white leading-none"
-          style="background: linear-gradient(135deg, #0891B2, #0D9488)"
+          :style="{ background: 'var(--accent)' }"
         >Pro</span>
       </span>
       <button

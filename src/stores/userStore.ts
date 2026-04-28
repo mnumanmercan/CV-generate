@@ -28,6 +28,19 @@ export const useUserStore = defineStore('user', () => {
   const isAuthenticating = ref(false)
   const authError        = ref<string | null>(null)
 
+  /**
+   * True once `restoreSession()` has resolved (regardless of outcome).
+   * Route guards for `requiresAuth` routes should wait on this so the guard
+   * does not redirect a logged-in user to /login just because the session
+   * probe hasn't finished yet.
+   *
+   * `main.ts` fires `restoreSession()` after mount (no top-level await), so
+   * this starts as `false` and flips to `true` as soon as the refresh probe
+   * returns. Public routes (/, /pricing, /login, /register) don't need to
+   * wait — they render immediately.
+   */
+  const isSessionRestored = ref(false)
+
   const showUpgradeModal    = ref(false)
   const upgradeModalTrigger = ref<string>('')
 
@@ -77,13 +90,23 @@ export const useUserStore = defineStore('user', () => {
 
   // ── Login ─────────────────────────────────────────────────────────────────
 
-  async function loginWithCredentials(email: string, password: string): Promise<void> {
+  async function loginWithCredentials(
+    email: string,
+    password: string,
+    rememberMe = false,
+  ): Promise<void> {
     isAuthenticating.value = true
     authError.value        = null
     try {
+      // rememberMe is forwarded to the server which extends the refresh
+      // cookie + DB token from 7 days to 30. We only send the flag when
+      // it's true so the request body stays minimal on the default path.
+      const payload: { email: string; password: string; rememberMe?: boolean } = { email, password }
+      if (rememberMe) payload.rememberMe = true
+
       const data = await apiClient.post<{ accessToken: string; user: MeResponse }>(
         '/auth/login',
-        { email, password },
+        payload,
       )
       setAccessToken(data.accessToken)
       _applyUser(data.user)
@@ -95,7 +118,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // ── Restore session on page load (silent) ─────────────────────────────────
+  // ── Restore session on page load (silent, non-blocking) ──────────────────
 
   async function restoreSession(): Promise<void> {
     try {
@@ -113,22 +136,40 @@ export const useUserStore = defineStore('user', () => {
       _applyUser(me.data)
     } catch {
       // Network error or server down — remain as guest
+    } finally {
+      // Flip regardless of outcome so router guards unblock.
+      isSessionRestored.value = true
     }
   }
 
   // ── Logout ────────────────────────────────────────────────────────────────
 
+  /**
+   * Local-only session teardown. No network call. Safe to call from the
+   * `resumark:session-expired` listener where the server has ALREADY told us
+   * the session is gone — calling `/auth/logout` again in that path would
+   * just 401 and re-dispatch the event, creating an infinite loop.
+   *
+   * Synchronous so that any code following the call (e.g. `router.push`) can
+   * rely on the storage delegate having been swapped back to LocalStorage
+   * before the next view mounts.
+   */
+  function clearLocalSession(): void {
+    setAccessToken(null)
+    user.value       = null
+    isLoggedIn.value = false
+    isPremium.value  = false
+    _switchToLocalStorage()
+  }
+
   async function logout(): Promise<void> {
     try {
       await apiClient.post('/auth/logout')
     } catch {
-      // Best-effort
+      // Best-effort — a 401 here (stale token) is expected and handled by
+      // apiClient, which no longer dispatches session-expired for /auth/logout.
     } finally {
-      setAccessToken(null)
-      user.value       = null
-      isLoggedIn.value = false
-      isPremium.value  = false
-      _switchToLocalStorage()
+      clearLocalSession()
     }
   }
 
@@ -150,6 +191,7 @@ export const useUserStore = defineStore('user', () => {
     isPremium,
     isAuthenticating,
     authError,
+    isSessionRestored,
     showUpgradeModal,
     upgradeModalTrigger,
     canUploadPhoto,
@@ -157,6 +199,7 @@ export const useUserStore = defineStore('user', () => {
     register,
     loginWithCredentials,
     logout,
+    clearLocalSession,
     restoreSession,
     openUpgradeModal,
     closeUpgradeModal,
