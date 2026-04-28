@@ -53,6 +53,18 @@ export interface Certification {
   credentialUrl?: string
 }
 
+/**
+ * A spoken / written language and the user's self-assessed proficiency.
+ * `proficiency` is a free-form string so users can write whatever they like
+ * (e.g. "C1", "Native or bilingual"), but the form offers a dropdown of
+ * common levels to nudge consistent language across CVs.
+ */
+export interface Language {
+  id: string
+  name: string
+  proficiency: string
+}
+
 export interface CVMeta {
   createdAt: string
   updatedAt: string
@@ -69,18 +81,20 @@ export interface CVData {
   skills: Skill[]
   projects: Project[]
   certifications: Certification[]
+  languages: Language[]
   meta: CVMeta
 }
 
 export type SectionKey = keyof Omit<CVData, 'meta'>
 
-/** The 5 sections that participate in drag-to-reorder. Personal and Summary are always static. */
+/** The 6 sections that participate in drag-to-reorder. Personal and Summary are always static. */
 export const DRAGGABLE_SECTION_KEYS: readonly SectionKey[] = [
   'experience',
   'education',
   'skills',
   'projects',
   'certifications',
+  'languages',
 ] as const
 
 export const SECTION_LABELS: Record<SectionKey, string> = {
@@ -91,9 +105,19 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   skills: 'Skills',
   projects: 'Projects',
   certifications: 'Certifications',
+  languages: 'Languages',
 }
 
-export const CURRENT_VERSION = '1.1.0'
+/** Common proficiency levels offered in the form. Free-form input is still allowed. */
+export const LANGUAGE_PROFICIENCY_LEVELS: readonly string[] = [
+  'Native',
+  'Fluent',
+  'Professional',
+  'Conversational',
+  'Basic',
+] as const
+
+export const CURRENT_VERSION = '1.2.0'
 export const DEFAULT_TEMPLATE_ID = 'classic'
 
 /**
@@ -104,6 +128,16 @@ export function migrateCVData(stored: CVData): CVData {
   // v1.0.0 → v1.1.0: populate missing sectionOrder
   if (!stored.meta.sectionOrder || stored.meta.sectionOrder.length === 0) {
     stored.meta.sectionOrder = [...DRAGGABLE_SECTION_KEYS]
+  }
+  // v1.1.0 → v1.2.0: introduce `languages`
+  // Fallback for blobs serialized before the field existed.
+  if (!Array.isArray((stored as Partial<CVData>).languages)) {
+    stored.languages = []
+  }
+  // Append 'languages' to existing sectionOrder if missing, so users who
+  // already had a custom order keep their order with languages added at the end.
+  if (!stored.meta.sectionOrder.includes('languages')) {
+    stored.meta.sectionOrder = [...stored.meta.sectionOrder, 'languages']
   }
   // Stamp with current version so future migrations can gate on it.
   stored.meta.version = CURRENT_VERSION
@@ -130,6 +164,7 @@ export function createEmptyCVData(): CVData {
     skills: [],
     projects: [],
     certifications: [],
+    languages: [],
     meta: {
       createdAt: now,
       updatedAt: now,
@@ -189,5 +224,13 @@ export function createCertification(): Certification {
     date: '',
     credentialId: '',
     credentialUrl: '',
+  }
+}
+
+export function createLanguage(): Language {
+  return {
+    id: crypto.randomUUID(),
+    name: '',
+    proficiency: '',
   }
 }

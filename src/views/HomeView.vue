@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted } from 'vue'
+  import { computed, onMounted } from 'vue'
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import AppFooter from '@/components/ui/AppFooter.vue'
@@ -8,10 +8,88 @@
   import StepCard from '@/components/home/StepCard.vue'
   import TestimonialCard from '@/components/home/TestimonialCard.vue'
   import { useScrollReveal } from '@/composables/useScrollReveal'
+  import { useAutoSave } from '@/composables/useAutoSave'
   import { useCVStore } from '@/stores/cvStore'
+  import { createWorkExperience } from '@/types/cv.types'
 
   const cvStore = useCVStore()
   const { vReveal } = useScrollReveal()
+
+  // Mirror the auto-save loop /builder uses, so edits in HeroMiniDemo
+  // persist with the same debounced, fire-and-forget guarantee.
+  useAutoSave()
+
+  /**
+   * The mini-demo's five fields write straight into cvStore.cvData — the
+   * same Pinia slots the Builder reads from. So a visitor who types here
+   * will:
+   *   • see their input reflected in LiveCV (and persisted to localStorage),
+   *   • find the same data already filled in when they navigate to /builder,
+   *   • see the form pre-filled again the next time they return to the homepage.
+   *
+   * `fullName` writes to personal.fullName; the other four to experience[0].*.
+   *
+   * `ensureExp0()` lazily creates an Experience entry on first edit, and
+   * `pruneEmptyExp0()` removes it again the moment ALL its fields go empty —
+   * so when a visitor types something then clears it, cvData returns to a
+   * genuinely empty state. That's what lets LiveCV's "fully empty → return
+   * sample untouched" short-circuit fire and bring back the default mockup.
+   */
+  function ensureExp0() {
+    if (cvStore.cvData.experience.length === 0) {
+      cvStore.cvData.experience.push(createWorkExperience())
+    }
+    // Non-null asserted: ensureExp0 just guaranteed an entry exists.
+    return cvStore.cvData.experience[0]!
+  }
+
+  function pruneEmptyExp0(): void {
+    const exp = cvStore.cvData.experience[0]
+    if (!exp) return
+    const isEmpty =
+      !exp.position.trim() &&
+      !exp.company.trim() &&
+      !exp.startDate.trim() &&
+      !exp.endDate.trim() &&
+      !(exp.location ?? '').trim() &&
+      exp.bullets.every((b) => !b.trim())
+    if (isEmpty) cvStore.cvData.experience.splice(0, 1)
+  }
+
+  const demoFullName = computed<string>({
+    get: () => cvStore.cvData.personal.fullName,
+    set: (v) => { cvStore.cvData.personal.fullName = v },
+  })
+  const demoRole = computed<string>({
+    get: () => cvStore.cvData.experience[0]?.position ?? '',
+    set: (v) => {
+      ensureExp0().position = v
+      pruneEmptyExp0()
+    },
+  })
+  const demoCompany = computed<string>({
+    get: () => cvStore.cvData.experience[0]?.company ?? '',
+    set: (v) => {
+      ensureExp0().company = v
+      pruneEmptyExp0()
+    },
+  })
+  const demoStarted = computed<string>({
+    get: () => cvStore.cvData.experience[0]?.startDate ?? '',
+    set: (v) => {
+      ensureExp0().startDate = v
+      pruneEmptyExp0()
+    },
+  })
+  const demoHighlight = computed<string>({
+    get: () => cvStore.cvData.experience[0]?.bullets?.[0] ?? '',
+    set: (v) => {
+      const exp = ensureExp0()
+      if (exp.bullets.length === 0) exp.bullets.push(v)
+      else exp.bullets[0] = v
+      pruneEmptyExp0()
+    },
+  })
 
   /**
    * Per-page document title + lazy CV-data load. Loading the store on Home
@@ -123,7 +201,13 @@
 
             <!-- Mini demo -->
             <div class="mt-10 stagger-item" style="animation-delay: 180ms">
-              <HeroMiniDemo />
+              <HeroMiniDemo
+                v-model:full-name="demoFullName"
+                v-model:role="demoRole"
+                v-model:company="demoCompany"
+                v-model:started="demoStarted"
+                v-model:highlight="demoHighlight"
+              />
             </div>
 
             <!-- Foot line -->

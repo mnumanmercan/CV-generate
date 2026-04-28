@@ -1,14 +1,25 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
   import { RouterLink } from 'vue-router'
 
-  // Pre-filled fields hint at the writing experience without forcing the
-  // visitor to fill anything in — the goal is "this is how it feels", not
-  // "let me edit my résumé on the homepage."
-  const role      = ref('Senior Product Designer')
-  const company   = ref('Northwind Studio')
-  const started   = ref('Mar 2022')
-  const highlight = ref('Led the design system migration that cut new-feature design time by 38%.')
+  /**
+   * Two-way bindings for the five mini-demo fields. The parent (HomeView)
+   * owns the state — it pipes these into cvStore.cvData so every keystroke
+   * lands in the user's actual CV and gets auto-saved alongside any work
+   * done in /builder.
+   *
+   * `fullName` writes to cvData.personal.fullName (the headline of the CV).
+   * The other four write to cvData.experience[0].* — the row the visitor
+   * implicitly "edits" when they fill in this demo.
+   *
+   * No defaults: empty fields render their placeholders, which mirror the
+   * canned LiveCV sample text — so a first-time visitor sees hints in greyed
+   * placeholder type without auto-populating their stored CV with sample data.
+   */
+  const fullName  = defineModel<string>('fullName',  { default: '' })
+  const role      = defineModel<string>('role',      { default: '' })
+  const company   = defineModel<string>('company',   { default: '' })
+  const started   = defineModel<string>('started',   { default: '' })
+  const highlight = defineModel<string>('highlight', { default: '' })
 
   const totalSteps   = 7
   const currentStep  = 5
@@ -17,7 +28,8 @@
 <!--
   Hero-side mini demo. Looks like one section of the real builder, with a
   writing hint and a progress indicator. Clicking Continue takes you to
-  /builder where the real flow starts.
+  /builder where the real flow starts — the data the visitor types here
+  is the same row they'll find pre-filled in /builder's Experience section.
 -->
 <template>
   <div class="paper-card p-6">
@@ -25,7 +37,7 @@
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-2">
         <span class="w-1.5 h-1.5 rounded-full" :style="{ background:'var(--accent)' }" aria-hidden="true" />
-        <span class="mono-eyebrow">Editing · Experience</span>
+        <span class="mono-eyebrow">Editing · Your CV</span>
       </div>
       <span class="mono-eyebrow" :style="{ color:'var(--accent)' }">
         Step {{ currentStep }} / {{ totalSteps }}
@@ -34,23 +46,58 @@
 
     <!-- Form -->
     <div class="flex flex-col gap-3.5">
+      <!--
+        Full name is the headline of the CV — kept at the top of the form
+        so the visitor's first keystroke lands in the most prominent slot
+        of the live preview.
+      -->
+      <label class="block">
+        <span class="mono-eyebrow block mb-1.5">Full name</span>
+        <input
+          v-model="fullName"
+          type="text"
+          placeholder="Maya Okafor"
+          autocomplete="name"
+          class="w-full text-sm"
+        />
+      </label>
       <label class="block">
         <span class="mono-eyebrow block mb-1.5">Role</span>
-        <input v-model="role" type="text" class="w-full text-sm" />
+        <input
+          v-model="role"
+          type="text"
+          placeholder="Senior Product Designer"
+          class="w-full text-sm"
+        />
       </label>
       <div class="grid grid-cols-2 gap-3">
         <label class="block">
           <span class="mono-eyebrow block mb-1.5">Company</span>
-          <input v-model="company" type="text" class="w-full text-sm" />
+          <input
+            v-model="company"
+            type="text"
+            placeholder="Northwind Studio"
+            class="w-full text-sm"
+          />
         </label>
         <label class="block">
           <span class="mono-eyebrow block mb-1.5">Started</span>
-          <input v-model="started" type="text" class="w-full text-sm" />
+          <input
+            v-model="started"
+            type="text"
+            placeholder="Mar 2022"
+            class="w-full text-sm"
+          />
         </label>
       </div>
       <label class="block">
         <span class="mono-eyebrow block mb-1.5">Highlight</span>
-        <textarea v-model="highlight" rows="2" class="w-full text-sm resize-none" />
+        <textarea
+          v-model="highlight"
+          rows="2"
+          placeholder="Led the design system migration that cut new-feature design time by 38%."
+          class="w-full text-sm resize-none"
+        />
       </label>
     </div>
 

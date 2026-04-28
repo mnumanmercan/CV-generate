@@ -6,6 +6,7 @@
   import SkillsSection from './classic/sections/SkillsSection.vue'
   import ProjectsSection from './classic/sections/ProjectsSection.vue'
   import CertificationsSection from './classic/sections/CertificationsSection.vue'
+  import LanguagesSection from './classic/sections/LanguagesSection.vue'
 
   const props = defineProps<{
     cvData: CVData
@@ -19,6 +20,7 @@
     skills: SkillsSection,
     projects: ProjectsSection,
     certifications: CertificationsSection,
+    languages: LanguagesSection,
   }
 
   const orderedSections = computed(() =>

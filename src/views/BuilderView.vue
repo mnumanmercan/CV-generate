@@ -20,6 +20,7 @@
   import SkillsForm from '@/components/form/SkillsForm.vue'
   import ProjectsForm from '@/components/form/ProjectsForm.vue'
   import CertificationsForm from '@/components/form/CertificationsForm.vue'
+  import LanguagesForm from '@/components/form/LanguagesForm.vue'
   import CVPreview from '@/components/preview/CVPreview.vue'
   import TemplatePicker from '@/components/preview/TemplatePicker.vue'
   import { VueDraggable } from 'vue-draggable-plus'
@@ -35,6 +36,7 @@
     isSkillsComplete,
     isProjectsComplete,
     isCertificationsComplete,
+    isLanguagesComplete,
   } = storeToRefs(cvStore)
   const { status: pdfStatus, errorMessage: pdfError, overflowWarning: pdfOverflow, exportPDF } = usePDFExport()
   const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } = usePreviewZoom()
@@ -56,7 +58,7 @@
   // section in the preview on page load.
   // A single watcher with a snapshot comparison replaces 7 separate deep watchers,
   // reducing the number of traversals Vue performs on each keystroke.
-  const SECTION_KEYS: SectionKey[] = ['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications']
+  const SECTION_KEYS: SectionKey[] = ['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'languages']
   const sectionSnapshots = new Map<SectionKey, string>()
 
   watch(
@@ -68,6 +70,7 @@
       cvData.value.skills,
       cvData.value.projects,
       cvData.value.certifications,
+      cvData.value.languages,
     ]),
     (newJson) => {
       if (cvStore.loadingData) {
@@ -106,6 +109,7 @@
   //   ✦  Skills               — four-point sparkle
   //   ⎔  Projects             — hex, the made-thing glyph
   //   √  Certifications       — check radical, the verified mark
+  //   ❡  Languages            — pilcrow turn, the speech glyph
 
   // Static sections — always first, never draggable
   const staticSections = computed(() => [
@@ -120,6 +124,7 @@
     skills:         { title: 'Skills',          icon: '✦' },
     projects:       { title: 'Projects',        icon: '⎔' },
     certifications: { title: 'Certifications',  icon: '√' },
+    languages:      { title: 'Languages',       icon: '❡' },
   }
 
   // Mutable ref — v-model target for VueDraggable. Holds key + metadata only;
@@ -135,6 +140,7 @@
     skills:         isSkillsComplete.value,
     projects:       isProjectsComplete.value,
     certifications: isCertificationsComplete.value,
+    languages:      isLanguagesComplete.value,
   }))
 
   // Sync draggableSections order from store after loadFromStorage completes.
@@ -179,7 +185,7 @@
               class="font-display leading-[1.05] tracking-editorial text-ink mb-7"
               :style="{ fontSize: 'clamp(28px, 3.4vw, 38px)' }"
             >
-              Seven sections.<br />
+              Eight sections.<br />
               <span class="accent-italic">Drag</span><span class="text-ink"> to reorder.</span>
             </h2>
 
@@ -223,6 +229,7 @@
                 <SkillsForm         v-else-if="section.key === 'skills'" />
                 <ProjectsForm       v-else-if="section.key === 'projects'" />
                 <CertificationsForm v-else-if="section.key === 'certifications'" />
+                <LanguagesForm      v-else-if="section.key === 'languages'" />
               </FormSection>
             </VueDraggable>
 

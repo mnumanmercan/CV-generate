@@ -57,6 +57,12 @@ export const useCVStore = defineStore('cv', () => {
       cvData.value.certifications.every((c) => c.name.trim()),
   )
 
+  const isLanguagesComplete = computed(
+    () =>
+      cvData.value.languages.length > 0 &&
+      cvData.value.languages.every((l) => l.name.trim()),
+  )
+
   async function loadFromStorage(): Promise<void> {
     loadingData.value = true
     const stored = await localStorageService.load()
@@ -142,6 +148,7 @@ export const useCVStore = defineStore('cv', () => {
     isSkillsComplete,
     isProjectsComplete,
     isCertificationsComplete,
+    isLanguagesComplete,
     loadFromStorage,
     saveToStorage,
     setActiveSection,

@@ -5,9 +5,20 @@
   const cvStore = useCVStore()
 
   /**
-   * Default sample shown to first-time visitors who haven't started a CV yet.
-   * Once the user has saved data via /builder, the live store data takes over
-   * so the homepage hero feels personal even before they click anywhere.
+   * Static "Maya" sample shown when the visitor hasn't entered anything
+   * yet. The preview operates in three clearly-separated modes:
+   *
+   *   1. Empty cvData (first visit, empty localStorage)
+   *       → Render this sample verbatim. Every section filled, full mockup.
+   *
+   *   2. Mini-demo edits only (homepage form has been touched, /builder hasn't)
+   *       → Overlay the touched mini-demo fields (fullName, role, company,
+   *         started, highlight) onto this sample, keeping the rest of the
+   *         persona intact so the preview stays visually complete.
+   *
+   *   3. Builder-territory edits exist (email, education, skills, etc. set)
+   *       → Show cvStore.cvData verbatim — the visitor has a real CV in
+   *         progress and we shouldn't dilute it with sample data.
    */
   const sample = {
     personal: {
@@ -45,11 +56,98 @@
     ],
   }
 
-  // Switch the entire dataset wholesale rather than mixing user fields with
-  // sample fields — that would produce visually awkward "Alex / Northwind"
-  // hybrids on a half-filled CV.
-  const hasUserData = computed(() => !!cvStore.cvData?.personal?.fullName?.trim())
-  const data = computed(() => (hasUserData.value ? cvStore.cvData : sample))
+  /**
+   * "Has Builder data" — the visitor has filled in CV slots OUTSIDE the
+   * homepage mini-demo's reach (almost certainly via /builder). The mini
+   * demo only writes:
+   *   • personal.fullName
+   *   • experience[0].{position, company, startDate, bullets[0]}
+   * If any other slot is populated, we treat that as a real-CV-in-progress
+   * signal and render cvData wholesale instead of overlaying it onto Maya.
+   */
+  const hasBuilderData = computed(() => {
+    const d = cvStore.cvData
+    return !!(
+      d.personal.email?.trim() ||
+      d.personal.phone?.trim() ||
+      d.personal.location?.trim() ||
+      d.personal.jobTitle?.trim() ||
+      d.summary?.trim() ||
+      d.experience.length > 1 ||
+      (d.experience[0]?.bullets?.length ?? 0) > 1 ||
+      d.experience[0]?.location?.trim() ||
+      d.experience[0]?.endDate?.trim() ||
+      d.education.length > 0 ||
+      d.skills.length > 0 ||
+      d.projects.length > 0 ||
+      d.certifications.length > 0 ||
+      d.languages.length > 0
+    )
+  })
+
+  /**
+   * Has the mini-demo been touched at all? This guards the "fully empty →
+   * return sample verbatim" short-circuit below, so the initial first-visit
+   * render is GUARANTEED to be the full mockup with zero overlay logic.
+   */
+  const hasMiniDemoData = computed(() => {
+    const d = cvStore.cvData
+    return !!(
+      d.personal.fullName?.trim() ||
+      d.experience[0]?.position?.trim() ||
+      d.experience[0]?.company?.trim() ||
+      d.experience[0]?.startDate?.trim() ||
+      d.experience[0]?.bullets?.[0]?.trim()
+    )
+  })
+
+  /**
+   * Compose the rendered data along the three modes called out at the top:
+   *
+   *   1. hasBuilderData      → cvStore.cvData verbatim
+   *   2. hasMiniDemoData     → sample with mini-demo fields overlaid
+   *   3. (everything empty)  → sample verbatim — the initial mockup state
+   *
+   * Splitting modes 2 and 3 keeps the empty-localStorage path obvious and
+   * unconditional: no spreads, no `||` chains, just the sample as-is.
+   */
+  const data = computed(() => {
+    // Mode 1: real-CV territory → render cvData wholesale.
+    if (hasBuilderData.value) return cvStore.cvData
+
+    // Mode 3: empty everything → render the sample untouched (the default mockup).
+    if (!hasMiniDemoData.value) return sample
+
+    // Mode 2: per-field overlay. Only here do we mix mini-demo fields with sample.
+    const exp0         = cvStore.cvData.experience[0]
+    const userFullName = cvStore.cvData.personal.fullName?.trim()
+    return {
+      personal: {
+        ...sample.personal,
+        // The visitor's typed name is the headline — overlay it onto the sample.
+        fullName: userFullName || sample.personal.fullName,
+        // Mirror the typed Role under the name as well — keeps the preview lively.
+        jobTitle: exp0?.position?.trim() || sample.personal.jobTitle,
+      },
+      experience: [
+        {
+          ...sample.experience[0],
+          position:  exp0?.position?.trim()  || sample.experience[0].position,
+          company:   exp0?.company?.trim()   || sample.experience[0].company,
+          startDate: exp0?.startDate?.trim() || sample.experience[0].startDate,
+          endDate:   exp0?.endDate           || sample.experience[0].endDate,
+          bullets: [
+            // Highlight overlays the first canned bullet; the second canned
+            // bullet stays so the preview never thins to a single line mid-edit.
+            exp0?.bullets?.[0]?.trim() || sample.experience[0].bullets[0],
+            sample.experience[0].bullets[1],
+          ],
+        },
+      ],
+      education: sample.education,
+      skills:    sample.skills,
+    }
+  })
 
   function trunc(s: string | undefined, len: number): string {
     if (!s) return ''

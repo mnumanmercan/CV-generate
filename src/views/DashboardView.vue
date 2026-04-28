@@ -40,6 +40,7 @@
     if (cvData.value.skills.length > 0) n++
     if (cvData.value.projects.length > 0) n++
     if (cvData.value.certifications.length > 0) n++
+    if (cvData.value.languages.length > 0) n++
     return n
   })
 
@@ -120,13 +121,13 @@
               {{ cvData.personal.fullName || 'Your CV' }}
             </h2>
             <p class="mono-eyebrow text-[10.5px] mb-5">
-              {{ templateLabel }} · {{ completedSections }}/7 sections filled
+              {{ templateLabel }} · {{ completedSections }}/8 sections filled
             </p>
             <!-- Progress bar -->
             <div class="h-[3px] rounded-full mb-6" style="background: rgba(0,0,0,0.08)">
               <div
                 class="h-full rounded-full transition-all duration-500"
-                :style="{ width: `${Math.round((completedSections / 7) * 100)}%`, background: 'var(--accent)' }"
+                :style="{ width: `${Math.round((completedSections / 8) * 100)}%`, background: 'var(--accent)' }"
               />
             </div>
             <div class="flex gap-2">
@@ -230,12 +231,12 @@
               {{ cvData.personal.fullName || 'Your CV' }}
             </h2>
             <p class="mono-eyebrow text-[10.5px] mb-5">
-              {{ templateLabel }} · {{ completedSections }}/7 sections filled
+              {{ templateLabel }} · {{ completedSections }}/8 sections filled
             </p>
             <div class="h-[3px] rounded-full mb-6" style="background: rgba(0,0,0,0.08)">
               <div
                 class="h-full rounded-full transition-all duration-500"
-                :style="{ width: `${Math.round((completedSections / 7) * 100)}%`, background: 'var(--accent)' }"
+                :style="{ width: `${Math.round((completedSections / 8) * 100)}%`, background: 'var(--accent)' }"
               />
             </div>
             <div class="flex gap-2">
