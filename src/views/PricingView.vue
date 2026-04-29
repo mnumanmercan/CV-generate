@@ -37,52 +37,40 @@
     return Math.floor(price * 0.8) * 12
   }
 
-  /* ── Comparison table (15 rows — added "Cover Letter Builder") ───────── */
-  type ComparisonRow = [string, boolean, boolean, boolean]
+  /* ── Comparison table (Free vs Pro — Enterprise removed from public UI) ── */
+  type ComparisonRow = [string, boolean, boolean]
 
   const comparisonRows: ComparisonRow[] = [
-    ['ATS résumé builder',          true,  true,  true],
-    ['Real-time preview',            true,  true,  true],
-    ['PDF download',                 true,  true,  true],
-    ['Browser auto-save',            true,  true,  true],
-    ['ATS writing hints',            true,  true,  true],
-    ['Cover letter builder',         true,  true,  true],
-    ['Profile photo upload',         false, true,  true],
-    ['Premium templates',            false, true,  true],
-    ['Cloud storage',                false, true,  true],
-    ['Multiple résumés',             false, true,  true],
-    ['Priority support',             false, true,  true],
-    ['Team management',              false, false, true],
-    ['Custom branding',              false, false, true],
-    ['API access',                   false, false, true],
-    ['Dedicated account manager',    false, false, true],
+    ['ATS résumé builder',          true,  true],
+    ['Real-time preview',            true,  true],
+    ['PDF download',                 true,  true],
+    ['Browser auto-save',            true,  true],
+    ['ATS writing hints',            true,  true],
+    ['Cover letter builder',         true,  true],
+    ['Profile photo upload',         false, true],
+    ['Premium templates',            false, true],
+    ['Cloud storage & sync',         false, true],
+    ['Multiple CV versions',         false, true],
+    ['Priority support',             false, true],
   ]
 
-  /* ── FAQ — 6 items (added cancellation + data privacy) ──────────────── */
+  /* ── FAQ — 4 persuasive items ────────────────────────────────────────── */
   const faq = [
     {
-      q: 'Is the Free plan really free forever?',
-      a: 'Yes. The Free plan includes the full ATS résumé builder, live preview, PDF download, and browser auto-save — permanently free, no time limits, no credit card.',
+      q: 'What does an ATS-friendly CV actually look like?',
+      a: 'Two columns, custom fonts, and a photo header look great to a person. An ATS sees garbage. An ATS-friendly CV is single-column, uses standard section headings (Experience, Education, Skills), relies on machine-readable text, and has no tables or graphics. Every Resumark export passes those requirements by default — you never have to think about it.',
     },
     {
-      q: 'Where does my data live?',
-      a: 'On the Free plan, everything sits in your browser via localStorage — it never reaches our servers. Pro and Enterprise sync to encrypted cloud storage so you can access your résumé from any device.',
+      q: 'How is Resumark different from Canva or Zety?',
+      a: 'Canva and Zety optimise for aesthetics. Resumark optimises for getting your résumé read. Single-column layout. Standard ATS headings. No mandatory sign-up. No personal data leaving your browser on the Free plan. The goal is a callback, not a compliment on the design.',
     },
     {
-      q: 'What is an ATS-compliant résumé?',
-      a: 'Applicant Tracking Systems scan résumés before a human ever reads them. ATS-compliant means single-column layout, standard section headings, no tables, no graphics, machine-readable text. That\'s exactly what every Resumark export gives you.',
+      q: 'What happens to my data if I cancel Pro?',
+      a: 'Your exported PDFs are yours to keep, always. If you cancel Pro, your cloud-stored CV data remains downloadable for 30 days, then it\'s deleted from our servers. You can export a copy at any time from the builder — Free or Pro.',
     },
     {
-      q: 'Can I cancel any time?',
-      a: 'Yes. Cancel from the billing portal in your dashboard and you\'ll keep Pro features until the end of the current billing period. No retention calls, no friction.',
-    },
-    {
-      q: 'Do you sell or share my data?',
-      a: 'No. We have no advertising, no partner data feeds, no third-party trackers in the editor. The business model is paid plans — we don\'t need your data to be the product.',
-    },
-    {
-      q: 'When will Pro and Enterprise be available?',
-      a: 'Pro and Enterprise are launching soon. Click "Upgrade" on any plan card and leave your email — you\'ll be among the first to know when billing goes live.',
+      q: 'Can I try Pro before paying?',
+      a: 'The Free tier is the trial. It includes the full builder, ATS hints, real-time preview, and PDF download — no account needed, no time limit. Pro adds cloud sync and extra features on top of a foundation you\'ve already tested.',
     },
   ]
 
@@ -110,16 +98,16 @@
           class="font-display leading-[1.02] tracking-editorial text-ink stagger-item"
           :style="{ fontSize: 'clamp(48px, 7.4vw, 96px)', animationDelay: '60ms' }"
         >
-          Start free.<br />
-          <span class="accent-italic">Upgrade</span><span> when you're ready.</span>
+          Free for the <span class="accent-italic">work.</span><br />
+          <span class="accent-italic">Pro</span><span> for the rest.</span>
         </h1>
 
         <p
           class="mt-7 max-w-xl mx-auto text-[18px] leading-[1.55] text-muted stagger-item"
           style="animation-delay: 120ms"
         >
-          The core résumé builder is free, forever. Pro and Enterprise unlock cloud
-          storage, multiple résumés, premium templates, and team features.
+          The full résumé builder is free, forever. Pro unlocks cloud sync,
+          multiple CV versions, and cover letters tailored to every application.
         </p>
 
         <!-- Billing toggle -->
@@ -170,12 +158,12 @@
       <!-- ── Plan cards ───────────────────────────────────────────────── -->
       <section
         v-reveal
-        class="px-6 pb-20 max-w-6xl mx-auto w-full"
+        class="px-6 pb-20 max-w-3xl mx-auto w-full"
         aria-label="Pricing plans"
       >
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           <div
-            v-for="(plan, i) in PLANS"
+            v-for="(plan, i) in PLANS.filter(p => p.id !== 'enterprise')"
             :key="plan.id"
             class="relative reveal-item flex"
             :style="{ animationDelay: `${i * 70}ms` }"
@@ -328,7 +316,7 @@
       >
         <div class="flex flex-col md:flex-row gap-8 md:gap-16 mb-10">
           <div class="md:w-1/3 reveal-item">
-            <p class="mono-eyebrow">Side by side</p>
+            <p class="mono-eyebrow">Free vs Pro</p>
           </div>
           <div class="md:w-2/3 reveal-item" style="animation-delay: 80ms">
             <h2
@@ -361,9 +349,6 @@
                          background: color-mix(in oklab, var(--accent) 5%, transparent);
                          color: var(--accent)"
                 >Pro</th>
-                <th class="text-center px-4 py-4 mono-eyebrow font-medium" scope="col">
-                  Enterprise
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -391,17 +376,17 @@
                   </svg>
                   <span v-else class="text-muted/50" aria-label="Not included">—</span>
                 </td>
-
-                <td class="px-4 py-3.5 text-center">
-                  <svg v-if="row[3]" class="w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" :style="{ color: 'var(--accent)' }" aria-label="Included">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span v-else class="text-muted/50" aria-label="Not included">—</span>
-                </td>
               </tr>
             </tbody>
           </table>
         </div>
+        <!-- Teams footer link -->
+        <p class="mt-8 text-center mono-eyebrow reveal-item">
+          Building for a team?
+          <RouterLink to="/teams" class="ml-1 underline underline-offset-4 hover:opacity-70 transition-opacity" style="color: var(--accent)">
+            See /teams →
+          </RouterLink>
+        </p>
       </section>
 
       <!-- ── FAQ ──────────────────────────────────────────────────────── -->

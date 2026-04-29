@@ -56,6 +56,12 @@ export interface Certification {
   credentialUrl?: string
 }
 
+export interface Language {
+  id: string
+  name: string
+  proficiency: string
+}
+
 export type SectionKey =
   | 'personal'
   | 'summary'
@@ -64,6 +70,7 @@ export type SectionKey =
   | 'skills'
   | 'projects'
   | 'certifications'
+  | 'languages'
 
 export interface CVMeta {
   createdAt: string
@@ -81,5 +88,6 @@ export interface CVData {
   skills: Skill[]
   projects: Project[]
   certifications: Certification[]
+  languages: Language[]
   meta: CVMeta
 }
