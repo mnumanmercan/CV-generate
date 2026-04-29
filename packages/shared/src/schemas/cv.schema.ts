@@ -55,9 +55,15 @@ const CertificationSchema = z.object({
   credentialUrl: z.string().url().optional().or(z.literal('')),
 })
 
+const LanguageSchema = z.object({
+  id:          z.string().uuid(),
+  name:        z.string().min(1).max(100),
+  proficiency: z.string().max(50),
+})
+
 const SECTION_KEYS = [
   'personal', 'summary', 'experience', 'education',
-  'skills', 'projects', 'certifications',
+  'skills', 'projects', 'certifications', 'languages',
 ] as const
 
 const CVMetaSchema = z.object({
@@ -76,6 +82,7 @@ export const CVDataSchema = z.object({
   skills:         z.array(SkillSchema).max(20),
   projects:       z.array(ProjectSchema).max(20),
   certifications: z.array(CertificationSchema).max(20),
+  languages:      z.array(LanguageSchema).max(30),
   meta:           CVMetaSchema,
 })
 
