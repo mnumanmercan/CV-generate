@@ -168,10 +168,10 @@
         class="px-6 pt-10 md:pt-14 pb-20 md:pb-28 max-w-7xl mx-auto w-full"
         aria-labelledby="hero-heading"
       >
-        <div class="flex flex-col lg:flex-row items-start gap-12 lg:gap-16">
+        <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-10">
 
           <!-- Left column: copy + mini demo -->
-          <div class="w-full lg:flex-1 lg:max-w-[640px]">
+          <div class="w-full shrink-0 lg:w-[44%] lg:max-w-[580px]">
             <!-- Eyebrow -->
             <div class="flex items-center gap-2.5 mb-8 stagger-item">
               <span class="w-1.5 h-1.5 rounded-full" :style="{ background:'var(--accent)' }" aria-hidden="true" />
@@ -217,7 +217,7 @@
           </div>
 
           <!-- Right column: live CV preview -->
-          <div class="w-full lg:flex-1 flex justify-center lg:justify-end">
+          <div class="w-full lg:flex-1 flex justify-center">
             <div
               class="stagger-item w-full flex justify-center"
               style="animation-delay: 100ms"
