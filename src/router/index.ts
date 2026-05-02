@@ -45,6 +45,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Cover Letter — Resumark', requiresAuth: true },
   },
   {
+    path: '/teams',
+    name: 'teams',
+    component: () => import('@/views/TeamsView.vue'),
+    meta: { title: 'Teams — Resumark' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/',
   },

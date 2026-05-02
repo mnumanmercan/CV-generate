@@ -1,5 +1,5 @@
 // Types
-export type { CVData, CVMeta, PersonalInfo, WorkExperience, Education, Skill, Project, Certification, SectionKey } from './types/cv.types.js'
+export type { CVData, CVMeta, PersonalInfo, WorkExperience, Education, Skill, Project, Certification, Language, SectionKey } from './types/cv.types.js'
 export type { CoverLetterData } from './types/coverLetter.types.js'
 
 // CV Schemas

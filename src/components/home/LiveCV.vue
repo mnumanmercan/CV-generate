@@ -40,6 +40,16 @@
           'Shipped seven flows for the relaunch — every one measured against WCAG AA.',
         ],
       },
+      {
+        company:   'Arc Digital',
+        position:  'UX Designer',
+        location:  'New York, NY',
+        startDate: 'Jun 2019',
+        endDate:   'Feb 2022',
+        bullets: [
+          'Redesigned onboarding flow, reducing drop-off by 24% in the first quarter.',
+        ],
+      },
     ],
     education: [
       {
@@ -53,6 +63,7 @@
     skills: [
       { category: 'Design',    items: ['Figma', 'Sketch', 'Prototyping'] },
       { category: 'Front-end', items: ['HTML', 'CSS', 'JavaScript'] },
+      { category: 'Tools',     items: ['Jira', 'Notion', 'Linear'] },
     ],
   }
 
@@ -104,7 +115,11 @@
   /**
    * Compose the rendered data along the three modes called out at the top:
    *
-   *   1. hasBuilderData      → cvStore.cvData verbatim
+   *   1. hasBuilderData      → smart overlay: user fields where non-empty,
+   *                            sample data where the user hasn't filled a section yet.
+   *                            This prevents sparse previews when the user has only
+   *                            touched some sections (e.g. certifications) but left
+   *                            experience/education/skills empty.
    *   2. hasMiniDemoData     → sample with mini-demo fields overlaid
    *   3. (everything empty)  → sample verbatim — the initial mockup state
    *
@@ -112,11 +127,26 @@
    * unconditional: no spreads, no `||` chains, just the sample as-is.
    */
   const data = computed(() => {
-    // Mode 1: real-CV territory → render cvData wholesale.
-    if (hasBuilderData.value) return cvStore.cvData
-
     // Mode 3: empty everything → render the sample untouched (the default mockup).
-    if (!hasMiniDemoData.value) return sample
+    if (!hasMiniDemoData.value && !hasBuilderData.value) return sample
+
+    // Mode 1: real-CV territory → smart overlay so sections the user hasn't
+    // filled yet still show the sample data instead of disappearing.
+    if (hasBuilderData.value) {
+      const d = cvStore.cvData
+      return {
+        personal: {
+          fullName: d.personal.fullName?.trim()  || sample.personal.fullName,
+          jobTitle: d.personal.jobTitle?.trim()  || d.experience[0]?.position?.trim() || sample.personal.jobTitle,
+          email:    d.personal.email?.trim()     || sample.personal.email,
+          phone:    d.personal.phone?.trim()     || sample.personal.phone,
+          location: d.personal.location?.trim()  || sample.personal.location,
+        },
+        experience: d.experience.length > 0 ? d.experience : sample.experience,
+        education:  d.education.length > 0  ? d.education  : sample.education,
+        skills:     d.skills.length > 0     ? d.skills     : sample.skills,
+      }
+    }
 
     // Mode 2: per-field overlay. Only here do we mix mini-demo fields with sample.
     const exp0         = cvStore.cvData.experience[0]
@@ -143,6 +173,7 @@
             sample.experience[0].bullets[1],
           ],
         },
+        sample.experience[1],
       ],
       education: sample.education,
       skills:    sample.skills,
@@ -162,58 +193,58 @@
 -->
 <template>
   <div
-    class="rounded-xl shadow-2xl shadow-black/15 p-7 w-full max-w-[400px] border border-overlay/8"
-    style="background:#FFFFFF;color:#1a1a1a;font-family:'Inter',sans-serif;font-size:10.5px;line-height:1.65"
+    class="rounded-xl shadow-2xl shadow-black/20 p-9 w-full max-w-[500px] border border-overlay/8"
+    style="background:#FFFFFF;color:#1a1a1a;font-family:'Inter',sans-serif;font-size:12px;line-height:1.65"
   >
     <!-- Header -->
-    <div style="border-bottom:1px solid rgba(0,0,0,0.10);padding-bottom:11px;margin-bottom:13px">
-      <div style="font-size:23px;font-weight:700;color:#111;letter-spacing:-0.012em;line-height:1.1">
-        {{ trunc(data.personal.fullName, 30) }}
+    <div style="border-bottom:1px solid rgba(0,0,0,0.10);padding-bottom:14px;margin-bottom:16px">
+      <div style="font-size:28px;font-weight:700;color:#111;letter-spacing:-0.012em;line-height:1.1">
+        {{ trunc(data.personal.fullName, 34) }}
       </div>
-      <div :style="{ fontSize:'13px', fontWeight:500, color:'var(--accent)', margin:'5px 0 6px' }">
-        {{ trunc(data.personal.jobTitle, 36) }}
+      <div :style="{ fontSize:'15.5px', fontWeight:500, color:'var(--accent)', margin:'6px 0 8px' }">
+        {{ trunc(data.personal.jobTitle, 42) }}
       </div>
-      <div style="font-size:9.5px;color:#6b7280;display:flex;gap:6px;flex-wrap:wrap">
-        <span>{{ trunc(data.personal.email, 24) }}</span>
+      <div style="font-size:11px;color:#6b7280;display:flex;gap:6px;flex-wrap:wrap">
+        <span>{{ trunc(data.personal.email, 28) }}</span>
         <span>·</span>
-        <span>{{ trunc(data.personal.phone, 18) }}</span>
+        <span>{{ trunc(data.personal.phone, 20) }}</span>
         <span>·</span>
-        <span>{{ trunc(data.personal.location, 22) }}</span>
+        <span>{{ trunc(data.personal.location, 26) }}</span>
       </div>
     </div>
 
     <!-- Experience -->
-    <div v-if="data.experience?.length" style="margin-bottom:11px">
-      <div :style="{ fontSize:'8.5px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.16em', borderBottom:'1px solid rgba(0,0,0,0.10)', paddingBottom:'3px', marginBottom:'7px', color:'var(--accent)' }">
+    <div v-if="data.experience?.length" style="margin-bottom:14px">
+      <div :style="{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.16em', borderBottom:'1px solid rgba(0,0,0,0.10)', paddingBottom:'3px', marginBottom:'8px', color:'var(--accent)' }">
         Experience
       </div>
-      <div v-for="(job, i) in data.experience.slice(0, 1)" :key="i">
+      <div v-for="(job, i) in data.experience.slice(0, 2)" :key="i" :style="{ marginBottom: i < data.experience.slice(0,2).length - 1 ? '10px' : '0' }">
         <div style="display:flex;justify-content:space-between;align-items:baseline">
           <div>
-            <div style="font-weight:600;font-size:11.5px;color:#111;letter-spacing:-0.005em">
-              {{ trunc(job.position, 30) }}
+            <div style="font-weight:600;font-size:13.5px;color:#111;letter-spacing:-0.005em">
+              {{ trunc(job.position, 36) }}
             </div>
-            <div style="color:#6b7280;font-size:9.5px;margin-top:1px">
-              {{ trunc(job.company + (job.location ? ' · ' + job.location : ''), 38) }}
+            <div style="color:#6b7280;font-size:11px;margin-top:1px">
+              {{ trunc(job.company + (job.location ? ' · ' + job.location : ''), 46) }}
             </div>
           </div>
-          <div style="color:#9ca3af;font-size:9px;white-space:nowrap;margin-left:8px">
+          <div style="color:#9ca3af;font-size:10.5px;white-space:nowrap;margin-left:8px">
             {{ job.startDate }} – {{ job.endDate || 'Present' }}
           </div>
         </div>
-        <ul v-if="job.bullets?.length" style="padding-left:13px;margin-top:5px;color:#374151">
+        <ul v-if="job.bullets?.length" style="padding-left:14px;margin-top:5px;color:#374151">
           <li
             v-for="(b, bi) in job.bullets.slice(0, 2)"
             :key="bi"
-            :style="{ listStyle:'disc', marginBottom: bi === 0 ? '2px' : '0' }"
-          >{{ trunc(b, 64) }}</li>
+            :style="{ listStyle:'disc', marginBottom: bi === 0 ? '3px' : '0' }"
+          >{{ trunc(b, 76) }}</li>
         </ul>
       </div>
     </div>
 
     <!-- Education -->
-    <div v-if="data.education?.length" style="margin-bottom:11px">
-      <div :style="{ fontSize:'8.5px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.16em', borderBottom:'1px solid rgba(0,0,0,0.10)', paddingBottom:'3px', marginBottom:'7px', color:'var(--accent)' }">
+    <div v-if="data.education?.length" style="margin-bottom:14px">
+      <div :style="{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.16em', borderBottom:'1px solid rgba(0,0,0,0.10)', paddingBottom:'3px', marginBottom:'8px', color:'var(--accent)' }">
         Education
       </div>
       <div
@@ -222,12 +253,12 @@
         style="display:flex;justify-content:space-between;align-items:baseline"
       >
         <div>
-          <div style="font-weight:600;font-size:11px;color:#111">
-            {{ trunc((ed.degree ?? '') + (ed.field ? ' ' + ed.field : ''), 30) }}
+          <div style="font-weight:600;font-size:13px;color:#111">
+            {{ trunc((ed.degree ?? '') + (ed.field ? ' ' + ed.field : ''), 36) }}
           </div>
-          <div style="color:#6b7280;font-size:9.5px">{{ trunc(ed.institution, 24) }}</div>
+          <div style="color:#6b7280;font-size:11px">{{ trunc(ed.institution, 30) }}</div>
         </div>
-        <div style="color:#9ca3af;font-size:9px;white-space:nowrap;margin-left:8px">
+        <div style="color:#9ca3af;font-size:10.5px;white-space:nowrap;margin-left:8px">
           {{ ed.startDate }} – {{ ed.endDate }}
         </div>
       </div>
@@ -235,16 +266,16 @@
 
     <!-- Skills -->
     <div v-if="data.skills?.length">
-      <div :style="{ fontSize:'8.5px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.16em', borderBottom:'1px solid rgba(0,0,0,0.10)', paddingBottom:'3px', marginBottom:'7px', color:'var(--accent)' }">
+      <div :style="{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.16em', borderBottom:'1px solid rgba(0,0,0,0.10)', paddingBottom:'3px', marginBottom:'8px', color:'var(--accent)' }">
         Skills
       </div>
       <div
-        v-for="(skill, i) in data.skills.slice(0, 2)"
+        v-for="(skill, i) in data.skills.slice(0, 3)"
         :key="skill.category"
-        :style="{ color:'#374151', marginBottom: i < Math.min(data.skills.length, 2) - 1 ? '3px' : '0', fontSize:'10px' }"
+        :style="{ color:'#374151', marginBottom: i < Math.min(data.skills.length, 3) - 1 ? '4px' : '0', fontSize:'12px' }"
       >
-        <span style="font-weight:600">{{ trunc(skill.category, 14) }}:</span>
-        {{ trunc(skill.items.join(', '), 44) }}
+        <span style="font-weight:600">{{ trunc(skill.category, 16) }}:</span>
+        {{ trunc(skill.items.join(', '), 56) }}
       </div>
     </div>
   </div>
