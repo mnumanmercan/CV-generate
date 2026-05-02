@@ -22,13 +22,13 @@
   import CertificationsForm from '@/components/form/CertificationsForm.vue'
   import LanguagesForm from '@/components/form/LanguagesForm.vue'
   import CVPreview from '@/components/preview/CVPreview.vue'
-  import TemplatePicker from '@/components/preview/TemplatePicker.vue'
   import { VueDraggable } from 'vue-draggable-plus'
   import { type SectionKey, DRAGGABLE_SECTION_KEYS } from '@/types/cv.types'
 
   const cvStore = useCVStore()
   const {
     cvData,
+    saveIndicatorVisible: showSaved,
     isPersonalComplete,
     isSummaryComplete,
     isExperienceComplete,
@@ -247,21 +247,17 @@
         <!-- ── Preview Panel ────────────────────────────────── -->
         <template #preview>
           <!--
-            flex-col so the scroll area (flex-1) and the bottom control strip
-            are siblings — controls live entirely outside the scrollable content,
-            so they can never overlap the CV document.
+            relative container so the floating zoom + download islands can be
+            positioned absolute without affecting the scroll area layout.
+            overflow-hidden is intentionally ABSENT from the inner CV wrapper
+            so the CV element is never clipped in the preview or PDF.
           -->
-          <div class="flex flex-col h-full">
+          <div class="relative h-full">
 
-            <!-- Top toolbar: A4 indicator + template picker -->
-            <TemplatePicker />
-
-            <!-- A4 preview scroll area — fills all remaining height.
-                 overflow-hidden is intentionally ABSENT from the inner wrapper:
-                 the CV element must not be clipped in either the preview or PDF. -->
+            <!-- A4 preview scroll area — fills the full panel height -->
             <div
               ref="previewScrollEl"
-              class="flex-1 overflow-auto flex justify-center py-8 px-4"
+              class="h-full overflow-auto flex justify-center py-8 px-4"
               style="background: var(--paper2)"
             >
               <div
@@ -277,59 +273,82 @@
               </div>
             </div>
 
-            <!-- ── Bottom control strip ───────────────────────────── -->
-            <div
-              class="flex items-center justify-between px-5 py-3 border-t border-overlay/8 shrink-0"
-              style="background: var(--paper)"
+            <!-- Floating save indicator — top-right -->
+            <Transition
+              enter-active-class="transition-opacity duration-200"
+              enter-from-class="opacity-0"
+              enter-to-class="opacity-100"
+              leave-active-class="transition-opacity duration-300"
+              leave-from-class="opacity-100"
+              leave-to-class="opacity-0"
             >
-              <!-- Zoom controls -->
-              <div class="flex items-center gap-1">
-                <button
-                  type="button"
-                  :disabled="previewScale <= ZOOM_MIN"
-                  class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Zoom out"
-                  @click="zoomOut"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
-                  </svg>
-                </button>
-
-                <span class="mono-eyebrow text-[11px] tabular-nums w-9 text-center select-none">
-                  {{ Math.round(previewScale * 100) }}%
-                </span>
-
-                <button
-                  type="button"
-                  :disabled="previewScale >= ZOOM_MAX"
-                  class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Zoom in"
-                  @click="zoomIn"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                  </svg>
-                </button>
-
-                <button
-                  type="button"
-                  class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
-                  aria-label="Fit to panel width"
-                  title="Fit to panel"
-                  @click="fitToPanel"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
-                  </svg>
-                </button>
+              <div
+                v-if="showSaved"
+                class="absolute top-4 right-5 z-10 flex items-center gap-2 rounded-full px-3 py-1.5"
+                style="background: var(--paper); box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06)"
+                aria-live="polite"
+                role="status"
+              >
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background: #22C55E" aria-hidden="true" />
+                <span class="mono-eyebrow text-[10.5px]">Saved to this browser · just now</span>
               </div>
+            </Transition>
 
-              <!-- PDF Download — the headline action, ink pill -->
+            <!-- Floating zoom island — bottom-left -->
+            <div
+              class="absolute bottom-5 left-5 z-10 flex items-center gap-0.5 rounded-2xl px-2 py-1.5"
+              style="background: var(--paper); box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)"
+            >
+              <button
+                type="button"
+                :disabled="previewScale <= ZOOM_MIN"
+                class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Zoom out"
+                @click="zoomOut"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+                </svg>
+              </button>
+
+              <span class="mono-eyebrow text-[11px] tabular-nums w-9 text-center select-none">
+                {{ Math.round(previewScale * 100) }}%
+              </span>
+
+              <button
+                type="button"
+                :disabled="previewScale >= ZOOM_MAX"
+                class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Zoom in"
+                @click="zoomIn"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+
+              <div class="w-px h-3.5 mx-1 shrink-0 bg-overlay/15" aria-hidden="true" />
+
+              <button
+                type="button"
+                class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
+                aria-label="Fit to panel width"
+                title="Fit to panel"
+                @click="fitToPanel"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Floating download island — bottom-right -->
+            <div class="absolute bottom-5 right-5 z-10">
               <button
                 type="button"
                 :disabled="pdfStatus === 'generating'"
                 class="btn-primary text-[13px]"
+                style="box-shadow: 0 4px 16px rgba(184,83,42,0.22)"
                 aria-label="Download CV as PDF"
                 @click="handleDownload"
               >

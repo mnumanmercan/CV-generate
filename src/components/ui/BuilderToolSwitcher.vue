@@ -4,21 +4,48 @@
   import { storeToRefs } from 'pinia'
   import { useUserStore } from '@/stores/userStore'
   import { useCVStore } from '@/stores/cvStore'
-  import { useCoverLetterStore } from '@/stores/coverLetterStore'
+  import { TEMPLATES } from '@/components/templates/registry'
 
-  const route             = useRoute()
-  const router            = useRouter()
-  const userStore         = useUserStore()
-  const cvStore           = useCVStore()
-  const coverLetterStore  = useCoverLetterStore()
+  const route            = useRoute()
+  const router           = useRouter()
+  const userStore        = useUserStore()
+  const cvStore          = useCVStore()
+  const { cvData } = storeToRefs(cvStore)
 
-  // Both stores expose a short-lived saveIndicatorVisible flag that flicks on
-  // for ~1s after every persisted edit. We OR them together: only one view is
-  // mounted at a time, so they never both fire — and this keeps the sub-nav
-  // store-agnostic.
-  const { saveIndicatorVisible: cvSaved } = storeToRefs(cvStore)
-  const { saveIndicatorVisible: clSaved } = storeToRefs(coverLetterStore)
-  const showSaved = computed(() => cvSaved.value || clSaved.value)
+  const isBuilder = computed(() => route.name === 'builder')
+
+  // Template picker state (only active on builder route)
+  const activeId = computed(() => cvData.value.meta.templateId)
+  const activeTemplate = computed(
+    () => TEMPLATES.find((t) => t.id === activeId.value) ?? TEMPLATES[0],
+  )
+
+  function selectTemplate(id: string, isPro: boolean): void {
+    if (isPro && !userStore.isPremium) {
+      userStore.openUpgradeModal('Premium Templates')
+      return
+    }
+    cvStore.setTemplate(id)
+  }
+
+  function onTemplateKeydown(event: KeyboardEvent): void {
+    const idx = TEMPLATES.findIndex((t) => t.id === activeId.value)
+    let next = idx
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      event.preventDefault()
+      next = (idx + 1) % TEMPLATES.length
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      next = (idx - 1 + TEMPLATES.length) % TEMPLATES.length
+    } else {
+      return
+    }
+    const t = TEMPLATES[next]
+    selectTemplate(t.id, t.isPro)
+    const group = event.currentTarget as HTMLElement
+    const buttons = group.querySelectorAll<HTMLElement>('[role="radio"]')
+    buttons[next]?.focus()
+  }
 
   function openCoverLetter(): void {
     if (userStore.isPremium) {
@@ -30,21 +57,29 @@
 </script>
 
 <!--
-  Sub-nav strip beneath AppHeader on the builder + cover-letter views. Two
-  pill tabs (◉ CV Builder · ✎ Cover Letter Pro) plus a quiet save-status
-  indicator on the right that fades in for a beat after every persisted edit.
-  No icons-from-a-set — just two decorative glyphs in the editorial language
-  of the rest of the app.
+  Sub-nav strip beneath AppHeader on the builder + cover-letter views.
+
+  On the builder route the strip expands to also host the A4 format label and
+  template radio group (previously a separate TemplatePicker toolbar), keeping
+  all session-level controls in a single row and eliminating one toolbar layer.
+
+  Layout (builder route):
+    [◉ CV Builder] [✎ Cover Letter] | A4 · CLASSIC ··· [Classic] [Modern] [Technical]   [● Saved]
+
+  Layout (other routes):
+    [◉ CV Builder] [✎ Cover Letter]                                                        [● Saved]
 -->
 <template>
   <div
-    class="flex items-center justify-between px-6 py-3 border-b border-overlay/8 shrink-0"
+    class="flex items-center px-6 py-3 border-b border-overlay/8 shrink-0 min-w-0"
     style="background: var(--paper)"
-    role="tablist"
-    aria-label="Builder tools"
   >
     <!-- Tabs -->
-    <div class="flex items-center gap-1">
+    <div
+      class="flex items-center gap-1 shrink-0"
+      role="tablist"
+      aria-label="Builder tools"
+    >
       <RouterLink
         to="/builder"
         role="tab"
@@ -91,30 +126,61 @@
       </button>
     </div>
 
-    <!-- Save indicator — fades in for a beat after every persisted edit -->
-    <Transition
-      enter-active-class="transition-opacity duration-200"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition-opacity duration-300"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
+    <!-- Cover-letter: divider + static A4 · LETTER label (only when pro editor is visible) -->
+    <template v-if="route.name === 'cover-letter' && userStore.isPremium">
+      <div class="w-px h-4 mx-4 shrink-0 bg-overlay/15" aria-hidden="true" />
+      <span class="mono-eyebrow text-[10.5px] text-muted shrink-0">A4 · LETTER</span>
+    </template>
+
+    <!-- Builder-only: vertical divider → A4 label → template radios (right-aligned) -->
+    <template v-else-if="isBuilder">
+      <div class="w-px h-4 mx-4 shrink-0 bg-overlay/15" aria-hidden="true" />
+
+      <span class="mono-eyebrow text-[10.5px] text-muted shrink-0">
+        A4 · {{ activeTemplate.name }}
+      </span>
+
       <div
-        v-if="showSaved"
-        class="flex items-center gap-2"
-        aria-live="polite"
-        role="status"
+        class="flex items-center gap-1 ml-auto overflow-x-auto"
+        role="radiogroup"
+        aria-label="Resume template"
+        @keydown="onTemplateKeydown"
       >
-        <span
-          class="w-1.5 h-1.5 rounded-full"
-          style="background: #22C55E"
-          aria-hidden="true"
-        />
-        <span class="mono-eyebrow text-[10.5px]">
-          Saved to this browser · just now
-        </span>
+        <button
+          v-for="template in TEMPLATES"
+          :key="template.id"
+          type="button"
+          role="radio"
+          :aria-checked="activeId === template.id"
+          :tabindex="activeId === template.id ? 0 : -1"
+          :aria-label="template.isPro && !userStore.isPremium
+            ? `${template.name} (Pro plan required)`
+            : template.name"
+          :title="template.isPro && !userStore.isPremium
+            ? `${template.description} (Pro plan required)`
+            : template.description"
+          :class="[
+            'relative flex items-center gap-1.5 px-3 py-1 rounded-full text-[12.5px] font-medium transition-colors whitespace-nowrap',
+            activeId === template.id
+              ? 'text-white'
+              : template.isPro && !userStore.isPremium
+                ? 'text-muted/70 hover:text-muted hover:bg-overlay/5'
+                : 'text-muted hover:text-ink hover:bg-overlay/5',
+          ]"
+          :style="activeId === template.id ? { background: 'var(--accent)' } : {}"
+          @click="selectTemplate(template.id, template.isPro)"
+        >
+          {{ template.name }}
+          <span
+            v-if="template.isPro && !userStore.isPremium"
+            class="mono-eyebrow text-[9px] px-1.5 py-px rounded text-white"
+            :style="{
+              background: activeId === template.id ? 'rgba(255,255,255,0.22)' : 'var(--accent)',
+            }"
+          >Pro</span>
+        </button>
       </div>
-    </Transition>
+    </template>
+
   </div>
 </template>

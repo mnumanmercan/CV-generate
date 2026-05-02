@@ -20,7 +20,7 @@
   const coverLetterStore = useCoverLetterStore()
   const cvStore = useCVStore()
   const userStore = useUserStore()
-  const { clData } = storeToRefs(coverLetterStore)
+  const { clData, saveIndicatorVisible: showSaved } = storeToRefs(coverLetterStore)
   const { status: pdfStatus, errorMessage: pdfError, exportPDF } = usePDFExport()
   const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } = usePreviewZoom()
   // previewScrollEl is bound via `ref="previewScrollEl"` in the template;
@@ -145,42 +145,22 @@
 
           <!-- ── Preview panel ────────────────────────────────── -->
           <template #preview>
-            <div class="flex flex-col h-full">
+            <div class="relative h-full">
 
-              <!-- Top toolbar: format label + download -->
-              <div
-                class="flex items-center justify-between px-5 py-3 border-b border-overlay/8 shrink-0"
-                style="background: var(--paper)"
-              >
-                <span class="mono-eyebrow">A4 · LETTER</span>
-
-                <button
-                  type="button"
-                  :disabled="pdfStatus === 'generating'"
-                  class="btn-primary text-[13px]"
-                  aria-label="Download cover letter as PDF"
-                  @click="handleDownload"
-                >
-                  <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
-                  <span v-else aria-hidden="true">↓</span>
-                  {{ pdfStatus === 'generating' ? 'Generating…' : 'Download PDF' }}
-                </button>
-              </div>
-
-              <!-- Error banner -->
+              <!-- Error banner — floating alert at top of preview -->
               <div
                 v-if="pdfStatus === 'error'"
-                class="mx-5 mt-3 px-4 py-2.5 rounded-lg text-[13px]"
+                class="absolute top-4 left-5 right-5 z-10 px-4 py-2.5 rounded-lg text-[13px]"
                 style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); color: #B42727"
                 role="alert"
               >
                 {{ pdfError || 'PDF generation failed. Please try again.' }}
               </div>
 
-              <!-- A4 scroll area -->
+              <!-- A4 scroll area — fills the full panel height -->
               <div
                 ref="previewScrollEl"
-                class="flex-1 overflow-auto flex justify-center py-8 px-4"
+                class="h-full overflow-auto flex justify-center py-8 px-4"
                 style="background: var(--paper2)"
               >
                 <div
@@ -196,10 +176,31 @@
                 </div>
               </div>
 
-              <!-- Bottom zoom strip -->
+              <!-- Floating save indicator — top-right -->
+              <Transition
+                enter-active-class="transition-opacity duration-200"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition-opacity duration-300"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+              >
+                <div
+                  v-if="showSaved"
+                  class="absolute top-4 right-5 z-10 flex items-center gap-2 rounded-full px-3 py-1.5"
+                  style="background: var(--paper); box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06)"
+                  aria-live="polite"
+                  role="status"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background: #22C55E" aria-hidden="true" />
+                  <span class="mono-eyebrow text-[10.5px]">Saved to this browser · just now</span>
+                </div>
+              </Transition>
+
+              <!-- Floating zoom island — bottom-left -->
               <div
-                class="flex items-center justify-center gap-1 px-4 py-2 border-t border-overlay/8 shrink-0"
-                style="background: var(--paper)"
+                class="absolute bottom-5 left-5 z-10 flex items-center gap-0.5 rounded-2xl px-2 py-1.5"
+                style="background: var(--paper); box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)"
               >
                 <button
                   type="button"
@@ -229,6 +230,8 @@
                   </svg>
                 </button>
 
+                <div class="w-px h-3.5 mx-1 shrink-0 bg-overlay/15" aria-hidden="true" />
+
                 <button
                   type="button"
                   class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
@@ -241,6 +244,23 @@
                   </svg>
                 </button>
               </div>
+
+              <!-- Floating download island — bottom-right -->
+              <div class="absolute bottom-5 right-5 z-10">
+                <button
+                  type="button"
+                  :disabled="pdfStatus === 'generating'"
+                  class="btn-primary text-[13px]"
+                  style="box-shadow: 0 4px 16px rgba(184,83,42,0.22)"
+                  aria-label="Download cover letter as PDF"
+                  @click="handleDownload"
+                >
+                  <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
+                  <span v-else aria-hidden="true">↓</span>
+                  {{ pdfStatus === 'generating' ? 'Generating…' : 'Download PDF' }}
+                </button>
+              </div>
+
             </div>
           </template>
 
