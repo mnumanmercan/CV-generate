@@ -51,13 +51,13 @@
 
 <style scoped>
   .cv-section-heading {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: #111827;
     border-bottom: 1.5px solid #d1d5db;
-    padding-bottom: 3px;
+    padding-bottom: 5px;
     margin: 0 0 6px 0;
   }
 </style>

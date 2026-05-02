@@ -24,7 +24,7 @@
     >
       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
-          <p style="font-size: 11.5px; font-weight: 700; color: #111827; margin: 0;">{{ edu.institution }}</p>
+          <p style="font-size: 12px; font-weight: 700; color: #111827; margin: 0;">{{ edu.institution }}</p>
           <p style="font-size: 10.5px; color: #4b5563; margin: 1px 0 0 0;">
             {{ edu.degree }} in {{ edu.field }}<span v-if="edu.gpa"> | GPA: {{ edu.gpa }}</span>
           </p>
@@ -39,13 +39,13 @@
 
 <style scoped>
   .cv-section-heading {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: #111827;
     border-bottom: 1.5px solid #d1d5db;
-    padding-bottom: 3px;
+    padding-bottom: 5px;
     margin: 0 0 6px 0;
   }
 </style>

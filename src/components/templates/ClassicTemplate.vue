@@ -48,7 +48,7 @@
     >
       <h1
         :style="{
-          fontSize: '26px', fontWeight: '700',
+          fontSize: '28px', fontWeight: '700',
           color: cvData.personal.fullName ? '#111827' : '#9ca3af',
           margin: '0 0 2px 0', lineHeight: '1.2'
         }"
@@ -103,7 +103,7 @@
 
 <style scoped>
   .cv-section-heading {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
     /* 0.04em — tight enough to preserve the all-caps "section heading" feel
@@ -112,7 +112,7 @@
     letter-spacing: 0.04em;
     color: #111827;
     border-bottom: 1.5px solid #d1d5db;
-    padding-bottom: 3px;
+    padding-bottom: 5px;
     margin: 0 0 6px 0;
   }
 </style>
