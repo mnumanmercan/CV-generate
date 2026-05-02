@@ -115,7 +115,11 @@
   /**
    * Compose the rendered data along the three modes called out at the top:
    *
-   *   1. hasBuilderData      → cvStore.cvData verbatim
+   *   1. hasBuilderData      → smart overlay: user fields where non-empty,
+   *                            sample data where the user hasn't filled a section yet.
+   *                            This prevents sparse previews when the user has only
+   *                            touched some sections (e.g. certifications) but left
+   *                            experience/education/skills empty.
    *   2. hasMiniDemoData     → sample with mini-demo fields overlaid
    *   3. (everything empty)  → sample verbatim — the initial mockup state
    *
@@ -123,11 +127,26 @@
    * unconditional: no spreads, no `||` chains, just the sample as-is.
    */
   const data = computed(() => {
-    // Mode 1: real-CV territory → render cvData wholesale.
-    if (hasBuilderData.value) return cvStore.cvData
-
     // Mode 3: empty everything → render the sample untouched (the default mockup).
-    if (!hasMiniDemoData.value) return sample
+    if (!hasMiniDemoData.value && !hasBuilderData.value) return sample
+
+    // Mode 1: real-CV territory → smart overlay so sections the user hasn't
+    // filled yet still show the sample data instead of disappearing.
+    if (hasBuilderData.value) {
+      const d = cvStore.cvData
+      return {
+        personal: {
+          fullName: d.personal.fullName?.trim()  || sample.personal.fullName,
+          jobTitle: d.personal.jobTitle?.trim()  || d.experience[0]?.position?.trim() || sample.personal.jobTitle,
+          email:    d.personal.email?.trim()     || sample.personal.email,
+          phone:    d.personal.phone?.trim()     || sample.personal.phone,
+          location: d.personal.location?.trim()  || sample.personal.location,
+        },
+        experience: d.experience.length > 0 ? d.experience : sample.experience,
+        education:  d.education.length > 0  ? d.education  : sample.education,
+        skills:     d.skills.length > 0     ? d.skills     : sample.skills,
+      }
+    }
 
     // Mode 2: per-field overlay. Only here do we mix mini-demo fields with sample.
     const exp0         = cvStore.cvData.experience[0]
