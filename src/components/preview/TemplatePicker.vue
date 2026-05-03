@@ -89,9 +89,13 @@
         {{ template.name }}
         <span
           v-if="template.isPro && !userStore.isPremium"
-          class="mono-eyebrow text-[9px] px-1.5 py-px rounded text-white"
+          class="mono-eyebrow rounded leading-none"
           :style="{
-            background: activeId === template.id ? 'rgba(255,255,255,0.22)' : 'var(--accent)',
+            fontSize: '8.5px',
+            fontWeight: '700',
+            padding: '2px 6px',
+            color: '#ffffff',
+            background: activeId === template.id ? 'rgba(255,255,255,0.28)' : 'var(--accent)',
           }"
         >Pro</span>
       </button>

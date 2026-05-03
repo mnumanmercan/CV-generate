@@ -1,13 +1,11 @@
 <script setup lang="ts">
-  import { ref, reactive, computed } from 'vue'
+  import { reactive, computed } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
-  import { useUserStore } from '@/stores/userStore'
   import FormField from './FormField.vue'
   import { validateEmail, validatePhone, validateUrl } from '@/services/atsFormatter'
 
   const cvStore = useCVStore()
-  const userStore = useUserStore()
   const { cvData } = storeToRefs(cvStore)
 
   const errors = reactive<Record<string, string>>({})
@@ -54,56 +52,26 @@
       cvData.value.personal.jobTitle,
   )
 
-  const showPhotoComingSoon = ref(false)
-  let photoComingSoonTimer: ReturnType<typeof setTimeout> | null = null
 
-  function handlePhotoUploadClick(): void {
-    if (!userStore.canUploadPhoto) {
-      userStore.openUpgradeModal('Profile Photo Upload')
-      return
-    }
-    // Phase 2: trigger real file input. For now, acknowledge the click.
-    if (photoComingSoonTimer) clearTimeout(photoComingSoonTimer)
-    showPhotoComingSoon.value = true
-    photoComingSoonTimer = setTimeout(() => {
-      showPhotoComingSoon.value = false
-      photoComingSoonTimer = null
-    }, 3000)
-  }
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
-    <!-- Profile photo (Pro-gated) -->
+    <!--
+      Profile photo upload — removed from form (ATS compliance: photos can
+      cause parsing failures in ATS scanners). The profilePhoto field is
+      preserved in cv.types.ts to avoid breaking stored-data migrations.
+
     <div>
       <span class="text-xs font-medium text-secondary font-mono uppercase tracking-wider flex items-center gap-1.5">
         Profile Photo
-        <span
-          v-if="!userStore.canUploadPhoto"
-          class="text-[9px] font-bold px-1.5 py-px rounded-full text-white leading-none"
-          :style="{ background: 'var(--accent)' }"
-        >Pro</span>
+        <span v-if="!userStore.canUploadPhoto" ...>Pro</span>
       </span>
-      <button
-        type="button"
-        class="mt-1.5 w-full h-20 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors"
-        :class="userStore.canUploadPhoto
-          ? 'border-overlay/10 text-secondary hover:border-accent/50 hover:text-accent cursor-pointer'
-          : 'border-overlay/5 text-secondary/40 hover:border-accent/30 hover:text-secondary/60 cursor-pointer'"
-        :aria-label="userStore.canUploadPhoto ? 'Upload profile photo' : 'Upload profile photo (Pro feature)'"
-        @click="handlePhotoUploadClick"
-      >
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-        <span class="text-xs">{{ userStore.canUploadPhoto ? 'Click to upload' : 'Upgrade to Pro to upload' }}</span>
+      <button type="button" ... @click="handlePhotoUploadClick">
+        Upload photo (Phase 2)
       </button>
-      <p v-if="showPhotoComingSoon" class="mt-1.5 text-xs text-center text-secondary/70">
-        Photo upload coming in a future update.
-      </p>
     </div>
+    -->
 
     <!-- Required fields -->
     <div class="grid grid-cols-1 gap-3">
@@ -127,6 +95,50 @@
         :error="errors.jobTitle"
         @blur="validateField('jobTitle')"
       />
+
+      <!-- Job title color -->
+      <div>
+        <p class="mono-eyebrow text-[10.5px] text-muted mb-2">Title color</p>
+        <div class="flex gap-5" role="radiogroup" aria-label="Job title color">
+          <button
+            type="button"
+            class="flex items-center gap-2"
+            role="radio"
+            :aria-checked="(cvData.personal.jobTitleColor ?? 'accent') === 'accent'"
+            @click="cvData.personal.jobTitleColor = 'accent'"
+          >
+            <span
+              class="w-3.5 h-3.5 rounded-full shrink-0 transition-all"
+              :style="(cvData.personal.jobTitleColor ?? 'accent') === 'accent'
+                ? { background: '#B8532A', outline: '2px solid #B8532A', outlineOffset: '2px' }
+                : { background: '#B8532A', outline: '1.5px solid rgba(0,0,0,0.12)', outlineOffset: '2px' }"
+            />
+            <span
+              class="mono-eyebrow text-[10px] transition-colors"
+              :class="(cvData.personal.jobTitleColor ?? 'accent') === 'accent' ? 'text-ink' : 'text-muted'"
+            >Sienna</span>
+          </button>
+
+          <button
+            type="button"
+            class="flex items-center gap-2"
+            role="radio"
+            :aria-checked="cvData.personal.jobTitleColor === 'dark'"
+            @click="cvData.personal.jobTitleColor = 'dark'"
+          >
+            <span
+              class="w-3.5 h-3.5 rounded-full shrink-0 transition-all"
+              :style="cvData.personal.jobTitleColor === 'dark'
+                ? { background: '#111827', outline: '2px solid #111827', outlineOffset: '2px' }
+                : { background: '#111827', outline: '1.5px solid rgba(0,0,0,0.12)', outlineOffset: '2px' }"
+            />
+            <span
+              class="mono-eyebrow text-[10px] transition-colors"
+              :class="cvData.personal.jobTitleColor === 'dark' ? 'text-ink' : 'text-muted'"
+            >Dark</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="grid grid-cols-2 gap-3">

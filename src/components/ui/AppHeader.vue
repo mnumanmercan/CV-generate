@@ -68,7 +68,7 @@
         :key="link.name"
         :to="`/${link.name}`"
         :class="[
-          'relative font-mono text-[11px] tracking-[0.18em] uppercase font-medium transition-colors',
+          'relative font-sans text-[12px] tracking-[0.14em] uppercase font-medium transition-colors',
           route.name === link.name ? 'text-accent' : 'text-muted hover:text-ink',
         ]"
       >

@@ -106,22 +106,22 @@
 
   const steps = [
     {
-      eyebrow:     'Open the document',
+      eyebrow:     'Open the editor',
       numeral:     '01',
-      title:       'Start writing',
-      description: 'Resumark gives you the page you need — pre-shaped sections, real-world examples, gentle hints when a sentence drifts. No blinking cursor on a blank page.',
+      title:       'Write your story',
+      description: 'Pick a section, start typing. Resumark keeps the structure tight so you can focus on the words — no blank page, no formatting headaches.',
     },
     {
-      eyebrow:     'Watch it tighten',
+      eyebrow:     'See the result',
       numeral:     '02',
-      title:       'See it as the reviewer will',
-      description: 'The right side updates with every keystroke. The page stays pinned to A4, so what you see is exactly what arrives in the recruiter\'s inbox.',
+      title:       'Preview as you type',
+      description: 'Your résumé updates live on the right — pinned to A4, exactly as the recruiter will see it.',
     },
     {
-      eyebrow:     'Send the work',
+      eyebrow:     'Ship it',
       numeral:     '03',
-      title:       'Export and apply',
-      description: 'One click delivers a pixel-perfect, ATS-readable PDF. Same fonts, same spacing, same margins — every single time.',
+      title:       'Export and go',
+      description: 'One click. Pixel-perfect PDF, ATS-readable, consistent every time.',
     },
   ]
 
@@ -175,7 +175,7 @@
             <!-- Eyebrow -->
             <div class="flex items-center gap-2.5 mb-8 stagger-item">
               <span class="w-1.5 h-1.5 rounded-full" :style="{ background:'var(--accent)' }" aria-hidden="true" />
-              <span class="mono-eyebrow">A Résumé Builder · April Edition</span>
+              <span class="mono-eyebrow">A Résumé Builder · Pixel-perfect PDF Export</span>
             </div>
 
             <!-- Display headline -->
@@ -184,9 +184,11 @@
               class="font-display leading-[1.02] tracking-editorial stagger-item"
               :style="{ fontSize:'clamp(48px, 7.4vw, 96px)', animationDelay:'60ms' }"
             >
-              <span class="text-ink">Write your résumé,</span>
-              <br />
-              <span class="accent-italic">not</span><span class="text-ink"> a template.</span>
+            <!--             
+              <span class="text-ink">Open the page.</span>
+              <br /> 
+            -->
+              <div class="text-nowrap"><span class="accent-italic">Build</span><span class="text-ink"> in minutes.</span></div>
             </h1>
 
             <!-- Lede -->
@@ -194,9 +196,9 @@
               class="mt-7 max-w-[540px] text-[18px] leading-[1.55] text-muted stagger-item"
               style="animation-delay: 120ms"
             >
-              A focused résumé builder for the people who write theirs once, in one
-              sitting, and want it to <span class="accent-italic">read like a person</span>
-              instead of a form. Free, private, ATS-friendly.
+              Resumark takes the friction out of résumé writing — structured sections
+              guide you, a live preview shows exactly what the <span>HR</span> sees.
+              <span class="accent-italic">No account required.</span>
             </p>
 
             <!-- Mini demo -->
@@ -212,7 +214,7 @@
 
             <!-- Foot line -->
             <p class="mt-6 mono-eyebrow stagger-item" style="animation-delay: 240ms">
-              Free forever · No sign-up required · Under five minutes
+              Free to start · No account required · ATS-ready PDF
             </p>
           </div>
 
@@ -246,8 +248,7 @@
               class="font-display leading-[1.02] tracking-editorial text-ink"
               :style="{ fontSize:'clamp(40px, 6vw, 80px)' }"
             >
-              Three steps.<br />
-              <span class="accent-italic">No</span><span> blank page.</span>
+              Just three steps<br />
             </h2>
           </div>
         </div>
@@ -302,15 +303,15 @@
         class="px-6 py-24 md:py-32 max-w-6xl mx-auto w-full text-center border-t border-overlay/8"
       >
         <p class="mono-eyebrow mb-8 reveal-item">
-          Free forever · No sign-up · Under five minutes
+          Free to start · No account required · ATS-ready PDF
         </p>
 
         <h2
           class="font-display leading-[1.02] tracking-editorial text-ink mb-12 reveal-item"
           :style="{ fontSize:'clamp(56px, 9vw, 120px)', animationDelay:'80ms' }"
         >
-          Your next job<br />
-          is <span class="accent-italic">one résumé</span> away.
+          The page is open.<br />
+          The <span class="accent-italic">rest</span> is yours.
         </h2>
 
         <RouterLink

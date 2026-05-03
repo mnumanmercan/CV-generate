@@ -5,15 +5,16 @@ import { z } from 'zod'
 // These enforce all business rules: non-empty required fields, date format, etc.
 
 const PersonalInfoSchema = z.object({
-  fullName:     z.string().min(1).max(100),
-  jobTitle:     z.string().min(1).max(100),
-  email:        z.string().email().max(254),
-  phone:        z.string().min(1).max(30),
-  location:     z.string().min(1).max(100),
-  linkedin:     z.string().url().optional().or(z.literal('')),
-  github:       z.string().url().optional().or(z.literal('')),
-  website:      z.string().url().optional().or(z.literal('')),
-  profilePhoto: z.string().url().optional().or(z.literal('')),
+  fullName:      z.string().min(1).max(100),
+  jobTitle:      z.string().min(1).max(100),
+  jobTitleColor: z.enum(['accent', 'dark']).optional(),
+  email:         z.string().email().max(254),
+  phone:         z.string().min(1).max(30),
+  location:      z.string().min(1).max(100),
+  linkedin:      z.string().url().optional().or(z.literal('')),
+  github:        z.string().url().optional().or(z.literal('')),
+  website:       z.string().url().optional().or(z.literal('')),
+  profilePhoto:  z.string().url().optional().or(z.literal('')),
 })
 
 const WorkExperienceSchema = z.object({
@@ -109,15 +110,16 @@ export const CVDataSchema = z.object({
 //     and would throw 403 for an unknown value regardless
 
 const DraftPersonalInfoSchema = z.object({
-  fullName:     z.string().max(100),
-  jobTitle:     z.string().max(100),
-  email:        z.string().max(254),
-  phone:        z.string().max(30),
-  location:     z.string().max(100),
-  linkedin:     z.string().max(500).optional().or(z.literal('')),
-  github:       z.string().max(500).optional().or(z.literal('')),
-  website:      z.string().max(500).optional().or(z.literal('')),
-  profilePhoto: z.string().max(2048).optional().or(z.literal('')),
+  fullName:      z.string().max(100),
+  jobTitle:      z.string().max(100),
+  jobTitleColor: z.enum(['accent', 'dark']).optional(),
+  email:         z.string().max(254),
+  phone:         z.string().max(30),
+  location:      z.string().max(100),
+  linkedin:      z.string().max(500).optional().or(z.literal('')),
+  github:        z.string().max(500).optional().or(z.literal('')),
+  website:       z.string().max(500).optional().or(z.literal('')),
+  profilePhoto:  z.string().max(2048).optional().or(z.literal('')),
 })
 
 const DraftWorkExperienceSchema = z.object({

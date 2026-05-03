@@ -32,12 +32,12 @@
   is the same row they'll find pre-filled in /builder's Experience section.
 -->
 <template>
-  <div class="paper-card p-6">
+  <div class="paper-card p-6 demo-float">
     <!-- Eyebrow row -->
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-2">
         <span class="w-1.5 h-1.5 rounded-full" :style="{ background:'var(--accent)' }" aria-hidden="true" />
-        <span class="mono-eyebrow">Editing · Your CV</span>
+        <span class="mono-eyebrow">Try demo · Your CV</span>
       </div>
       <span class="mono-eyebrow" :style="{ color:'var(--accent)' }">
         Step {{ currentStep }} / {{ totalSteps }}
@@ -122,7 +122,7 @@
         />
       </div>
       <RouterLink to="/builder" class="btn-primary text-sm">
-        Continue
+        <span>Complete your CV</span>
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
         </svg>

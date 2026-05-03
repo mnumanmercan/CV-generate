@@ -1,6 +1,7 @@
 export interface PersonalInfo {
   fullName: string
   jobTitle: string
+  jobTitleColor?: 'accent' | 'dark'
   email: string
   phone: string
   location: string
@@ -117,7 +118,7 @@ export const LANGUAGE_PROFICIENCY_LEVELS: readonly string[] = [
   'Basic',
 ] as const
 
-export const CURRENT_VERSION = '1.2.0'
+export const CURRENT_VERSION = '1.3.0'
 export const DEFAULT_TEMPLATE_ID = 'classic'
 
 /**
@@ -139,6 +140,10 @@ export function migrateCVData(stored: CVData): CVData {
   if (!stored.meta.sectionOrder.includes('languages')) {
     stored.meta.sectionOrder = [...stored.meta.sectionOrder, 'languages']
   }
+  // v1.2.0 → v1.3.0: introduce jobTitleColor
+  if (!stored.personal.jobTitleColor) {
+    stored.personal.jobTitleColor = 'accent'
+  }
   // Stamp with current version so future migrations can gate on it.
   stored.meta.version = CURRENT_VERSION
   return stored
@@ -150,6 +155,7 @@ export function createEmptyCVData(): CVData {
     personal: {
       fullName: '',
       jobTitle: '',
+      jobTitleColor: 'accent',
       email: '',
       phone: '',
       location: '',

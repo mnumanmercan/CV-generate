@@ -1,6 +1,10 @@
 <script setup lang="ts">
   import { computed, type Component } from 'vue'
   import type { CVData, SectionKey } from '@/types/cv.types'
+
+  type DisplaySection =
+    | { paired: false; key: SectionKey }
+    | { paired: true; first: SectionKey; second: SectionKey }
   import ExperienceSection from './classic/sections/ExperienceSection.vue'
   import EducationSection from './classic/sections/EducationSection.vue'
   import SkillsSection from './classic/sections/SkillsSection.vue'
@@ -26,6 +30,28 @@
   const orderedSections = computed(() =>
     props.sectionOrder.filter((key) => key in sectionMap),
   )
+
+  const displaySections = computed<DisplaySection[]>(() => {
+    const keys = orderedSections.value
+    const result: DisplaySection[] = []
+    let pairEmitted = false
+
+    for (const key of keys) {
+      if (key !== 'certifications' && key !== 'languages') {
+        result.push({ paired: false, key })
+        continue
+      }
+      if (pairEmitted) continue
+      const other = keys.find((k) => k !== key && (k === 'certifications' || k === 'languages'))
+      if (other) {
+        result.push({ paired: true, first: key, second: other })
+        pairEmitted = true
+      } else {
+        result.push({ paired: false, key })
+      }
+    }
+    return result
+  })
 
   const socialLinks = computed(() => {
     const p = props.cvData.personal
@@ -58,7 +84,9 @@
       <p
         :style="{
           fontSize: '12px', fontWeight: '600',
-          color: cvData.personal.jobTitle ? '#B8532A' : '#D5916F',
+          color: cvData.personal.jobTitle
+            ? (cvData.personal.jobTitleColor === 'dark' ? '#111827' : '#B8532A')
+            : '#D5916F',
           margin: '0 0 6px 0'
         }"
       >
@@ -90,12 +118,21 @@
     </section>
 
     <!-- ── Ordered Sections ──────────────────────────────────────── -->
-    <template v-for="key in orderedSections" :key="key">
+    <template v-for="item in displaySections" :key="item.paired ? 'cert-lang-pair' : item.key">
       <component
-        :is="sectionMap[key]"
+        v-if="!item.paired"
+        :is="sectionMap[item.key]"
         :cv-data="cvData"
         :is-pulsed="isPulsed"
       />
+      <div v-else style="display: flex; gap: 24px; align-items: flex-start;">
+        <div style="flex: 1; min-width: 0;">
+          <component :is="sectionMap[item.first]" :cv-data="cvData" :is-pulsed="isPulsed" />
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <component :is="sectionMap[item.second]" :cv-data="cvData" :is-pulsed="isPulsed" />
+        </div>
+      </div>
     </template>
 
   </div>

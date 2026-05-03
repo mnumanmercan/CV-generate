@@ -119,7 +119,7 @@
         Cover Letter
         <span
           v-if="!userStore.isPremium"
-          class="mono-eyebrow text-[9.5px] px-1.5 py-px rounded text-white"
+          class="mono-eyebrow text-[10px] px-2.5 py-[4px] rounded"
           :style="{ background: 'var(--accent)' }"
           aria-label="Pro feature"
         >Pro</span>
@@ -173,9 +173,9 @@
           {{ template.name }}
           <span
             v-if="template.isPro && !userStore.isPremium"
-            class="mono-eyebrow text-[9px] px-1.5 py-px rounded text-white"
+            class="mono-eyebrow text-[10px] px-2.5 py-[4px] rounded text-white"
             :style="{
-              background: activeId === template.id ? 'rgba(255,255,255,0.22)' : 'var(--accent)',
+              background: activeId === template.id ? 'rgba(255,255,255,0.28)' : 'var(--accent)',
             }"
           >Pro</span>
         </button>

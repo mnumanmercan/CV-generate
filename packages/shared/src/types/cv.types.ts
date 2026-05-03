@@ -4,6 +4,7 @@
 export interface PersonalInfo {
   fullName: string
   jobTitle: string
+  jobTitleColor?: 'accent' | 'dark'
   email: string
   phone: string
   location: string

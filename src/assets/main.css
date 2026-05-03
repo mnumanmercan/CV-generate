@@ -192,7 +192,7 @@ select:focus {
   line-height: 1;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink-2);
   font-weight: 500;
 }
 
@@ -349,11 +349,34 @@ select:focus {
 .section-visible .reveal-item:nth-child(7)  { animation-delay: 420ms; }
 .section-visible .reveal-item:nth-child(8)  { animation-delay: 490ms; }
 
+/* ─── Hero Mini Demo float ───────────────────────────────────────────── */
+
+@keyframes floatCard {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-7px); }
+}
+
+.demo-float {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.10),
+    0 2px  6px rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .demo-float {
+    animation: floatCard 4s ease-in-out infinite alternate;
+  }
+  .demo-float:hover {
+    animation-play-state: paused;
+  }
+}
+
 /* ─── Reduced motion ─────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .stagger-item,
   .section-visible .reveal-item,
-  .section-pulse {
+  .section-pulse,
+  .demo-float {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
