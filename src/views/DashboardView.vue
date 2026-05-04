@@ -136,72 +136,78 @@
           </div>
         </div>
 
-        <!-- Unlock with Pro — locked features + upgrade teaser -->
+        <!-- Unlock with Pro — Pro Plan card wraps the feature subcards -->
         <div class="stagger-item">
           <p class="mono-eyebrow mb-4">Unlock with Pro</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-            <!-- Locked feature cards -->
+          <!-- Pro Plan container card (full width) -->
+          <div class="paper-card p-5 relative">
+
+            <!-- Soon badge -->
             <div
-              v-for="feat in lockedFeatures"
-              :key="feat.title"
-              class="paper-card p-5 flex flex-col gap-3"
+              class="absolute -top-3 right-5 px-3 py-1 rounded-full text-[10px] font-mono font-semibold tracking-[0.16em] uppercase shadow-md"
+              style="background: var(--accent); color: #FFFFFF; white-space: nowrap"
+              aria-label="Coming soon"
             >
-              <span
-                class="font-display text-[24px] leading-none"
-                :style="{ color: 'var(--accent)' }"
-                aria-hidden="true"
-              >{{ feat.glyph }}</span>
-              <div>
-                <div class="flex items-center gap-1.5 mb-1">
-                  <h3 class="font-display text-[17px] leading-tight text-ink">{{ feat.title }}</h3>
-                  <span
-                    class="mono-eyebrow text-[9px] px-1.5 py-px rounded-full text-white leading-none"
-                    :style="{ background: 'var(--accent)' }"
-                  >Pro</span>
-                </div>
-                <p class="text-[13px] text-muted leading-[1.55]">{{ feat.desc }}</p>
-              </div>
-              <button
-                type="button"
-                class="mt-auto mono-eyebrow text-[10.5px] text-left transition-colors hover:opacity-80"
-                :style="{ color: 'var(--accent)' }"
-                @click="userStore.openUpgradeModal(feat.trigger)"
-              >Get notified →</button>
+              Soon
             </div>
 
-            <!-- Upgrade teaser card with Soon badge -->
-            <div class="paper-card p-5 flex flex-col gap-3 relative">
-              <div
-                class="absolute -top-3 right-5 px-3 py-1 rounded-full text-[10px] font-mono font-semibold tracking-[0.16em] uppercase shadow-md"
-                style="background: var(--accent); color: #FFFFFF; white-space: nowrap"
-                aria-label="Coming soon"
-              >
-                Soon
-              </div>
+            <!-- Header row — single line -->
+            <div class="flex items-center gap-4 mb-5">
               <span
-                class="font-display text-[24px] leading-none"
+                class="font-display text-[24px] leading-none shrink-0"
                 :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
               >✦</span>
-              <div>
-                <div class="flex items-center gap-1.5 mb-1">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
                   <h3 class="font-display text-[17px] leading-tight text-ink">Pro Plan</h3>
                   <span
                     class="mono-eyebrow text-[9px] px-1.5 py-px rounded-full text-white leading-none"
                     :style="{ background: 'var(--accent)' }"
                   >Pro</span>
                 </div>
-                <p class="text-[13px] text-muted leading-[1.55]">
+                <p class="text-[13px] text-muted leading-none">
                   Cloud sync, multiple CVs, premium templates, and more — coming soon.
                 </p>
               </div>
               <button
                 type="button"
-                class="mt-auto mono-eyebrow text-[10.5px] text-left transition-colors hover:opacity-80"
-                :style="{ color: 'var(--accent)' }"
+                class="btn-ghost shrink-0 text-[13px]"
                 @click="userStore.openUpgradeModal('pro plan')"
-              >Get notified →</button>
+              >
+                Get notified
+              </button>
+            </div>
+
+            <!-- Feature subcards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div
+                v-for="feat in lockedFeatures"
+                :key="feat.title"
+                class="rounded-xl p-4 flex flex-col gap-2.5 border border-overlay/8"
+                style="background: var(--paper)"
+              >
+                <div class="flex items-center gap-2">
+                  <span
+                    class="font-display text-[20px] leading-none"
+                    :style="{ color: 'var(--accent)' }"
+                    aria-hidden="true"
+                  >{{ feat.glyph }}</span>
+                  <h4 class="font-display text-[15px] leading-tight text-ink">{{ feat.title }}</h4>
+                  <span
+                    class="mono-eyebrow text-[9px] px-1.5 py-px rounded-full text-white leading-none"
+                    :style="{ background: 'var(--accent)' }"
+                  >Pro</span>
+                </div>
+                <p class="text-[12.5px] text-muted leading-[1.55]">{{ feat.desc }}</p>
+                <button
+                  type="button"
+                  class="mono-eyebrow text-[10.5px] text-left transition-colors hover:opacity-80"
+                  :style="{ color: 'var(--accent)' }"
+                  @click="userStore.openUpgradeModal(feat.trigger)"
+                >Get notified →</button>
+              </div>
             </div>
 
           </div>
