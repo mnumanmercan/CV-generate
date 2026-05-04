@@ -6,7 +6,6 @@
   import HeroMiniDemo from '@/components/home/HeroMiniDemo.vue'
   import LiveCV from '@/components/home/LiveCV.vue'
   import StepCard from '@/components/home/StepCard.vue'
-  import TestimonialCard from '@/components/home/TestimonialCard.vue'
   import { useScrollReveal } from '@/composables/useScrollReveal'
   import { useAutoSave } from '@/composables/useAutoSave'
   import { useCVStore } from '@/stores/cvStore'
@@ -125,36 +124,6 @@
     },
   ]
 
-  const testimonials = [
-    {
-      quote:   'I spent four hours on three job sites before I gave up and tried Resumark. Twenty minutes later I had something I was proud to send.',
-      name:    'Alex K.',
-      role:    'Software Engineer · Berlin',
-      outcome: 'Three callbacks in one week',
-      when:    'Two months ago',
-    },
-    {
-      quote:   'The hints kept pulling me back to verbs. I didn\'t know how passive my old résumé read until the page literally underlined it.',
-      name:    'Priya M.',
-      role:    'Product Manager · Bengaluru',
-      outcome: 'Hired at her #1 choice',
-      when:    'Six weeks ago',
-    },
-    {
-      quote:   'No sign-up. No marketing email. The PDF just appeared in my downloads folder. I keep waiting for the catch.',
-      name:    'James T.',
-      role:    'Data Scientist · Toronto',
-      outcome: 'Still waiting for the catch',
-      when:    'Last month',
-    },
-    {
-      quote:   'I\'ve made résumés in InDesign, Word, and four LaTeX templates. Resumark is the first one where I closed the tab without rewriting anything.',
-      name:    'Sara D.',
-      role:    'UX Researcher · Lisbon',
-      outcome: 'Used it for three applications',
-      when:    'Last week',
-    },
-  ]
 </script>
 
 <template>
@@ -260,39 +229,6 @@
             class="reveal-item"
             :style="{ animationDelay: `${i * 90}ms` }"
             v-bind="step"
-          />
-        </div>
-      </section>
-
-      <!-- ── Testimonials ─────────────────────────────────────────────── -->
-      <section
-        v-reveal
-        class="px-6 py-20 md:py-28 max-w-7xl mx-auto w-full border-t border-overlay/8"
-        aria-labelledby="testimonials-heading"
-      >
-        <div class="flex flex-col md:flex-row gap-8 md:gap-16 mb-14 md:mb-16">
-          <div class="md:w-1/3 reveal-item">
-            <p class="mono-eyebrow">From the inbox</p>
-          </div>
-          <div class="md:w-2/3 reveal-item" style="animation-delay: 80ms">
-            <h2
-              id="testimonials-heading"
-              class="font-display leading-[1.02] tracking-editorial text-ink"
-              :style="{ fontSize:'clamp(36px, 5.4vw, 72px)' }"
-            >
-              Notes from the<br />
-              <span class="accent-italic">people</span><span> who shipped.</span>
-            </h2>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-7">
-          <TestimonialCard
-            v-for="(t, i) in testimonials"
-            :key="t.name"
-            class="reveal-item"
-            :style="{ animationDelay: `${i * 90}ms` }"
-            v-bind="t"
           />
         </div>
       </section>

@@ -138,8 +138,13 @@
           </div>
 
           <p class="text-[13.5px] text-muted mb-6 leading-[1.55]">
-            <span class="text-ink font-medium">{{ userStore.upgradeModalTrigger }}</span> is coming to the Pro plan.
-            Drop your email — we'll let you know the moment it launches.
+            <template v-if="userStore.upgradeModalTrigger === 'pro plan'">
+              The Pro Plan will be available soon. Drop your email — we'll let you know the moment it launches.
+            </template>
+            <template v-else>
+              <span class="text-ink font-medium">{{ userStore.upgradeModalTrigger }}</span> is coming to the Pro plan.
+              Drop your email — we'll let you know the moment it launches.
+            </template>
           </p>
 
           <!-- Error banner -->

@@ -3,9 +3,10 @@
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import AppFooter from '@/components/ui/AppFooter.vue'
+  import UpgradePrompt from '@/components/ui/UpgradePrompt.vue'
   import { useUserStore } from '@/stores/userStore'
   import { useScrollReveal } from '@/composables/useScrollReveal'
-  import { PLANS, useSubscription, type SubscriptionTier } from '@/composables/useSubscription'
+  import { PLANS, type SubscriptionTier } from '@/composables/useSubscription'
 
   onMounted(() => {
     document.title = 'Pricing — Resumark'
@@ -13,19 +14,8 @@
 
   const { vReveal } = useScrollReveal()
   const userStore = useUserStore()
-  const { subscribe, isCheckingOut, checkoutError } = useSubscription()
-
   const currentTier = computed<SubscriptionTier>(() => (userStore.isPremium ? 'pro' : 'free'))
   const billingPeriod = ref<'monthly' | 'annual'>('monthly')
-
-  /**
-   * Click handler for the plan CTA. Delegates to useSubscription which will
-   * either redirect to Stripe Checkout (logged-in Pro upgrade) or open the
-   * upgrade modal (anonymous user needs to sign up first).
-   */
-  async function handleUpgrade(tier: SubscriptionTier): Promise<void> {
-    await subscribe(tier, billingPeriod.value)
-  }
 
   function displayedPrice(price: number): string {
     if (price === 0) return '$0'
@@ -107,7 +97,7 @@
           style="animation-delay: 120ms"
         >
           The full résumé builder is free, forever. Pro unlocks cloud sync,
-          multiple CV versions, and cover letters tailored to every application.
+          multiple CV versions, premium templates, and more.
         </p>
 
         <!-- Billing toggle -->
@@ -140,21 +130,6 @@
         </div>
       </section>
 
-      <!-- ── Checkout error banner ─────────────────────────────────────── -->
-      <div v-if="checkoutError" class="max-w-3xl mx-auto px-6 mb-4">
-        <div
-          class="flex items-center gap-2.5 px-4 py-3 rounded-lg text-sm"
-          style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); color: #ef4444"
-          role="alert"
-        >
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-          </svg>
-          {{ checkoutError }}
-        </div>
-      </div>
-
       <!-- ── Plan cards ───────────────────────────────────────────────── -->
       <section
         v-reveal
@@ -172,18 +147,20 @@
                  border + tinted shadow so it pops out of the row visually. -->
             <div
               class="paper-card relative w-full p-8 flex flex-col"
-              :style="plan.id === 'pro'
-                ? { borderColor: 'var(--accent)', transform: 'scale(1.02)', boxShadow: '0 14px 36px rgba(184,83,42,0.18)' }
-                : {}"
+              :style="currentTier === plan.id
+                ? { border: '1.5px solid var(--accent)', boxShadow: '0 8px 32px rgba(0,0,0,0.14)' }
+                : plan.id === 'pro'
+                  ? { boxShadow: '0 8px 24px rgba(0,0,0,0.10)' }
+                  : {}"
             >
-              <!-- Most-popular badge -->
+              <!-- Soon badge -->
               <div
                 v-if="plan.id === 'pro'"
-                class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10.5px] font-mono font-semibold tracking-[0.16em] uppercase shadow-md"
+                class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-[13px] font-mono font-semibold tracking-[0.16em] uppercase shadow-md"
                 style="background: var(--accent); color: #FFFFFF; white-space: nowrap"
-                aria-label="Most popular plan"
+                aria-label="Coming soon"
               >
-                Most Popular
+                Soon
               </div>
 
               <!-- Plan identity -->
@@ -260,31 +237,20 @@
                   Contact sales
                 </a>
                 <button
-                  v-else
+                  v-else-if="plan.id === 'pro'"
                   type="button"
-                  :disabled="isCheckingOut"
-                  class="w-full py-3 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  class="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
                   :style="{ background: 'var(--accent)', color: '#FFFFFF' }"
-                  @click="handleUpgrade(plan.id)"
+                  @click="userStore.openUpgradeModal('pro plan')"
                 >
-                  <svg
-                    v-if="isCheckingOut"
-                    class="w-4 h-4 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  {{ isCheckingOut ? 'Starting checkout…' : `Upgrade to ${plan.name}` }}
+                  Get notified at launch
                 </button>
               </div>
 
               <!-- Hairline -->
               <div class="my-7 h-px bg-overlay/10" aria-hidden="true" />
 
-              <!-- Features (sienna circle + checkmark — matches image-6) -->
+              <!-- Features -->
               <ul class="flex flex-col gap-3.5 flex-1" :aria-label="`${plan.name} features`">
                 <li
                   v-for="feature in plan.features"
@@ -474,5 +440,6 @@
     </main>
 
     <AppFooter />
+    <UpgradePrompt />
   </div>
 </template>

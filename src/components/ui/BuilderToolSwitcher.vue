@@ -48,11 +48,7 @@
   }
 
   function openCoverLetter(): void {
-    if (userStore.isPremium) {
-      router.push('/cover-letter')
-    } else {
-      userStore.openUpgradeModal('Cover Letter Generator')
-    }
+    router.push('/cover-letter')
   }
 </script>
 
@@ -105,9 +101,7 @@
         class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors"
         :class="route.name === 'cover-letter'
           ? 'text-ink'
-          : userStore.isPremium
-            ? 'text-muted hover:text-ink'
-            : 'text-muted/70 hover:text-muted'"
+          : 'text-muted hover:text-ink'"
         :style="route.name === 'cover-letter' ? { background: 'var(--card)' } : {}"
         @click="openCoverLetter"
       >
@@ -117,17 +111,11 @@
           aria-hidden="true"
         >✎</span>
         Cover Letter
-        <span
-          v-if="!userStore.isPremium"
-          class="mono-eyebrow text-[10px] px-2.5 py-[4px] rounded"
-          :style="{ background: 'var(--accent)' }"
-          aria-label="Pro feature"
-        >Pro</span>
       </button>
     </div>
 
-    <!-- Cover-letter: divider + static A4 · LETTER label (only when pro editor is visible) -->
-    <template v-if="route.name === 'cover-letter' && userStore.isPremium">
+    <!-- Cover-letter: divider + static A4 · LETTER label -->
+    <template v-if="route.name === 'cover-letter'">
       <div class="w-px h-4 mx-4 shrink-0 bg-overlay/15" aria-hidden="true" />
       <span class="mono-eyebrow text-[10.5px] text-muted shrink-0">A4 · LETTER</span>
     </template>

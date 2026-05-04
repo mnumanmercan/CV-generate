@@ -98,7 +98,7 @@
           to="/register"
           class="btn-primary text-sm"
         >
-          Start free
+          Register
           <svg
             class="w-3.5 h-3.5 opacity-90"
             fill="none"

@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import { onMounted } from 'vue'
   import { storeToRefs } from 'pinia'
-  import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import BuilderToolSwitcher from '@/components/ui/BuilderToolSwitcher.vue'
   import SplitLayout from '@/components/ui/SplitLayout.vue'
@@ -13,13 +12,11 @@
   import CoverLetterPreview from '@/components/cover-letter/CoverLetterPreview.vue'
   import { useCoverLetterStore } from '@/stores/coverLetterStore'
   import { useCVStore } from '@/stores/cvStore'
-  import { useUserStore } from '@/stores/userStore'
   import { usePDFExport } from '@/composables/usePDFExport'
   import { usePreviewZoom } from '@/composables/usePreviewZoom'
 
   const coverLetterStore = useCoverLetterStore()
   const cvStore = useCVStore()
-  const userStore = useUserStore()
   const { clData, saveIndicatorVisible: showSaved } = storeToRefs(coverLetterStore)
   const { status: pdfStatus, errorMessage: pdfError, exportPDF } = usePDFExport()
   const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } = usePreviewZoom()
@@ -54,38 +51,8 @@
     <AppHeader />
     <BuilderToolSwitcher />
 
-    <!-- ── Pro gate (free-tier visitors) ────────────────────── -->
-    <template v-if="!userStore.isPremium">
-      <div class="flex-1 flex flex-col items-center justify-center px-6 text-center">
-        <span
-          class="font-display italic mb-7 leading-none"
-          :style="{ fontSize: '64px', color: 'var(--accent)' }"
-          aria-hidden="true"
-        >✎</span>
-        <p class="mono-eyebrow mb-3">Pro feature</p>
-        <h1
-          class="font-display leading-[1.05] tracking-editorial text-ink mb-4"
-          :style="{ fontSize: 'clamp(36px, 5vw, 56px)' }"
-        >
-          A second page<br />
-          for the <span class="accent-italic">why</span>.
-        </h1>
-        <p class="text-muted text-[15px] max-w-[440px] mb-8 leading-[1.55]">
-          Cover letters live alongside your CV — same data, same fonts, same
-          tone. Available on the Pro plan.
-        </p>
-        <RouterLink to="/pricing" class="btn-primary text-sm">
-          Upgrade to Pro
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </RouterLink>
-      </div>
-    </template>
-
-    <!-- ── Full editor (Pro) ─────────────────────────────────── -->
-    <template v-else>
-      <div class="flex-1 overflow-hidden">
+    <!-- ── Full editor ──────────────────────────────────────── -->
+    <div class="flex-1 overflow-hidden">
         <SplitLayout>
 
           <!-- ── Form panel ──────────────────────────────────── -->
@@ -266,6 +233,5 @@
 
         </SplitLayout>
       </div>
-    </template>
   </div>
 </template>
