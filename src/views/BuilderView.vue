@@ -178,7 +178,7 @@
       <SplitLayout>
         <!-- ── Form Panel ─────────────────────────────────────── -->
         <template #form>
-          <div class="px-6 pt-7 pb-8 max-w-9/10 max-w-screen-md max-w-screen-lg mx-auto">
+          <div class="px-6 pt-7 pb-8 max-w-9/10 max-w-screen-lg mx-auto">
             <!-- Editorial heading -->
             <p class="mono-eyebrow mb-3">CV Information</p>
             <h2
