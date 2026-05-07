@@ -4,6 +4,7 @@
   import { storeToRefs } from 'pinia'
   import { useUserStore } from '@/stores/userStore'
   import { useCVStore } from '@/stores/cvStore'
+  import { useI18n } from '@/composables/useI18n'
   import { TEMPLATES } from '@/components/templates/registry'
 
   const route            = useRoute()
@@ -11,6 +12,7 @@
   const userStore        = useUserStore()
   const cvStore          = useCVStore()
   const { cvData } = storeToRefs(cvStore)
+  const { t } = useI18n()
 
   const isBuilder = computed(() => route.name === 'builder')
 
@@ -74,7 +76,7 @@
     <div
       class="flex items-center gap-1 shrink-0"
       role="tablist"
-      aria-label="Builder tools"
+      :aria-label="t('aria.builderTools')"
     >
       <RouterLink
         to="/builder"
@@ -91,7 +93,7 @@
           :style="route.name === 'builder' ? { color: 'var(--accent)' } : {}"
           aria-hidden="true"
         >◉</span>
-        CV Builder
+        {{ t('nav.builder') }}
       </RouterLink>
 
       <button
@@ -110,7 +112,7 @@
           :style="route.name === 'cover-letter' ? { color: 'var(--accent)' } : {}"
           aria-hidden="true"
         >✎</span>
-        Cover Letter
+        {{ t('nav.coverLetter') }}
       </button>
     </div>
 
@@ -131,7 +133,7 @@
       <div
         class="flex items-center gap-1 ml-auto overflow-x-auto"
         role="radiogroup"
-        aria-label="Resume template"
+        :aria-label="t('builder.resumeTemplate')"
         @keydown="onTemplateKeydown"
       >
         <button
@@ -142,10 +144,10 @@
           :aria-checked="activeId === template.id"
           :tabindex="activeId === template.id ? 0 : -1"
           :aria-label="template.isPro && !userStore.isPremium
-            ? `${template.name} (Pro plan required)`
+            ? t('builder.proRequired', { name: template.name })
             : template.name"
           :title="template.isPro && !userStore.isPremium
-            ? `${template.description} (Pro plan required)`
+            ? t('builder.proRequired', { name: template.description })
             : template.description"
           :class="[
             'relative flex items-center gap-1.5 px-3 py-1 rounded-full text-[12.5px] font-medium transition-colors whitespace-nowrap',

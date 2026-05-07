@@ -5,13 +5,14 @@
   import { useDragSort } from '@/composables/useDragSort'
   import FormField from './FormField.vue'
   import { createSkill } from '@/types/cv.types'
+  import { useI18n } from '@/composables/useI18n'
 
+  const { t } = useI18n()
   const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
 
   const drag = useDragSort(computed(() => cvData.value.skills))
 
-  // New tag input per skill category
   const tagInputs = ref<Record<string, string>>({})
   const duplicateWarnings = ref(new Set<string>())
 
@@ -70,7 +71,7 @@
         drag.isDragOver(skill.id) ? 'drag-over' : 'border-overlay/5',
       ]"
       draggable="true"
-      :aria-label="`Skill category ${index + 1}`"
+      :aria-label="t('forms.skillCatEntryLabel', { n: String(index + 1) })"
       @dragstart="drag.onDragStart(skill.id)"
       @dragover.prevent="drag.onDragOver(skill.id)"
       @drop="drag.onDrop(skill.id)"
@@ -78,25 +79,25 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab" role="img" aria-label="Drag to reorder">⠿</span>
+          <span class="text-secondary cursor-grab" role="img" :aria-label="t('forms.dragToReorder')">⠿</span>
           <span class="text-sm font-semibold text-primary">
-            {{ skill.category || `Category ${index + 1}` }}
+            {{ skill.category || t('forms.skillCatEntryLabel', { n: String(index + 1) }) }}
           </span>
         </div>
         <button
           type="button"
           class="text-secondary hover:text-red-400 transition-colors text-xs px-2 py-1 rounded hover:bg-red-500/10"
-          :aria-label="`Remove skill category ${index + 1}`"
+          :aria-label="`${t('forms.remove')} ${t('forms.skillCatEntryLabel', { n: String(index + 1) })}`"
           @click="removeSkill(index)"
         >
-          Remove
+          {{ t('forms.remove') }}
         </button>
       </div>
 
       <FormField
         :id="`skill-category-${skill.id}`"
         v-model="skill.category"
-        label="Category"
+        :label="t('forms.skillCategory')"
         placeholder="Frontend, Backend, DevOps..."
         required
       />
@@ -104,7 +105,7 @@
       <!-- Tag chips -->
       <div class="mt-3">
         <p class="text-xs font-medium text-secondary font-mono uppercase tracking-wider mb-2">
-          Skills <span class="normal-case font-sans">(press Enter or comma to add)</span>
+          Skills <span class="normal-case font-sans">({{ t('forms.skillsHint') }})</span>
         </p>
 
         <div class="flex flex-wrap gap-1.5 mb-2" :aria-label="`Skills in ${skill.category}`">
@@ -130,7 +131,7 @@
             :id="`skill-tag-input-${skill.id}`"
             v-model="tagInputs[skill.id]"
             type="text"
-            placeholder="Add skill..."
+            :placeholder="t('forms.addSkillPlaceholder')"
             class="flex-1 px-3 py-2 text-sm rounded-lg"
             :aria-label="`Add skill to ${skill.category || 'category'}`"
             @keydown="onTagKeydown($event, skill.id, index)"
@@ -141,7 +142,7 @@
             class="px-3 py-2 rounded-lg bg-accent/20 text-accent text-sm hover:bg-accent/30 transition-colors"
             @click="addTag(skill.id, index)"
           >
-            Add
+            {{ t('forms.add') }}
           </button>
         </div>
         <p
@@ -153,7 +154,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
               d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
           </svg>
-          Already added
+          {{ t('forms.duplicateSkill') }}
         </p>
       </div>
     </div>
@@ -163,7 +164,7 @@
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addSkill"
     >
-      <span aria-hidden="true">+</span> Add Skill Category
+      <span aria-hidden="true">+</span> {{ t('forms.addSkillCategory') }}
     </button>
   </div>
 </template>

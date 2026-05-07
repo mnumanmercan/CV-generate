@@ -1,11 +1,13 @@
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
   import { apiClient } from '@/services/apiClient'
+  import { useI18n } from '@/composables/useI18n'
 
   const router    = useRouter()
   const userStore = useUserStore()
+  const { t, t_obj } = useI18n()
 
   const email        = ref('')
   const password     = ref('')
@@ -23,8 +25,11 @@
   const forgotSent      = ref(false)
   const forgotError     = ref('')
 
+  const loginHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('auth.login.heading'))
+  const forgotHeading = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('auth.login.forgotHeading'))
+
   function openForgotModal(): void {
-    forgotEmail.value     = email.value.trim() // pre-fill from login form
+    forgotEmail.value     = email.value.trim()
     forgotSent.value      = false
     forgotError.value     = ''
     showForgotModal.value = true
@@ -36,7 +41,7 @@
 
   async function submitForgotPassword(): Promise<void> {
     if (!forgotEmail.value.trim()) {
-      forgotError.value = 'Please enter your email address.'
+      forgotError.value = t('auth.login.forgotEmailRequired')
       return
     }
     forgotError.value   = ''
@@ -45,7 +50,7 @@
       await apiClient.post('/auth/forgot-password', { email: forgotEmail.value.trim() })
       forgotSent.value = true
     } catch (err) {
-      forgotError.value = err instanceof Error ? err.message : 'Could not send reset link. Please try again.'
+      forgotError.value = err instanceof Error ? err.message : t('auth.login.forgotSendError')
     } finally {
       forgotLoading.value = false
     }
@@ -53,7 +58,7 @@
 
   async function handleSubmit(): Promise<void> {
     if (!email.value.trim() || !password.value) {
-      errorMsg.value = 'Please fill in all fields.'
+      errorMsg.value = t('auth.login.errorRequired')
       return
     }
     errorMsg.value  = ''
@@ -80,7 +85,7 @@
 
       router.push('/dashboard')
     } catch {
-      errorMsg.value = userStore.authError ?? 'Invalid email or password.'
+      errorMsg.value = userStore.authError ?? t('auth.login.errorInvalidCredentials')
     } finally {
       isLoading.value = false
     }
@@ -109,12 +114,12 @@
       </RouterLink>
 
       <p class="text-[13.5px] text-muted">
-        Don't have an account?
+        {{ t('auth.login.noAccount') }}
         <RouterLink
           to="/register"
           class="ml-1 font-medium transition-colors hover:opacity-80 underline-offset-4 hover:underline"
           :style="{ color: 'var(--accent)' }"
-        >Sign up free</RouterLink>
+        >{{ t('auth.login.signUpFree') }}</RouterLink>
       </p>
     </header>
 
@@ -122,16 +127,15 @@
     <main class="flex-1 flex items-center justify-center px-4 py-16">
       <div class="w-full max-w-[440px] animate-slide-up">
         <!-- Eyebrow + display heading -->
-        <p class="mono-eyebrow mb-3 text-center">A Résumé Builder</p>
+        <p class="mono-eyebrow mb-3 text-center">{{ t('auth.login.eyebrow') }}</p>
         <h1
           class="font-display leading-[1.02] tracking-editorial text-ink mb-3 text-center"
           :style="{ fontSize: 'clamp(44px, 5.4vw, 64px)' }"
         >
-          Sign back<br />
-          <span class="accent-italic">in</span><span>.</span>
+          {{ loginHeading.prefix }}<span class="accent-italic">{{ loginHeading.accent }}</span>{{ loginHeading.suffix }}
         </h1>
         <p class="text-center text-[14.5px] text-muted mb-10 leading-[1.55]">
-          Pick up where you left off — your draft is exactly where you left it.
+          {{ t('auth.login.lede') }}
         </p>
 
         <!-- Card -->
@@ -155,7 +159,7 @@
             <!-- Email -->
             <div>
               <label class="mono-eyebrow block mb-1.5" for="login-email">
-                Email address
+                {{ t('auth.login.emailLabel') }}
               </label>
               <input
                 id="login-email"
@@ -170,13 +174,13 @@
             <!-- Password -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
-                <label class="mono-eyebrow" for="login-password">Password</label>
+                <label class="mono-eyebrow" for="login-password">{{ t('auth.login.passwordLabel') }}</label>
                 <button
                   type="button"
                   class="text-[11px] font-medium tracking-wider uppercase transition-colors hover:opacity-80"
                   :style="{ color: 'var(--accent)' }"
                   @click="openForgotModal"
-                >Forgot?</button>
+                >{{ t('auth.login.forgot') }}</button>
               </div>
               <div class="relative">
                 <input
@@ -190,7 +194,7 @@
                 <button
                   type="button"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors"
-                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                  :aria-label="showPassword ? t('auth.login.hidePassword') : t('auth.login.showPassword')"
                   @click="showPassword = !showPassword"
                 >
                   <svg v-if="!showPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -219,7 +223,7 @@
               <label
                 for="remember-me"
                 class="text-[13.5px] text-muted cursor-pointer select-none"
-              >Remember me for 30 days</label>
+              >{{ t('auth.login.rememberMe') }}</label>
             </div>
 
             <!-- Submit -->
@@ -239,7 +243,7 @@
                 <path class="opacity-75" fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              {{ isLoading ? 'Signing in…' : 'Sign in' }}
+              {{ isLoading ? t('auth.login.signingIn') : t('auth.login.signIn') }}
             </button>
           </form>
 
@@ -252,7 +256,7 @@
               <span
                 class="px-3 mono-eyebrow"
                 :style="{ background: 'var(--card)' }"
-              >or continue with</span>
+              >{{ t('auth.login.orContinueWith') }}</span>
             </div>
           </div>
 
@@ -272,13 +276,13 @@
               <path fill="#EA4335"
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
-            Continue with Google
+            {{ t('auth.login.google') }}
           </button>
         </div>
 
         <!-- Footnote -->
         <p class="text-center mt-7 mono-eyebrow text-[10.5px]">
-          Free forever · No sign-up required for the builder
+          {{ t('auth.login.footnote') }}
         </p>
       </div>
     </main>
@@ -311,19 +315,19 @@
         <div class="paper-card relative w-full max-w-md p-7 shadow-2xl">
           <div class="flex items-start justify-between gap-3 mb-5">
             <div>
-              <p class="mono-eyebrow mb-2">Reset password</p>
+              <p class="mono-eyebrow mb-2">{{ t('auth.login.forgotEyebrow') }}</p>
               <h2
                 id="forgot-title"
                 class="font-display leading-tight tracking-editorial text-ink"
                 style="font-size: 26px"
               >
-                Forgot? <span class="accent-italic">No</span> problem.
+                {{ forgotHeading.prefix }}<span class="accent-italic">{{ forgotHeading.accent }}</span>{{ forgotHeading.suffix }}
               </h2>
             </div>
             <button
               type="button"
               class="text-muted hover:text-ink transition-colors shrink-0"
-              aria-label="Close"
+              :aria-label="t('auth.login.forgotClose')"
               @click="closeForgotModal"
             >
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -333,7 +337,7 @@
           </div>
 
           <p class="text-[13.5px] text-muted mb-5 leading-[1.55]">
-            Enter your email and we'll send you a secure link to set a new password.
+            {{ t('auth.login.forgotLede') }}
           </p>
 
           <!-- Success state -->
@@ -347,8 +351,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
             </svg>
             <p class="text-[13px]">
-              If an account exists for <strong>{{ forgotEmail }}</strong>, a reset link is on its way.
-              Check your inbox (and spam folder).
+              {{ t('auth.login.forgotSentConfirm', { email: forgotEmail }) }}
             </p>
           </div>
 
@@ -364,7 +367,7 @@
             </div>
 
             <div>
-              <label class="mono-eyebrow block mb-1.5" for="forgot-email">Email address</label>
+              <label class="mono-eyebrow block mb-1.5" for="forgot-email">{{ t('auth.login.forgotEmailLabel') }}</label>
               <input
                 id="forgot-email"
                 v-model="forgotEmail"
@@ -391,7 +394,7 @@
                 <path class="opacity-75" fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              {{ forgotLoading ? 'Sending…' : 'Send reset link' }}
+              {{ forgotLoading ? t('auth.login.forgotSending') : t('auth.login.forgotSendLink') }}
             </button>
           </form>
         </div>

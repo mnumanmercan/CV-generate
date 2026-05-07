@@ -4,7 +4,9 @@
   import { useCVStore } from '@/stores/cvStore'
   import FormField from './FormField.vue'
   import { validateEmail, validatePhone, validateUrl } from '@/services/atsFormatter'
+  import { useI18n } from '@/composables/useI18n'
 
+  const { t } = useI18n()
   const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
 
@@ -14,31 +16,31 @@
     const p = cvData.value.personal
     switch (field) {
       case 'fullName':
-        errors.fullName = p.fullName.trim() ? '' : 'Full name is required.'
+        errors.fullName = p.fullName.trim() ? '' : t('forms.errorFullNameRequired')
         break
       case 'jobTitle':
-        errors.jobTitle = p.jobTitle.trim() ? '' : 'Job title is required.'
+        errors.jobTitle = p.jobTitle.trim() ? '' : t('forms.errorJobTitleRequired')
         break
       case 'email':
-        errors.email = validateEmail(p.email) ? '' : 'Enter a valid email address.'
+        errors.email = validateEmail(p.email) ? '' : t('forms.errorInvalidEmail')
         break
       case 'phone':
-        errors.phone = validatePhone(p.phone) ? '' : 'Enter a valid phone number.'
+        errors.phone = validatePhone(p.phone) ? '' : t('forms.errorInvalidPhone')
         break
       case 'location':
-        errors.location = p.location.trim() ? '' : 'Location is required.'
+        errors.location = p.location.trim() ? '' : t('forms.errorLocationRequired')
         break
       case 'linkedin':
         errors.linkedin =
-          !p.linkedin || validateUrl(p.linkedin) ? '' : 'URL must start with https://'
+          !p.linkedin || validateUrl(p.linkedin) ? '' : t('forms.errorUrlHttps')
         break
       case 'github':
         errors.github =
-          !p.github || validateUrl(p.github) ? '' : 'URL must start with https://'
+          !p.github || validateUrl(p.github) ? '' : t('forms.errorUrlHttps')
         break
       case 'website':
         errors.website =
-          !p.website || validateUrl(p.website) ? '' : 'URL must start with https://'
+          !p.website || validateUrl(p.website) ? '' : t('forms.errorUrlHttps')
         break
     }
   }
@@ -51,8 +53,6 @@
       cvData.value.personal.location &&
       cvData.value.personal.jobTitle,
   )
-
-
 </script>
 
 <template>
@@ -61,16 +61,6 @@
       Profile photo upload — removed from form (ATS compliance: photos can
       cause parsing failures in ATS scanners). The profilePhoto field is
       preserved in cv.types.ts to avoid breaking stored-data migrations.
-
-    <div>
-      <span class="text-xs font-medium text-secondary font-mono uppercase tracking-wider flex items-center gap-1.5">
-        Profile Photo
-        <span v-if="!userStore.canUploadPhoto" ...>Pro</span>
-      </span>
-      <button type="button" ... @click="handlePhotoUploadClick">
-        Upload photo (Phase 2)
-      </button>
-    </div>
     -->
 
     <!-- Required fields -->
@@ -78,7 +68,7 @@
       <FormField
         id="fullName"
         v-model="cvData.personal.fullName"
-        label="Full Name"
+        :label="t('forms.fullName')"
         placeholder="Jane Doe"
         autocomplete="name"
         required
@@ -88,7 +78,7 @@
       <FormField
         id="jobTitle"
         v-model="cvData.personal.jobTitle"
-        label="Job Title"
+        :label="t('forms.jobTitle')"
         placeholder="Senior Software Engineer"
         autocomplete="organization-title"
         required
@@ -98,8 +88,8 @@
 
       <!-- Job title color -->
       <div>
-        <p class="mono-eyebrow text-[10.5px] text-muted mb-2">Title color</p>
-        <div class="flex gap-5" role="radiogroup" aria-label="Job title color">
+        <p class="mono-eyebrow text-[10.5px] text-muted mb-2">{{ t('forms.titleColor') }}</p>
+        <div class="flex gap-5" role="radiogroup" :aria-label="t('forms.titleColor')">
           <button
             type="button"
             class="flex items-center gap-2"
@@ -116,7 +106,7 @@
             <span
               class="mono-eyebrow text-[10px] transition-colors"
               :class="(cvData.personal.jobTitleColor ?? 'accent') === 'accent' ? 'text-ink' : 'text-muted'"
-            >Sienna</span>
+            >{{ t('forms.titleColorSienna') }}</span>
           </button>
 
           <button
@@ -135,7 +125,7 @@
             <span
               class="mono-eyebrow text-[10px] transition-colors"
               :class="cvData.personal.jobTitleColor === 'dark' ? 'text-ink' : 'text-muted'"
-            >Dark</span>
+            >{{ t('forms.titleColorDark') }}</span>
           </button>
         </div>
       </div>
@@ -145,7 +135,7 @@
       <FormField
         id="email"
         v-model="cvData.personal.email"
-        label="Email"
+        :label="t('forms.email')"
         type="email"
         placeholder="jane@example.com"
         autocomplete="email"
@@ -156,7 +146,7 @@
       <FormField
         id="phone"
         v-model="cvData.personal.phone"
-        label="Phone"
+        :label="t('forms.phone')"
         type="tel"
         placeholder="+1 555 000 0000"
         autocomplete="tel"
@@ -169,7 +159,7 @@
     <FormField
       id="location"
       v-model="cvData.personal.location"
-      label="Location"
+      :label="t('forms.location')"
       placeholder="New York, NY"
       autocomplete="address-level2"
       required
@@ -179,12 +169,12 @@
 
     <!-- Optional URLs -->
     <div class="pt-1 border-t border-overlay/5">
-      <p class="text-xs text-secondary mb-3">Optional links (must start with https://)</p>
+      <p class="text-xs text-secondary mb-3">{{ t('forms.optionalLinksHint') }}</p>
       <div class="flex flex-col gap-3">
         <FormField
           id="linkedin"
           v-model="cvData.personal.linkedin"
-          label="LinkedIn"
+          :label="t('forms.linkedin')"
           type="url"
           placeholder="https://linkedin.com/in/janedoe"
           autocomplete="url"
@@ -194,7 +184,7 @@
         <FormField
           id="github"
           v-model="cvData.personal.github"
-          label="GitHub"
+          :label="t('forms.github')"
           type="url"
           placeholder="https://github.com/janedoe"
           autocomplete="url"
@@ -204,7 +194,7 @@
         <FormField
           id="website"
           v-model="cvData.personal.website"
-          label="Website"
+          :label="t('forms.website')"
           type="url"
           placeholder="https://janedoe.dev"
           autocomplete="url"
@@ -220,7 +210,7 @@
       class="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-2 rounded-lg"
       role="status"
     >
-      <span aria-hidden="true">✓</span> Personal info complete
+      <span aria-hidden="true">✓</span> {{ t('forms.personalComplete') }}
     </div>
   </div>
 </template>

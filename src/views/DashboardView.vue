@@ -6,6 +6,9 @@
   import UpgradePrompt from '@/components/ui/UpgradePrompt.vue'
   import { useUserStore } from '@/stores/userStore'
   import { useCVStore } from '@/stores/cvStore'
+  import { useI18n } from '@/composables/useI18n'
+
+  const { t, t_obj } = useI18n()
 
   onMounted(() => {
     document.title = 'Dashboard — Resumark'
@@ -18,14 +21,14 @@
   /* ── Last saved relative time ─────────────────────────────── */
   const lastSavedLabel = computed(() => {
     const ts = cvData.value.meta.updatedAt
-    if (!ts) return 'Never'
+    if (!ts) return t('dashboard.lastSavedNever')
     const diff = Date.now() - new Date(ts).getTime()
     const mins = Math.floor(diff / 60000)
-    if (mins < 1) return 'Just now'
-    if (mins < 60) return `${mins}m ago`
+    if (mins < 1) return t('dashboard.lastSavedJustNow')
+    if (mins < 60) return t('dashboard.lastSavedMins', { n: String(mins) })
     const hrs = Math.floor(mins / 60)
-    if (hrs < 24) return `${hrs}h ago`
-    return `${Math.floor(hrs / 24)}d ago`
+    if (hrs < 24) return t('dashboard.lastSavedHours', { n: String(hrs) })
+    return t('dashboard.lastSavedDays', { n: String(Math.floor(hrs / 24)) })
   })
 
   /* ── Section completion count ─────────────────────────────── */
@@ -52,20 +55,24 @@
   })
 
   /* ── Locked Pro features (Free) ───────────────────────────── */
-  const lockedFeatures = [
+  const lockedFeatures = computed(() => [
     {
       glyph:   '◊',
-      title:   'Cloud Sync',
-      desc:    'Access your CV from any device, anytime',
+      title:   t('dashboard.cloudSyncTitle'),
+      desc:    t('dashboard.cloudSyncDesc'),
       trigger: 'Cloud Sync',
     },
     {
       glyph:   '▦',
-      title:   'Multiple CVs',
-      desc:    'Create tailored CVs for different roles',
+      title:   t('dashboard.multipleCvsTitle'),
+      desc:    t('dashboard.multipleCvsDesc'),
       trigger: 'Multiple CVs',
     },
-  ]
+  ])
+
+  const coverLetterHeading = computed(() =>
+    t_obj<{ prefix: string; accent: string; suffix: string }>('dashboard.coverLetterHeading')
+  )
 </script>
 
 <template>
@@ -77,20 +84,18 @@
       <!-- ── Welcome row ──────────────────────────────────────── -->
       <div class="mb-10 stagger-item">
         <p class="mono-eyebrow mb-3">
-          {{ userStore.isPremium ? 'Pro Member' : 'Free Plan' }}
+          {{ userStore.isPremium ? t('dashboard.planPro') : t('dashboard.planFree') }}
         </p>
         <h1
           class="font-display leading-[1.05] tracking-editorial text-ink mb-2 flex items-baseline flex-wrap gap-x-3"
           :style="{ fontSize: 'clamp(36px, 5vw, 52px)' }"
         >
-          <span>Welcome back,</span>
-          <span class="accent-italic">{{ userStore.user?.name?.split(' ')[0] ?? 'there' }}</span>
+          <span>{{ t('dashboard.welcomePrefix') }}</span>
+          <span class="accent-italic">{{ userStore.user?.name?.split(' ')[0] ?? t('dashboard.welcomeFallback') }}</span>
           <span class="text-ink">.</span>
         </h1>
         <p class="text-muted text-[14.5px] leading-[1.55] max-w-xl">
-          {{ userStore.isPremium
-            ? 'Full access to every Pro feature — cloud sync, multiple CVs, premium templates, and more.'
-            : 'You\'re on the Free plan. Build, polish, and export — upgrade when you need more.' }}
+          {{ userStore.isPremium ? t('dashboard.welcomeDescPro') : t('dashboard.welcomeDescFree') }}
         </p>
       </div>
 
@@ -109,12 +114,12 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-baseline justify-between gap-3 mb-0.5">
                 <h2 class="font-display text-[20px] leading-[1.15] tracking-editorial text-ink truncate">
-                  {{ cvData.personal.fullName || 'Your CV' }}
+                  {{ cvData.personal.fullName || t('dashboard.yourCv') }}
                 </h2>
                 <span class="mono-eyebrow text-[10.5px] shrink-0">{{ lastSavedLabel }}</span>
               </div>
               <p class="mono-eyebrow text-[10.5px] mb-3">
-                {{ templateLabel }} · {{ completedSections }}/8 sections filled
+                {{ templateLabel }} · {{ t('dashboard.sectionsLabel', { n: String(completedSections) }) }}
               </p>
               <div class="h-[3px] rounded-full" style="background: rgba(0,0,0,0.08)">
                 <div
@@ -128,7 +133,7 @@
               to="/builder"
               class="btn-primary shrink-0 text-[13px]"
             >
-              Edit CV
+              {{ t('dashboard.editCv') }}
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -138,7 +143,7 @@
 
         <!-- Unlock with Pro — Pro Plan card wraps the feature subcards -->
         <div class="stagger-item">
-          <p class="mono-eyebrow mb-4">Unlock with Pro</p>
+          <p class="mono-eyebrow mb-4">{{ t('dashboard.unlock') }}</p>
 
           <!-- Pro Plan container card (full width) -->
           <div class="paper-card p-5 relative">
@@ -149,7 +154,7 @@
               style="background: var(--accent); color: #FFFFFF; white-space: nowrap"
               aria-label="Coming soon"
             >
-              Soon
+              {{ t('dashboard.proCardBadge') }}
             </div>
 
             <!-- Header row — single line -->
@@ -161,14 +166,14 @@
               >✦</span>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5 mb-0.5">
-                  <h3 class="font-display text-[17px] leading-tight text-ink">Pro Plan</h3>
+                  <h3 class="font-display text-[17px] leading-tight text-ink">{{ t('dashboard.proCardName') }}</h3>
                   <span
                     class="mono-eyebrow text-[9px] px-1.5 py-px rounded-full text-white leading-none"
                     :style="{ background: 'var(--accent)' }"
                   >Pro</span>
                 </div>
                 <p class="text-[13px] text-muted leading-none">
-                  Cloud sync, multiple CVs, premium templates, and more — coming soon.
+                  {{ t('dashboard.proCardDesc') }}
                 </p>
               </div>
               <button
@@ -176,7 +181,7 @@
                 class="btn-ghost shrink-0 text-[13px]"
                 @click="userStore.openUpgradeModal('pro plan')"
               >
-                Get notified
+                {{ t('dashboard.getNotified') }}
               </button>
             </div>
 
@@ -206,7 +211,7 @@
                   class="mono-eyebrow text-[10.5px] text-left transition-colors hover:opacity-80"
                   :style="{ color: 'var(--accent)' }"
                   @click="userStore.openUpgradeModal(feat.trigger)"
-                >Get notified →</button>
+                >{{ t('dashboard.getNotified') }} →</button>
               </div>
             </div>
 
@@ -232,10 +237,10 @@
               <span class="mono-eyebrow text-[10.5px]">{{ lastSavedLabel }}</span>
             </div>
             <h2 class="font-display text-[22px] leading-[1.15] tracking-editorial text-ink mb-1">
-              {{ cvData.personal.fullName || 'Your CV' }}
+              {{ cvData.personal.fullName || t('dashboard.yourCv') }}
             </h2>
             <p class="mono-eyebrow text-[10.5px] mb-5">
-              {{ templateLabel }} · {{ completedSections }}/8 sections filled
+              {{ templateLabel }} · {{ t('dashboard.sectionsLabel', { n: String(completedSections) }) }}
             </p>
             <div class="h-[3px] rounded-full mb-6" style="background: rgba(0,0,0,0.08)">
               <div
@@ -247,7 +252,7 @@
               to="/builder"
               class="btn-primary w-full justify-center text-[13px]"
             >
-              Edit CV
+              {{ t('dashboard.editCv') }}
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -262,17 +267,16 @@
                 :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
               >✎</span>
-              <p class="mono-eyebrow mb-2">Cover letter</p>
+              <p class="mono-eyebrow mb-2">{{ t('dashboard.coverLetterEyebrow') }}</p>
               <h2 class="font-display text-[22px] leading-[1.15] tracking-editorial text-ink mb-2">
-                A second page<br />
-                for the <span class="accent-italic">why</span>.
+                {{ coverLetterHeading.prefix }}<span class="accent-italic">{{ coverLetterHeading.accent }}</span>{{ coverLetterHeading.suffix }}
               </h2>
               <p class="text-[13.5px] text-muted mb-5 leading-[1.55]">
-                Tailor a letter that matches your CV — same fonts, same tone, same paper.
+                {{ t('dashboard.coverLetterDesc') }}
               </p>
             </div>
             <RouterLink to="/cover-letter" class="btn-primary justify-center text-[13px]">
-              Open Cover Letter
+              {{ t('dashboard.coverLetterButton') }}
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
               </svg>
@@ -282,13 +286,13 @@
 
         <!-- Stats row -->
         <div class="stagger-item">
-          <p class="mono-eyebrow mb-4">Your stats</p>
+          <p class="mono-eyebrow mb-4">{{ t('dashboard.statsEyebrow') }}</p>
           <div class="grid grid-cols-3 gap-4">
             <div
               v-for="stat in [
-                { label: 'CVs Created',   value: '1' },
-                { label: 'Cover Letters', value: '—' },
-                { label: 'PDF Downloads', value: '—' },
+                { label: t('dashboard.statsCvsCreated'),   value: '1' },
+                { label: t('dashboard.statsCoverLetters'), value: '—' },
+                { label: t('dashboard.statsPdfDownloads'), value: '—' },
               ]"
               :key="stat.label"
               class="paper-card px-5 py-5 text-center"

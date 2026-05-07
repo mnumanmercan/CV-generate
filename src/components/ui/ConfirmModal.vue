@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import { onMounted, onUnmounted } from 'vue'
+  import { useI18n } from '@/composables/useI18n'
+
+  const { t } = useI18n()
 
   const props = withDefaults(
     defineProps<{
@@ -10,9 +13,9 @@
       cancelLabel?: string
     }>(),
     {
-      title: 'Are you sure?',
-      confirmLabel: 'Confirm',
-      cancelLabel: 'Cancel',
+      title: '',
+      confirmLabel: '',
+      cancelLabel: '',
     },
   )
 
@@ -61,7 +64,7 @@
             id="confirm-title"
             class="text-base font-semibold text-primary mb-2"
           >
-            {{ title }}
+            {{ title || t('confirm.defaultTitle') }}
           </h3>
           <p class="text-sm text-secondary mb-6">{{ message }}</p>
 
@@ -71,14 +74,14 @@
               class="px-4 py-2 rounded-lg text-sm font-medium text-secondary hover:text-primary hover:bg-overlay/5 transition-colors"
               @click="emit('cancel')"
             >
-              {{ cancelLabel }}
+              {{ cancelLabel || t('confirm.cancel') }}
             </button>
             <button
               type="button"
               class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors"
               @click="emit('confirm')"
             >
-              {{ confirmLabel }}
+              {{ confirmLabel || t('confirm.confirm') }}
             </button>
           </div>
         </div>

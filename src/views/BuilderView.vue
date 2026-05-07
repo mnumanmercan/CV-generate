@@ -24,8 +24,14 @@
   import CVPreview from '@/components/preview/CVPreview.vue'
   import { VueDraggable } from 'vue-draggable-plus'
   import { type SectionKey, DRAGGABLE_SECTION_KEYS } from '@/types/cv.types'
+  import { useI18n } from '@/composables/useI18n'
 
   const cvStore = useCVStore()
+  const { t, t_obj } = useI18n()
+
+  function sectionTitle(key: string): string {
+    return t(`builder.sections.${key}`)
+  }
   const {
     cvData,
     saveIndicatorVisible: showSaved,
@@ -111,20 +117,20 @@
   //   √  Certifications       — check radical, the verified mark
   //   ❡  Languages            — pilcrow turn, the speech glyph
 
-  // Static sections — always first, never draggable
+  // Static sections — always first, never draggable (title resolved via sectionTitle())
   const staticSections = computed(() => [
-    { key: 'personal' as SectionKey, title: 'Personal Info',         icon: '◉', defaultOpen: true,  completed: isPersonalComplete.value },
-    { key: 'summary'  as SectionKey, title: 'Professional Summary',  icon: '§', defaultOpen: false, completed: isSummaryComplete.value },
+    { key: 'personal' as SectionKey, icon: '◉', defaultOpen: true,  completed: isPersonalComplete.value },
+    { key: 'summary'  as SectionKey, icon: '§', defaultOpen: false, completed: isSummaryComplete.value },
   ])
 
-  // Metadata map for draggable sections (non-reactive title/icon only)
-  const DRAGGABLE_META: Record<string, { title: string; icon: string }> = {
-    experience:     { title: 'Work Experience', icon: '▦' },
-    education:      { title: 'Education',       icon: '◊' },
-    skills:         { title: 'Skills',          icon: '✦' },
-    projects:       { title: 'Projects',        icon: '⎔' },
-    certifications: { title: 'Certifications',  icon: '√' },
-    languages:      { title: 'Languages',       icon: '❡' },
+  // Metadata map for draggable sections (icon only; title resolved via sectionTitle())
+  const DRAGGABLE_META: Record<string, { icon: string }> = {
+    experience:     { icon: '▦' },
+    education:      { icon: '◊' },
+    skills:         { icon: '✦' },
+    projects:       { icon: '⎔' },
+    certifications: { icon: '√' },
+    languages:      { icon: '❡' },
   }
 
   // Mutable ref — v-model target for VueDraggable. Holds key + metadata only;
@@ -180,20 +186,20 @@
         <template #form>
           <div class="px-6 pt-7 pb-8 max-w-9/10 max-w-screen-lg mx-auto">
             <!-- Editorial heading -->
-            <p class="mono-eyebrow mb-3">CV Information</p>
+            <p class="mono-eyebrow mb-3">{{ t('builder.eyebrow') }}</p>
             <h2
               class="font-display leading-[1.05] tracking-editorial text-ink mb-7"
               :style="{ fontSize: 'clamp(28px, 3.4vw, 38px)' }"
             >
-              Eight sections.<br />
-              <span class="accent-italic">Drag</span><span class="text-ink"> to reorder.</span>
+              {{ t('builder.headingLine1') }}<br />
+              <span class="accent-italic">{{ t_obj<{accent:string}>('builder.headingLine2').accent }}</span><span class="text-ink">{{ t_obj<{suffix:string}>('builder.headingLine2').suffix }}</span>
             </h2>
 
             <!-- Static sections — Personal Info and Professional Summary -->
             <FormSection
               v-for="(section, idx) in staticSections"
               :key="section.key"
-              :title="section.title"
+              :title="sectionTitle(section.key)"
               :icon="section.icon"
               :default-open="section.defaultOpen"
               :step-index="idx"
@@ -217,7 +223,7 @@
               <FormSection
                 v-for="(section, idx) in draggableSections"
                 :key="section.key"
-                :title="section.title"
+                :title="sectionTitle(section.key)"
                 :icon="section.icon"
                 :default-open="false"
                 :step-index="staticSections.length + idx"
@@ -239,7 +245,7 @@
               class="w-full mt-6 py-2 mono-eyebrow text-[10.5px] text-muted hover:text-ink transition-colors"
               @click="showClearConfirm = true"
             >
-              · Clear all data ·
+              {{ t('builder.clearData') }}
             </button>
           </div>
         </template>
@@ -290,7 +296,7 @@
                 role="status"
               >
                 <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background: #22C55E" aria-hidden="true" />
-                <span class="mono-eyebrow text-[10.5px]">Saved to this browser · just now</span>
+                <span class="mono-eyebrow text-[10.5px]">{{ t('builder.saved') }}</span>
               </div>
             </Transition>
 
@@ -303,7 +309,7 @@
                 type="button"
                 :disabled="previewScale <= ZOOM_MIN"
                 class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                aria-label="Zoom out"
+                :aria-label="t('aria.zoomOut')"
                 @click="zoomOut"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -319,7 +325,7 @@
                 type="button"
                 :disabled="previewScale >= ZOOM_MAX"
                 class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                aria-label="Zoom in"
+                :aria-label="t('aria.zoomIn')"
                 @click="zoomIn"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -332,8 +338,8 @@
               <button
                 type="button"
                 class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
-                aria-label="Fit to panel width"
-                title="Fit to panel"
+                :aria-label="t('aria.fitToPanel')"
+                :title="t('builder.fitPanel')"
                 @click="fitToPanel"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -349,12 +355,12 @@
                 :disabled="pdfStatus === 'generating'"
                 class="btn-primary text-[13px]"
                 style="box-shadow: 0 4px 16px rgba(184,83,42,0.22)"
-                aria-label="Download CV as PDF"
+                :aria-label="t('aria.downloadCv')"
                 @click="handleDownload"
               >
                 <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
                 <span v-else aria-hidden="true">↓</span>
-                {{ pdfStatus === 'generating' ? 'Generating…' : 'Download PDF' }}
+                {{ pdfStatus === 'generating' ? t('builder.generating') : t('builder.downloadPdf') }}
               </button>
             </div>
 
@@ -366,17 +372,17 @@
     <!-- Toast notifications -->
     <ToastNotification
       :visible="pdfStatus === 'success'"
-      message="PDF downloaded successfully!"
+      :message="t('builder.toast.pdfSuccess')"
       type="success"
     />
     <ToastNotification
       :visible="pdfStatus === 'error'"
-      :message="pdfError || 'PDF generation failed. Please try again.'"
+      :message="pdfError || t('builder.toast.pdfError')"
       type="error"
     />
     <ToastNotification
       :visible="pdfOverflow && pdfStatus === 'success'"
-      message="Your CV exceeds one page — some content at the bottom may be cut off in the PDF."
+      :message="t('builder.toast.pdfOverflow')"
       type="info"
     />
 
@@ -386,9 +392,9 @@
     <!-- Clear data confirmation -->
     <ConfirmModal
       :visible="showClearConfirm"
-      title="Clear all CV data?"
-      message="This will permanently remove all your CV information. This action cannot be undone."
-      confirm-label="Clear data"
+      :title="t('builder.clearTitle')"
+      :message="t('builder.clearMessage')"
+      :confirm-label="t('builder.clearConfirm')"
       @confirm="confirmClearData"
       @cancel="showClearConfirm = false"
     />

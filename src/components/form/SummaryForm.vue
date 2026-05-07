@@ -3,7 +3,9 @@
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
   import { analyzeSummary, getKeywordHints } from '@/services/atsFormatter'
+  import { useI18n } from '@/composables/useI18n'
 
+  const { t } = useI18n()
   const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
 
@@ -27,7 +29,7 @@
         for="summary"
         class="text-xs font-medium text-secondary font-mono uppercase tracking-wider"
       >
-        Professional Summary
+        {{ t('forms.professionalSummary') }}
       </label>
 
       <div class="mt-1.5">
@@ -69,9 +71,9 @@
       v-if="hints.length"
       id="summary-hints"
       class="flex flex-col gap-1.5"
-      aria-label="ATS writing tips"
+      :aria-label="t('forms.atsTipsLabel')"
     >
-      <p class="text-xs font-mono text-accent uppercase tracking-wider">ATS Tips</p>
+      <p class="text-xs font-mono text-accent uppercase tracking-wider">{{ t('forms.atsTipsLabel') }}</p>
       <div
         v-for="hint in hints"
         :key="hint"

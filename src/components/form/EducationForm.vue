@@ -6,7 +6,9 @@
   import FormField from './FormField.vue'
   import { createEducation } from '@/types/cv.types'
   import { validateDateFormat, validateDateRange } from '@/services/atsFormatter'
+  import { useI18n } from '@/composables/useI18n'
 
+  const { t } = useI18n()
   const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
 
@@ -32,12 +34,12 @@
 
   function getDateError(date: string): string {
     if (!date) return ''
-    return validateDateFormat(date) ? '' : 'Use MM/YYYY format.'
+    return validateDateFormat(date) ? '' : t('forms.errorDateFormat')
   }
 
   function getRangeError(start: string, end: string): string {
     if (!start || !end) return ''
-    return validateDateRange(start, end) ? '' : 'End date must be after start date.'
+    return validateDateRange(start, end) ? '' : t('forms.errorEndAfterStart')
   }
 </script>
 
@@ -52,7 +54,7 @@
         drag.isDragOver(edu.id) ? 'drag-over' : 'border-overlay/5',
       ]"
       draggable="true"
-      :aria-label="`Education entry ${index + 1}`"
+      :aria-label="t('forms.eduEntryLabel', { n: String(index + 1) })"
       @dragstart="drag.onDragStart(edu.id)"
       @dragover.prevent="drag.onDragOver(edu.id)"
       @drop="drag.onDrop(edu.id)"
@@ -60,18 +62,18 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab active:cursor-grabbing" role="img" aria-label="Drag to reorder">⠿</span>
+          <span class="text-secondary cursor-grab active:cursor-grabbing" role="img" :aria-label="t('forms.dragToReorder')">⠿</span>
           <span class="text-sm font-semibold text-primary">
-            {{ edu.institution || `Education ${index + 1}` }}
+            {{ edu.institution || t('forms.eduEntryLabel', { n: String(index + 1) }) }}
           </span>
         </div>
         <button
           type="button"
           class="text-secondary hover:text-red-400 transition-colors text-xs px-2 py-1 rounded hover:bg-red-500/10"
-          :aria-label="`Remove education entry ${index + 1}`"
+          :aria-label="`${t('forms.remove')} ${t('forms.eduEntryLabel', { n: String(index + 1) })}`"
           @click="removeEducation(index)"
         >
-          Remove
+          {{ t('forms.remove') }}
         </button>
       </div>
 
@@ -79,7 +81,7 @@
         <FormField
           :id="`edu-institution-${edu.id}`"
           v-model="edu.institution"
-          label="Institution"
+          :label="t('forms.eduInstitution')"
           placeholder="University of Technology"
           required
         />
@@ -87,21 +89,21 @@
           <FormField
             :id="`edu-degree-${edu.id}`"
             v-model="edu.degree"
-            label="Degree"
+            :label="t('forms.eduDegree')"
             placeholder="Bachelor of Science"
             required
           />
           <FormField
             :id="`edu-field-${edu.id}`"
             v-model="edu.field"
-            label="Field of Study"
+            :label="t('forms.eduField')"
             placeholder="Computer Science"
             required
           />
           <FormField
             :id="`edu-start-${edu.id}`"
             v-model="edu.startDate"
-            label="Start Date"
+            :label="t('forms.eduStartDate')"
             placeholder="MM/YYYY"
             :error="isTouched(edu.id, 'startDate') ? getDateError(edu.startDate) : ''"
             @blur="markTouched(edu.id, 'startDate')"
@@ -109,7 +111,7 @@
           <FormField
             :id="`edu-end-${edu.id}`"
             v-model="edu.endDate"
-            label="End Date"
+            :label="t('forms.eduEndDate')"
             placeholder="MM/YYYY"
             :error="isTouched(edu.id, 'endDate') ? getDateError(edu.endDate) || getRangeError(edu.startDate, edu.endDate) : ''"
             @blur="markTouched(edu.id, 'endDate')"
@@ -117,7 +119,7 @@
           <FormField
             :id="`edu-gpa-${edu.id}`"
             v-model="edu.gpa"
-            label="GPA (optional)"
+            :label="t('forms.eduGpa')"
             placeholder="3.8"
           />
         </div>
@@ -129,7 +131,7 @@
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addEducation"
     >
-      <span aria-hidden="true">+</span> Add Education
+      <span aria-hidden="true">+</span> {{ t('forms.addEducation') }}
     </button>
   </div>
 </template>

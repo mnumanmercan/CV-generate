@@ -6,7 +6,9 @@
   import FormField from './FormField.vue'
   import { createCertification } from '@/types/cv.types'
   import { validateDateFormat } from '@/services/atsFormatter'
+  import { useI18n } from '@/composables/useI18n'
 
+  const { t } = useI18n()
   const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
 
@@ -22,7 +24,7 @@
 
   function getDateError(date: string): string {
     if (!date) return ''
-    return validateDateFormat(date) ? '' : 'Use MM/YYYY format.'
+    return validateDateFormat(date) ? '' : t('forms.errorDateFormat')
   }
 </script>
 
@@ -37,7 +39,7 @@
         drag.isDragOver(cert.id) ? 'drag-over' : 'border-overlay/5',
       ]"
       draggable="true"
-      :aria-label="`Certification entry ${index + 1}`"
+      :aria-label="t('forms.certEntryLabel', { n: String(index + 1) })"
       @dragstart="drag.onDragStart(cert.id)"
       @dragover.prevent="drag.onDragOver(cert.id)"
       @drop="drag.onDrop(cert.id)"
@@ -45,18 +47,18 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab" role="img" aria-label="Drag to reorder">⠿</span>
+          <span class="text-secondary cursor-grab" role="img" :aria-label="t('forms.dragToReorder')">⠿</span>
           <span class="text-sm font-semibold text-primary">
-            {{ cert.name || `Certification ${index + 1}` }}
+            {{ cert.name || t('forms.certEntryLabel', { n: String(index + 1) }) }}
           </span>
         </div>
         <button
           type="button"
           class="text-secondary hover:text-red-400 transition-colors text-xs px-2 py-1 rounded hover:bg-red-500/10"
-          :aria-label="`Remove certification ${index + 1}`"
+          :aria-label="`${t('forms.remove')} ${t('forms.certEntryLabel', { n: String(index + 1) })}`"
           @click="removeCertification(index)"
         >
-          Remove
+          {{ t('forms.remove') }}
         </button>
       </div>
 
@@ -65,7 +67,7 @@
           <FormField
             :id="`cert-name-${cert.id}`"
             v-model="cert.name"
-            label="Certification Name"
+            :label="t('forms.certName')"
             placeholder="AWS Certified Solutions Architect"
             required
           />
@@ -73,14 +75,14 @@
         <FormField
           :id="`cert-issuer-${cert.id}`"
           v-model="cert.issuer"
-          label="Issuing Organization"
+          :label="t('forms.certIssuer')"
           placeholder="Amazon Web Services"
           required
         />
         <FormField
           :id="`cert-date-${cert.id}`"
           v-model="cert.date"
-          label="Date"
+          :label="t('forms.certDate')"
           placeholder="06/2023"
           required
           :error="getDateError(cert.date)"
@@ -88,13 +90,13 @@
         <FormField
           :id="`cert-id-${cert.id}`"
           v-model="cert.credentialId"
-          label="Credential ID (optional)"
+          :label="t('forms.certCredentialId')"
           placeholder="ABC-12345"
         />
         <FormField
           :id="`cert-url-${cert.id}`"
           v-model="cert.credentialUrl"
-          label="Certificate URL (optional)"
+          :label="t('forms.certCredentialUrl')"
           type="url"
           placeholder="https://www.credly.com/badges/…"
         />
@@ -106,7 +108,7 @@
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addCertification"
     >
-      <span aria-hidden="true">+</span> Add Certification
+      <span aria-hidden="true">+</span> {{ t('forms.addCertification') }}
     </button>
   </div>
 </template>

@@ -1,15 +1,17 @@
 <script setup lang="ts">
   import { useThemeStore } from '@/stores/themeStore'
+  import { useI18n } from '@/composables/useI18n'
 
   const themeStore = useThemeStore()
+  const { t } = useI18n()
 </script>
 
 <template>
   <button
     type="button"
     class="theme-toggle"
-    :aria-label="themeStore.isDark ? 'Switch to light theme' : 'Switch to dark theme'"
-    :title="themeStore.isDark ? 'Switch to light theme' : 'Switch to dark theme'"
+    :aria-label="themeStore.isDark ? t('aria.switchToLight') : t('aria.switchToDark')"
+    :title="themeStore.isDark ? t('aria.switchToLight') : t('aria.switchToDark')"
     @click="themeStore.toggleTheme()"
   >
     <!-- Sun icon (light mode) -->

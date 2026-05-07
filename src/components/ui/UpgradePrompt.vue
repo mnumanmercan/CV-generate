@@ -2,9 +2,12 @@
   import { ref, onMounted, onUnmounted } from 'vue'
   import { RouterLink } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
+  import { useI18n } from '@/composables/useI18n'
   import { apiClient } from '@/services/apiClient'
+  import type { SplitHeading } from '@/i18n/index'
 
   const userStore = useUserStore()
+  const { t, t_obj } = useI18n()
 
   // @keydown.esc on a non-focusable div never fires.
   // Register on window instead so ESC always closes the modal.
@@ -25,11 +28,11 @@
 
   async function handleNotify(): Promise<void> {
     if (!email.value.trim()) {
-      emailError.value = 'Please enter your email address.'
+      emailError.value = t('upgrade.emailError')
       return
     }
     if (!validateEmail(email.value)) {
-      emailError.value = 'Please enter a valid email address.'
+      emailError.value = t('upgrade.emailInvalid')
       return
     }
     emailError.value   = ''
@@ -41,7 +44,7 @@
       })
       submitted.value = true
     } catch {
-      emailError.value = 'Something went wrong. Please try again.'
+      emailError.value = t('upgrade.emailInvalid')
     } finally {
       isSubmitting.value = false
     }
@@ -93,13 +96,13 @@
               aria-hidden="true"
             >✓</span>
             <div>
-              <p class="mono-eyebrow mb-2">You're on the list</p>
+              <p class="mono-eyebrow mb-2">{{ t('upgrade.onList') }}</p>
               <h2 class="font-display leading-tight tracking-editorial text-ink mb-2"
                   style="font-size: 28px">
-                See you <span class="accent-italic">soon</span>.
+                {{ t_obj<SplitHeading>('upgrade.seeSoon').prefix }}<span class="accent-italic">{{ t_obj<SplitHeading>('upgrade.seeSoon').accent }}</span>{{ t_obj<SplitHeading>('upgrade.seeSoon').suffix }}
               </h2>
               <p class="text-[13.5px] text-muted leading-[1.55]">
-                We'll let you know the moment Pro launches. Thanks for your interest.
+                {{ t('upgrade.sentDesc') }}
               </p>
             </div>
             <button
@@ -107,7 +110,7 @@
               class="btn-ghost w-full justify-center"
               @click="handleClose"
             >
-              Close
+              {{ t('upgrade.close') }}
             </button>
           </div>
         </template>
@@ -116,19 +119,19 @@
         <template v-else>
           <div class="flex items-start justify-between gap-3 mb-5">
             <div>
-              <p class="mono-eyebrow mb-2">Pro feature</p>
+              <p class="mono-eyebrow mb-2">{{ t('upgrade.eyebrow') }}</p>
               <h2
                 id="upgrade-modal-title"
                 class="font-display leading-tight tracking-editorial text-ink"
                 style="font-size: 26px"
               >
-                Coming to <span class="accent-italic">Pro</span>.
+                {{ t_obj<SplitHeading>('upgrade.heading').prefix }}<span class="accent-italic">{{ t_obj<SplitHeading>('upgrade.heading').accent }}</span>{{ t_obj<SplitHeading>('upgrade.heading').suffix }}
               </h2>
             </div>
             <button
               type="button"
               class="text-muted hover:text-ink transition-colors shrink-0"
-              aria-label="Close"
+              :aria-label="t('upgrade.close')"
               @click="handleClose"
             >
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -139,11 +142,10 @@
 
           <p class="text-[13.5px] text-muted mb-6 leading-[1.55]">
             <template v-if="userStore.upgradeModalTrigger === 'pro plan'">
-              The Pro Plan will be available soon. Drop your email — we'll let you know the moment it launches.
+              {{ t('upgrade.proDesc') }}
             </template>
             <template v-else>
-              <span class="text-ink font-medium">{{ userStore.upgradeModalTrigger }}</span> is coming to the Pro plan.
-              Drop your email — we'll let you know the moment it launches.
+              {{ t('upgrade.triggerDesc', { trigger: userStore.upgradeModalTrigger }) }}
             </template>
           </p>
 
@@ -164,7 +166,7 @@
           <!-- Email waitlist -->
           <div class="flex flex-col gap-3 mb-5">
             <div>
-              <label class="mono-eyebrow block mb-1.5" for="upgrade-email">Email address</label>
+              <label class="mono-eyebrow block mb-1.5" for="upgrade-email">{{ t('upgrade.emailLabel') }}</label>
               <input
                 id="upgrade-email"
                 v-model="email"
@@ -172,7 +174,7 @@
                 placeholder="you@example.com"
                 autocomplete="email"
                 class="w-full px-4 py-2.5 text-sm"
-                aria-label="Email address for Pro waitlist"
+                :aria-label="t('upgrade.emailLabel')"
                 @keydown.enter="handleNotify"
               />
             </div>
@@ -193,7 +195,7 @@
                 <path class="opacity-75" fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              {{ isSubmitting ? 'Registering…' : 'Notify me when Pro launches' }}
+              {{ isSubmitting ? t('upgrade.notifying') : t('upgrade.notify') }}
             </button>
           </div>
 
@@ -204,7 +206,7 @@
               class="mono-eyebrow text-[10.5px] text-muted hover:text-ink transition-colors"
               @click="handleClose"
             >
-              Maybe later
+              {{ t('upgrade.close') }}
             </button>
             <RouterLink
               to="/pricing"

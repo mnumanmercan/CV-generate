@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import { RouterLink } from 'vue-router'
+  import { useI18n } from '@/composables/useI18n'
+
+  const { t } = useI18n()
 </script>
 
 <!--
@@ -33,19 +36,19 @@
       <!-- Editorial nav -->
       <nav
         class="flex items-center gap-5 flex-wrap justify-center"
-        aria-label="Footer navigation"
+        :aria-label="t('aria.footerNav')"
       >
         <RouterLink
           to="/pricing"
           class="font-mono text-[10.5px] tracking-[0.18em] uppercase text-muted hover:text-ink transition-colors"
         >
-          Pricing
+          {{ t('footer.pricing') }}
         </RouterLink>
         <RouterLink
           to="/builder"
           class="font-mono text-[10.5px] tracking-[0.18em] uppercase text-muted hover:text-ink transition-colors"
         >
-          Builder
+          {{ t('footer.builder') }}
         </RouterLink>
         <a
           href="https://github.com/mnumanmercan/CV-generate"
@@ -53,13 +56,13 @@
           rel="noopener noreferrer"
           class="font-mono text-[10.5px] tracking-[0.18em] uppercase text-muted hover:text-ink transition-colors"
         >
-          GitHub
+          {{ t('footer.github') }}
         </a>
       </nav>
 
       <!-- Copyright + voice -->
       <p class="font-mono text-[10.5px] tracking-[0.14em] uppercase text-muted">
-        © {{ new Date().getFullYear() }} · Resumark · Made for résumés
+        {{ t('footer.copyright', { year: String(new Date().getFullYear()) }) }}
       </p>
     </div>
   </footer>

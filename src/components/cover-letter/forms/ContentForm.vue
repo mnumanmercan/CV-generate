@@ -1,12 +1,15 @@
 <script setup lang="ts">
+  import { computed } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useCoverLetterStore } from '@/stores/coverLetterStore'
   import FormField from '@/components/form/FormField.vue'
+  import { useI18n } from '@/composables/useI18n'
 
+  const { t, t_obj } = useI18n()
   const coverLetterStore = useCoverLetterStore()
   const { clData } = storeToRefs(coverLetterStore)
 
-  const SIGNATURES = ['Sincerely,', 'Best regards,', 'Kind regards,', 'Yours faithfully,', 'Warm regards,']
+  const signatures = computed(() => t_obj<string[]>('coverLetter.signatures'))
 </script>
 
 <template>
@@ -14,47 +17,47 @@
     <FormField
       id="cl-opening"
       v-model="clData.opening"
-      label="Opening Paragraph"
+      :label="t('coverLetter.contentOpening')"
       type="textarea"
       placeholder="I am writing to express my interest in the [Role] position at [Company]…"
-      hint="Introduce yourself and the role you're applying for (2–4 sentences)"
+      :hint="t('coverLetter.contentOpeningHint')"
     />
 
     <FormField
       id="cl-bodyWhy"
       v-model="clData.bodyWhy"
-      label="Why This Company / Role"
+      :label="t('coverLetter.contentBodyWhy')"
       type="textarea"
       placeholder="I am particularly drawn to [Company] because…"
-      hint="Explain why this company excites you and aligns with your goals"
+      :hint="t('coverLetter.contentBodyWhyHint')"
     />
 
     <FormField
       id="cl-bodyBring"
       v-model="clData.bodyBring"
-      label="What You Bring"
+      :label="t('coverLetter.contentBodyBring')"
       type="textarea"
       placeholder="In my previous role at [Company], I led…"
-      hint="Highlight your most relevant skills and achievements"
+      :hint="t('coverLetter.contentBodyBringHint')"
     />
 
     <FormField
       id="cl-closing"
       v-model="clData.closing"
-      label="Closing Paragraph"
+      :label="t('coverLetter.contentClosing')"
       type="textarea"
       placeholder="I would welcome the opportunity to discuss how my background…"
-      hint="Thank the reader and express your enthusiasm to continue the conversation"
+      :hint="t('coverLetter.contentClosingHint')"
     />
 
     <!-- Signature selector -->
     <div>
       <label class="block text-xs font-medium text-secondary font-mono uppercase tracking-wider mb-1.5" for="cl-signature">
-        Sign-off
+        {{ t('coverLetter.contentSignOff') }}
       </label>
       <div class="flex flex-wrap gap-2">
         <button
-          v-for="sig in SIGNATURES"
+          v-for="sig in signatures"
           :key="sig"
           type="button"
           class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200"

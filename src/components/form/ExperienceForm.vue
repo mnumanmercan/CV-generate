@@ -10,13 +10,14 @@
     validateDateRange,
     analyzeBullet,
   } from '@/services/atsFormatter'
+  import { useI18n } from '@/composables/useI18n'
 
+  const { t } = useI18n()
   const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
 
   const drag = useDragSort(computed(() => cvData.value.experience))
 
-  // Track which fields have been blurred so validation only shows after interaction
   const touchedFields = reactive(new Set<string>())
 
   function markTouched(expId: string, field: string): void {
@@ -57,15 +58,15 @@
     }
   }
 
-  function getDateError(date: string, label: string): string {
-    if (!date) return `${label} is required.`
-    if (!validateDateFormat(date)) return 'Use MM/YYYY format.'
+  function getDateError(date: string, isStart: boolean): string {
+    if (!date) return isStart ? t('forms.errorStartRequired') : t('forms.errorDateFormat')
+    if (!validateDateFormat(date)) return t('forms.errorDateFormat')
     return ''
   }
 
   function getRangeError(start: string, end: string): string {
     if (end === 'Present' || !start || !end) return ''
-    if (!validateDateRange(start, end)) return 'End date must be after start date.'
+    if (!validateDateRange(start, end)) return t('forms.errorEndAfterStart')
     return ''
   }
 </script>
@@ -82,7 +83,7 @@
         drag.isDragOver(exp.id) ? 'drag-over' : 'border-overlay/5',
       ]"
       draggable="true"
-      :aria-label="`Work experience entry ${index + 1}`"
+      :aria-label="t('forms.expEntryLabel', { n: String(index + 1) })"
       @dragstart="drag.onDragStart(exp.id)"
       @dragover.prevent="drag.onDragOver(exp.id)"
       @drop="drag.onDrop(exp.id)"
@@ -91,26 +92,25 @@
       <!-- Entry header -->
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <!-- Drag handle -->
           <span
             class="text-secondary cursor-grab active:cursor-grabbing"
             role="img"
-            aria-label="Drag to reorder"
-            title="Drag to reorder"
+            :aria-label="t('forms.dragToReorder')"
+            :title="t('forms.dragToReorder')"
           >
             ⠿
           </span>
           <span class="text-sm font-semibold text-primary">
-            {{ exp.position || `Experience ${index + 1}` }}
+            {{ exp.position || t('forms.expEntryLabel', { n: String(index + 1) }) }}
           </span>
         </div>
         <button
           type="button"
           class="text-secondary hover:text-red-400 transition-colors text-xs px-2 py-1 rounded hover:bg-red-500/10"
-          :aria-label="`Remove experience entry ${index + 1}`"
+          :aria-label="`${t('forms.remove')} ${t('forms.expEntryLabel', { n: String(index + 1) })}`"
           @click="removeExperience(index)"
         >
-          Remove
+          {{ t('forms.remove') }}
         </button>
       </div>
 
@@ -118,36 +118,36 @@
         <FormField
           :id="`exp-position-${exp.id}`"
           v-model="exp.position"
-          label="Job Title"
+          :label="t('forms.expJobTitle')"
           placeholder="Software Engineer"
           required
         />
         <FormField
           :id="`exp-company-${exp.id}`"
           v-model="exp.company"
-          label="Company"
+          :label="t('forms.expCompany')"
           placeholder="Acme Inc."
           required
         />
         <FormField
           :id="`exp-start-${exp.id}`"
           v-model="exp.startDate"
-          label="Start Date"
+          :label="t('forms.expStartDate')"
           placeholder="MM/YYYY"
           required
-          :error="isTouched(exp.id, 'startDate') ? getDateError(exp.startDate, 'Start date') : ''"
+          :error="isTouched(exp.id, 'startDate') ? getDateError(exp.startDate, true) : ''"
           @blur="markTouched(exp.id, 'startDate')"
         />
         <div>
           <FormField
             :id="`exp-end-${exp.id}`"
             v-model="exp.endDate"
-            label="End Date"
+            :label="t('forms.expEndDate')"
             placeholder="MM/YYYY"
             :disabled="exp.endDate === 'Present'"
             :error="
               isTouched(exp.id, 'endDate') && exp.endDate !== 'Present'
-                ? getRangeError(exp.startDate, exp.endDate) || getDateError(exp.endDate, 'End date')
+                ? getRangeError(exp.startDate, exp.endDate) || getDateError(exp.endDate, false)
                 : ''
             "
             @blur="markTouched(exp.id, 'endDate')"
@@ -161,14 +161,14 @@
               style="width: 14px; height: 14px;"
               @change="toggleCurrentlyEmployed(index)"
             />
-            <span class="text-xs text-secondary">I currently work here</span>
+            <span class="text-xs text-secondary">{{ t('forms.currentlyWorkHere') }}</span>
           </label>
         </div>
         <div class="col-span-2">
           <FormField
             :id="`exp-location-${exp.id}`"
             v-model="exp.location"
-            label="Location"
+            :label="t('forms.expLocation')"
             placeholder="New York, NY (optional)"
           />
         </div>
@@ -177,7 +177,7 @@
       <!-- Bullet points -->
       <div class="mt-3">
         <p class="text-xs font-medium text-secondary font-mono uppercase tracking-wider mb-2">
-          Bullet Points
+          {{ t('forms.bulletPoints') }}
         </p>
         <div class="flex flex-col gap-2">
           <div
@@ -232,7 +232,7 @@
           class="mt-2 text-xs text-accent hover:text-accent-hover flex items-center gap-1 transition-colors"
           @click="addBullet(index)"
         >
-          <span aria-hidden="true">+</span> Add bullet point
+          <span aria-hidden="true">+</span> {{ t('forms.addBullet') }}
         </button>
       </div>
     </div>
@@ -243,7 +243,7 @@
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addExperience"
     >
-      <span aria-hidden="true">+</span> Add Work Experience
+      <span aria-hidden="true">+</span> {{ t('forms.addExperience') }}
     </button>
   </div>
 </template>

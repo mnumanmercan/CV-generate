@@ -3,9 +3,11 @@
   import { RouterLink, useRouter } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
   import { apiClient } from '@/services/apiClient'
+  import { useI18n } from '@/composables/useI18n'
 
   const router    = useRouter()
   const userStore = useUserStore()
+  const { t, t_obj } = useI18n()
 
   const name                = ref('')
   const email               = ref('')
@@ -20,6 +22,8 @@
   const passwordAttempted   = ref(false)
   const passwordFlash       = ref(false)
   const confirmFlash        = ref(false)
+
+  const registerHeading = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('auth.register.heading'))
 
   function flashField(r: { value: boolean }): void {
     r.value = false
@@ -36,15 +40,15 @@
 
   const emailError = computed(() => {
     if (!emailTouched.value || !email.value) return ''
-    return emailValid.value ? '' : 'Please enter a valid email address.'
+    return emailValid.value ? '' : t('auth.register.errorInvalidEmail')
   })
 
   /* ── Password requirements (4 rules — no special character required) ── */
   const passwordRules = computed(() => [
-    { label: '8 or more characters', met: password.value.length >= 8 },
-    { label: 'Uppercase letter',     met: /[A-Z]/.test(password.value) },
-    { label: 'Lowercase letter',     met: /[a-z]/.test(password.value) },
-    { label: 'At least one number',  met: /[0-9]/.test(password.value) },
+    { label: t('auth.register.ruleLength'),    met: password.value.length >= 8 },
+    { label: t('auth.register.ruleUppercase'), met: /[A-Z]/.test(password.value) },
+    { label: t('auth.register.ruleLowercase'), met: /[a-z]/.test(password.value) },
+    { label: t('auth.register.ruleNumber'),    met: /[0-9]/.test(password.value) },
   ])
 
   const passwordValid    = computed(() => passwordRules.value.every(r => r.met))
@@ -52,11 +56,11 @@
 
   const strengthMeta = computed(() => {
     const s = passwordStrength.value
-    if (s === 0) return { label: '',       color: '' }
-    if (s === 1) return { label: 'Weak',   color: '#B42727' }
-    if (s === 2) return { label: 'Fair',   color: '#C26A1A' }
-    if (s === 3) return { label: 'Good',   color: '#A38421' }
-    return               { label: 'Strong', color: '#15803D' }
+    if (s === 0) return { label: '',                                  color: '' }
+    if (s === 1) return { label: t('auth.register.strengthWeak'),   color: '#B42727' }
+    if (s === 2) return { label: t('auth.register.strengthFair'),   color: '#C26A1A' }
+    if (s === 3) return { label: t('auth.register.strengthGood'),   color: '#A38421' }
+    return               { label: t('auth.register.strengthStrong'), color: '#15803D' }
   })
 
   /* ── Submit ──────────────────────────────────────────────────────────── */
@@ -65,11 +69,11 @@
     emailTouched.value = true
 
     if (!name.value.trim() || !email.value.trim() || !password.value || !confirmPassword.value) {
-      errorMsg.value = 'Please fill in all fields.'
+      errorMsg.value = t('auth.register.errorRequired')
       return
     }
     if (!emailValid.value) {
-      errorMsg.value = 'Please enter a valid email address.'
+      errorMsg.value = t('auth.register.errorInvalidEmail')
       return
     }
     if (!passwordValid.value) {
@@ -78,12 +82,12 @@
       return
     }
     if (password.value !== confirmPassword.value) {
-      errorMsg.value = 'Passwords do not match.'
+      errorMsg.value = t('auth.register.errorPasswordMismatch')
       flashField(confirmFlash)
       return
     }
     if (!agreeTerms.value) {
-      errorMsg.value = 'You must agree to the Terms of Service.'
+      errorMsg.value = t('auth.register.errorTerms')
       return
     }
 
@@ -106,7 +110,7 @@
 
       router.push('/dashboard')
     } catch {
-      errorMsg.value = userStore.authError ?? 'Registration failed. Please try again.'
+      errorMsg.value = userStore.authError ?? t('auth.register.errorRegistrationFailed')
     } finally {
       isLoading.value = false
     }
@@ -129,12 +133,12 @@
         <span class="font-display text-[24px] leading-none text-ink">Resumark</span>
       </RouterLink>
       <p class="text-[13.5px] text-muted">
-        Already have an account?
+        {{ t('auth.register.alreadyHaveAccount') }}
         <RouterLink
           to="/login"
           class="ml-1 font-medium underline-offset-4 hover:underline transition-colors"
           :style="{ color: 'var(--accent)' }"
-        >Sign in</RouterLink>
+        >{{ t('auth.register.signIn') }}</RouterLink>
       </p>
     </header>
 
@@ -143,17 +147,15 @@
       <div class="w-full max-w-[440px] animate-slide-up">
 
         <!-- Heading -->
-        <p class="mono-eyebrow mb-3 text-center">Free Forever</p>
+        <p class="mono-eyebrow mb-3 text-center">{{ t('auth.register.eyebrow') }}</p>
         <h1
           class="font-display leading-[1.02] tracking-editorial text-ink mb-3 text-center"
           :style="{ fontSize: 'clamp(38px, 5vw, 54px)' }"
         >
-          Create your<br />
-          <span class="accent-italic">free</span><span> account.</span>
+          {{ registerHeading.prefix }}<span class="accent-italic">{{ registerHeading.accent }}</span>{{ registerHeading.suffix }}
         </h1>
         <p class="text-center text-[14px] text-muted mb-8 leading-[1.55]">
-          Save your work, export polished PDFs,<br class="hidden md:block" />
-          and pick up where you left off.
+          {{ t('auth.register.lede') }}
         </p>
 
         <!-- Form card -->
@@ -177,7 +179,7 @@
 
             <!-- Full name -->
             <div>
-              <label class="mono-eyebrow block mb-1.5" for="reg-name">Full name</label>
+              <label class="mono-eyebrow block mb-1.5" for="reg-name">{{ t('auth.register.nameLabel') }}</label>
               <input
                 id="reg-name"
                 v-model="name"
@@ -190,7 +192,7 @@
 
             <!-- Email -->
             <div>
-              <label class="mono-eyebrow block mb-1.5" for="reg-email">Email address</label>
+              <label class="mono-eyebrow block mb-1.5" for="reg-email">{{ t('auth.register.emailLabel') }}</label>
               <input
                 id="reg-email"
                 v-model="email"
@@ -210,20 +212,20 @@
 
             <!-- Password -->
             <div>
-              <label class="mono-eyebrow block mb-1.5" for="reg-password">Password</label>
+              <label class="mono-eyebrow block mb-1.5" for="reg-password">{{ t('auth.register.passwordLabel') }}</label>
               <div class="relative">
                 <input
                   id="reg-password"
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
                   autocomplete="new-password"
-                  placeholder="Create a password"
+                  :placeholder="t('auth.register.passwordPlaceholder')"
                   :class="['w-full px-4 py-2.5 pr-11 text-sm', { 'input-error-flash': passwordFlash }]"
                 />
                 <button
                   type="button"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors"
-                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                  :aria-label="showPassword ? t('auth.register.hidePassword') : t('auth.register.showPassword')"
                   @click="showPassword = !showPassword"
                 >
                   <svg v-if="!showPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -310,7 +312,7 @@
                       class="mt-2.5 mono-eyebrow text-[10.5px]"
                       style="color: #B42727"
                       role="alert"
-                    >Password does not meet all requirements.</p>
+                    >{{ t('auth.register.passwordError') }}</p>
                   </Transition>
                 </div>
               </Transition>
@@ -318,20 +320,20 @@
 
             <!-- Confirm password -->
             <div>
-              <label class="mono-eyebrow block mb-1.5" for="reg-confirm">Confirm password</label>
+              <label class="mono-eyebrow block mb-1.5" for="reg-confirm">{{ t('auth.register.confirmPasswordLabel') }}</label>
               <div class="relative">
                 <input
                   id="reg-confirm"
                   v-model="confirmPassword"
                   :type="showConfirmPassword ? 'text' : 'password'"
                   autocomplete="new-password"
-                  placeholder="Repeat your password"
+                  :placeholder="t('auth.register.confirmPlaceholder')"
                   :class="['w-full px-4 py-2.5 pr-11 text-sm', { 'input-error-flash': confirmFlash }]"
                 />
                 <button
                   type="button"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors"
-                  :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
+                  :aria-label="showConfirmPassword ? t('auth.register.hidePassword') : t('auth.register.showPassword')"
                   @click="showConfirmPassword = !showConfirmPassword"
                 >
                   <svg v-if="!showConfirmPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -347,12 +349,12 @@
                 v-if="confirmPassword && confirmPassword !== password"
                 class="mt-1.5 mono-eyebrow text-[10.5px]"
                 style="color: #B42727"
-              >Passwords don't match</p>
+              >{{ t('auth.register.confirmMismatch') }}</p>
               <p
                 v-else-if="confirmPassword && confirmPassword === password"
                 class="mt-1.5 mono-eyebrow text-[10.5px]"
                 style="color: #15803D"
-              >Passwords match</p>
+              >{{ t('auth.register.confirmMatch') }}</p>
             </div>
 
             <!-- Terms -->
@@ -365,20 +367,7 @@
                 :style="{ accentColor: 'var(--accent)' }"
               />
               <label for="reg-terms" class="text-[13px] text-muted cursor-pointer leading-relaxed">
-                I agree to the
-                <a
-                  href="#"
-                  class="font-medium underline-offset-4 hover:underline transition-colors"
-                  :style="{ color: 'var(--accent)' }"
-                  @click.prevent
-                >Terms of Service</a>
-                and
-                <a
-                  href="#"
-                  class="font-medium underline-offset-4 hover:underline transition-colors"
-                  :style="{ color: 'var(--accent)' }"
-                  @click.prevent
-                >Privacy Policy</a>
+                {{ t('auth.register.termsLabel') }}
               </label>
             </div>
 
@@ -392,7 +381,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              {{ isLoading ? 'Creating account…' : 'Create free account' }}
+              {{ isLoading ? t('auth.register.creating') : t('auth.register.create') }}
             </button>
           </form>
 
@@ -402,7 +391,7 @@
               <div class="w-full border-t border-overlay/8" />
             </div>
             <div class="relative flex justify-center">
-              <span class="px-3 mono-eyebrow" :style="{ background: 'var(--card)' }">or continue with</span>
+              <span class="px-3 mono-eyebrow" :style="{ background: 'var(--card)' }">{{ t('auth.register.orContinueWith') }}</span>
             </div>
           </div>
 
@@ -418,12 +407,12 @@
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
-            Continue with Google
+            {{ t('auth.register.google') }}
           </button>
         </div>
 
         <p class="text-center mt-7 mono-eyebrow text-[10.5px]">
-          No credit card · Cancel anytime · Your data stays yours
+          {{ t('auth.register.footnote') }}
         </p>
       </div>
     </main>

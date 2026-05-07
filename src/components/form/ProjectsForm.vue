@@ -6,7 +6,9 @@
   import FormField from './FormField.vue'
   import { createProject } from '@/types/cv.types'
   import { validateUrl } from '@/services/atsFormatter'
+  import { useI18n } from '@/composables/useI18n'
 
+  const { t } = useI18n()
   const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
 
@@ -46,7 +48,7 @@
 
   function getLinkError(link: string | undefined): string {
     if (!link) return ''
-    return validateUrl(link) ? '' : 'URL must start with https://'
+    return validateUrl(link) ? '' : t('forms.errorUrlHttps')
   }
 </script>
 
@@ -61,7 +63,7 @@
         drag.isDragOver(project.id) ? 'drag-over' : 'border-overlay/5',
       ]"
       draggable="true"
-      :aria-label="`Project entry ${index + 1}`"
+      :aria-label="t('forms.projectEntryLabel', { n: String(index + 1) })"
       @dragstart="drag.onDragStart(project.id)"
       @dragover.prevent="drag.onDragOver(project.id)"
       @drop="drag.onDrop(project.id)"
@@ -69,18 +71,18 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab" role="img" aria-label="Drag to reorder">⠿</span>
+          <span class="text-secondary cursor-grab" role="img" :aria-label="t('forms.dragToReorder')">⠿</span>
           <span class="text-sm font-semibold text-primary">
-            {{ project.name || `Project ${index + 1}` }}
+            {{ project.name || t('forms.projectEntryLabel', { n: String(index + 1) }) }}
           </span>
         </div>
         <button
           type="button"
           class="text-secondary hover:text-red-400 transition-colors text-xs px-2 py-1 rounded hover:bg-red-500/10"
-          :aria-label="`Remove project ${index + 1}`"
+          :aria-label="`${t('forms.remove')} ${t('forms.projectEntryLabel', { n: String(index + 1) })}`"
           @click="removeProject(index)"
         >
-          Remove
+          {{ t('forms.remove') }}
         </button>
       </div>
 
@@ -88,14 +90,14 @@
         <FormField
           :id="`project-name-${project.id}`"
           v-model="project.name"
-          label="Project Name"
+          :label="t('forms.projectName')"
           placeholder="Open Source CV Builder"
           required
         />
         <FormField
           :id="`project-desc-${project.id}`"
           v-model="project.description"
-          label="Description"
+          :label="t('forms.projectDesc')"
           type="textarea"
           placeholder="Built a full-stack CV builder with real-time preview..."
           required
@@ -103,7 +105,7 @@
         <FormField
           :id="`project-link-${project.id}`"
           v-model="project.link"
-          label="Project URL (optional)"
+          :label="t('forms.projectUrl')"
           type="url"
           placeholder="https://github.com/you/project"
           :error="getLinkError(project.link)"
@@ -112,7 +114,7 @@
         <!-- Tech stack chips -->
         <div>
           <p class="text-xs font-medium text-secondary font-mono uppercase tracking-wider mb-2">
-            Tech Stack
+            {{ t('forms.techStack') }}
           </p>
           <div class="flex flex-wrap gap-1.5 mb-2">
             <span
@@ -144,7 +146,7 @@
               class="px-3 py-2 rounded-lg bg-accent/20 text-accent text-sm hover:bg-accent/30 transition-colors"
               @click="addTech(project.id, index)"
             >
-              Add
+              {{ t('forms.addTech') }}
             </button>
           </div>
         </div>
@@ -156,7 +158,7 @@
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addProject"
     >
-      <span aria-hidden="true">+</span> Add Project
+      <span aria-hidden="true">+</span> {{ t('forms.addProject') }}
     </button>
   </div>
 </template>

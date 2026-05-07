@@ -7,15 +7,26 @@
   import { useUserStore } from '@/stores/userStore'
   import { useScrollReveal } from '@/composables/useScrollReveal'
   import { PLANS, type SubscriptionTier } from '@/composables/useSubscription'
+  import { useI18n } from '@/composables/useI18n'
 
   onMounted(() => {
     document.title = 'Pricing — Resumark'
   })
 
+  const { t, t_obj } = useI18n()
   const { vReveal } = useScrollReveal()
   const userStore = useUserStore()
   const currentTier = computed<SubscriptionTier>(() => (userStore.isPremium ? 'pro' : 'free'))
   const billingPeriod = ref<'monthly' | 'annual'>('monthly')
+
+  const pricingHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.heading'))
+  const compareHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.compareHeading'))
+  const faqHeading      = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.faqHeading'))
+  const closingHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.closingHeading'))
+  const planFeatures    = computed<Record<string, string[]>>(() => ({
+    free: t_obj<string[]>('pricing.freePlanFeatures'),
+    pro:  t_obj<string[]>('pricing.proPlanFeatures'),
+  }))
 
   function displayedPrice(price: number): string {
     if (price === 0) return '$0'
@@ -27,42 +38,30 @@
     return Math.floor(price * 0.8) * 12
   }
 
-  /* ── Comparison table (Free vs Pro — Enterprise removed from public UI) ── */
+  /* ── Comparison table rows — sourced from i18n ──────────────────────── */
   type ComparisonRow = [string, boolean, boolean]
 
-  const comparisonRows: ComparisonRow[] = [
-    ['ATS résumé builder',          true,  true],
-    ['Real-time preview',            true,  true],
-    ['PDF download',                 true,  true],
-    ['Browser auto-save',            true,  true],
-    ['ATS writing hints',            true,  true],
-    ['Cover letter builder',         true,  true],
-    ['Profile photo upload',         false, true],
-    ['Premium templates',            false, true],
-    ['Cloud storage & sync',         false, true],
-    ['Multiple CV versions',         false, true],
-    ['Priority support',             false, true],
+  const comparisonAvailability: [boolean, boolean][] = [
+    [true,  true],
+    [true,  true],
+    [true,  true],
+    [true,  true],
+    [true,  true],
+    [true,  true],
+    [false, true],
+    [false, true],
+    [false, true],
+    [false, true],
+    [false, true],
   ]
 
-  /* ── FAQ — 4 persuasive items ────────────────────────────────────────── */
-  const faq = [
-    {
-      q: 'What does an ATS-friendly CV actually look like?',
-      a: 'Two columns, custom fonts, and a photo header look great to a person. An ATS sees garbage. An ATS-friendly CV is single-column, uses standard section headings (Experience, Education, Skills), relies on machine-readable text, and has no tables or graphics. Every Resumark export passes those requirements by default — you never have to think about it.',
-    },
-    {
-      q: 'How is Resumark different from Canva or Zety?',
-      a: 'Canva and Zety optimise for aesthetics. Resumark optimises for getting your résumé read. Single-column layout. Standard ATS headings. No mandatory sign-up. No personal data leaving your browser on the Free plan. The goal is a callback, not a compliment on the design.',
-    },
-    {
-      q: 'What happens to my data if I cancel Pro?',
-      a: 'Your exported PDFs are yours to keep, always. If you cancel Pro, your cloud-stored CV data remains downloadable for 30 days, then it\'s deleted from our servers. You can export a copy at any time from the builder — Free or Pro.',
-    },
-    {
-      q: 'Can I try Pro before paying?',
-      a: 'The Free tier is the trial. It includes the full builder, ATS hints, real-time preview, and PDF download — no account needed, no time limit. Pro adds cloud sync and extra features on top of a foundation you\'ve already tested.',
-    },
-  ]
+  const comparisonRows = computed<ComparisonRow[]>(() => {
+    const labels = t_obj<string[]>('pricing.comparisonRows')
+    return labels.map((label, i) => [label, ...comparisonAvailability[i]!] as ComparisonRow)
+  })
+
+  /* ── FAQ — sourced from i18n ──────────────────────────────────────────── */
+  const faq = computed(() => t_obj<Array<{ q: string; a: string }>>('pricing.faqItems'))
 
   // Single-open accordion. Click the same row again to close it.
   const openFaq = ref<number | null>(0)
@@ -81,23 +80,21 @@
       <section class="px-6 pt-14 md:pt-20 pb-16 md:pb-20 text-center max-w-5xl mx-auto w-full">
         <div class="flex items-center justify-center gap-2 mb-7 stagger-item">
           <span class="w-1.5 h-1.5 rounded-full" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
-          <span class="mono-eyebrow">Simple Pricing</span>
+          <span class="mono-eyebrow">{{ t('pricing.eyebrow') }}</span>
         </div>
 
         <h1
           class="font-display leading-[1.02] tracking-editorial text-ink stagger-item"
           :style="{ fontSize: 'clamp(48px, 7.4vw, 96px)', animationDelay: '60ms' }"
         >
-          Free for the <span class="accent-italic">work.</span><br />
-          <span class="accent-italic">Pro</span><span> for the rest.</span>
+          {{ pricingHeading.prefix }}<span class="accent-italic">{{ pricingHeading.accent }}</span>{{ pricingHeading.suffix }}
         </h1>
 
         <p
           class="mt-7 max-w-xl mx-auto text-[18px] leading-[1.55] text-muted stagger-item"
           style="animation-delay: 120ms"
         >
-          The full résumé builder is free, forever. Pro unlocks cloud sync,
-          multiple CV versions, premium templates, and more.
+          {{ t('pricing.lede') }}
         </p>
 
         <!-- Billing toggle -->
@@ -105,7 +102,7 @@
           class="inline-flex items-center mt-10 p-1 rounded-full border border-overlay/10 stagger-item"
           style="background: var(--card); animation-delay: 180ms"
           role="group"
-          aria-label="Billing period"
+          :aria-label="t('aria.billingPeriod')"
         >
           <button
             type="button"
@@ -113,7 +110,7 @@
             :class="billingPeriod === 'monthly' ? '' : 'text-muted hover:text-ink'"
             :style="billingPeriod === 'monthly' ? { background: 'var(--ink)', color: 'var(--paper)' } : {}"
             @click="billingPeriod = 'monthly'"
-          >Monthly</button>
+          >{{ t('pricing.billingMonthly') }}</button>
           <button
             type="button"
             class="px-5 py-2 rounded-full text-sm font-medium transition-all inline-flex items-center gap-2"
@@ -121,7 +118,7 @@
             :style="billingPeriod === 'annual' ? { background: 'var(--ink)', color: 'var(--paper)' } : {}"
             @click="billingPeriod = 'annual'"
           >
-            Annual
+            {{ t('pricing.billingAnnual') }}
             <span
               class="font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none"
               :style="{ background: 'var(--accent-soft)', color: 'var(--accent)' }"
@@ -160,7 +157,7 @@
                 style="background: var(--accent); color: #FFFFFF; white-space: nowrap"
                 aria-label="Coming soon"
               >
-                Soon
+                {{ t('dashboard.proCardBadge') }}
               </div>
 
               <!-- Plan identity -->
@@ -169,7 +166,7 @@
                 class="font-display leading-none tracking-editorial text-ink"
                 :style="{ fontSize: 'clamp(34px, 4.2vw, 48px)' }"
               >
-                {{ plan.name }}
+                {{ t('pricing.' + plan.id) }}
               </h2>
 
               <!-- Price -->
@@ -185,7 +182,7 @@
                     class="font-display leading-none text-ink"
                     :style="{ fontSize: 'clamp(40px, 5vw, 64px)', letterSpacing: '-0.02em' }"
                   >{{ displayedPrice(plan.price) }}</span>
-                  <span v-if="plan.price > 0" class="text-muted text-sm mb-2">/ month</span>
+                  <span v-if="plan.price > 0" class="text-muted text-sm mb-2">{{ t('pricing.perMonth') }}</span>
                 </template>
               </div>
 
@@ -195,23 +192,19 @@
                 class="text-[12.5px] mt-2"
                 :style="{ color: 'var(--accent)' }"
               >
-                ${{ annualTotal(plan.price) }} billed annually
+                {{ t('pricing.billedAnnually', { total: String(annualTotal(plan.price)) }) }}
               </p>
 
               <!-- Plan tagline -->
               <p
                 v-if="plan.id === 'free'"
                 class="text-[12.5px] mt-2 text-muted"
-              >No credit card required.</p>
+              >{{ t('pricing.noCreditCard') }}</p>
               <p
                 v-else-if="plan.id === 'pro'"
                 class="text-[12.5px] mt-2"
                 :style="{ color: 'var(--accent)' }"
-              >Everything in Free, plus more.</p>
-              <p
-                v-else
-                class="text-[12.5px] mt-2 text-muted"
-              >Custom pricing for teams.</p>
+              >{{ t('pricing.everythingInFree') }}</p>
 
               <!-- CTA -->
               <div class="mt-7">
@@ -220,22 +213,15 @@
                   class="block w-full text-center py-3 rounded-xl text-sm font-medium"
                   :style="{ border: '1px solid var(--accent)', color: 'var(--accent)' }"
                 >
-                  Current plan
+                  {{ t('pricing.currentPlan') }}
                 </span>
                 <RouterLink
                   v-else-if="plan.id === 'free'"
                   to="/builder"
                   class="block w-full text-center py-3 rounded-xl border border-overlay/15 text-ink text-sm font-medium hover:bg-overlay/5 transition-colors"
                 >
-                  Get started free
+                  {{ t('pricing.getStartedFree') }}
                 </RouterLink>
-                <a
-                  v-else-if="plan.id === 'enterprise'"
-                  href="mailto:hello@resumark.app"
-                  class="block w-full text-center py-3 rounded-xl border border-overlay/15 text-ink text-sm font-medium hover:bg-overlay/5 transition-colors"
-                >
-                  Contact sales
-                </a>
                 <button
                   v-else-if="plan.id === 'pro'"
                   type="button"
@@ -243,7 +229,7 @@
                   :style="{ background: 'var(--accent)', color: '#FFFFFF' }"
                   @click="userStore.openUpgradeModal('pro plan')"
                 >
-                  Get notified at launch
+                  {{ t('pricing.getNotified') }}
                 </button>
               </div>
 
@@ -251,9 +237,9 @@
               <div class="my-7 h-px bg-overlay/10" aria-hidden="true" />
 
               <!-- Features -->
-              <ul class="flex flex-col gap-3.5 flex-1" :aria-label="`${plan.name} features`">
+              <ul class="flex flex-col gap-3.5 flex-1" :aria-label="`${t('pricing.' + plan.id)} features`">
                 <li
-                  v-for="feature in plan.features"
+                  v-for="feature in (planFeatures[plan.id] ?? plan.features)"
                   :key="feature"
                   class="flex items-start gap-3 text-[14px] text-muted leading-snug"
                 >
@@ -282,7 +268,7 @@
       >
         <div class="flex flex-col md:flex-row gap-8 md:gap-16 mb-10">
           <div class="md:w-1/3 reveal-item">
-            <p class="mono-eyebrow">Free vs Pro</p>
+            <p class="mono-eyebrow">{{ t('pricing.compareEyebrow') }}</p>
           </div>
           <div class="md:w-2/3 reveal-item" style="animation-delay: 80ms">
             <h2
@@ -290,7 +276,7 @@
               class="font-display leading-[1.02] tracking-editorial text-ink"
               :style="{ fontSize: 'clamp(34px, 4.5vw, 56px)' }"
             >
-              <span class="accent-italic">Everything</span><span> in one table.</span>
+              {{ compareHeading.prefix }}<span class="accent-italic">{{ compareHeading.accent }}</span>{{ compareHeading.suffix }}
             </h2>
           </div>
         </div>
@@ -303,10 +289,10 @@
             <thead>
               <tr class="border-b border-overlay/10">
                 <th class="text-left px-5 py-4 mono-eyebrow font-medium w-1/2" scope="col">
-                  Feature
+                  {{ t('pricing.compareFeatureCol') }}
                 </th>
                 <th class="text-center px-4 py-4 mono-eyebrow font-medium" scope="col">
-                  Free
+                  {{ t('pricing.free') }}
                 </th>
                 <th
                   class="text-center px-4 py-4 mono-eyebrow font-medium"
@@ -348,9 +334,8 @@
         </div>
         <!-- Teams footer link -->
         <p class="mt-8 text-center mono-eyebrow reveal-item">
-          Building for a team?
-          <RouterLink to="/teams" class="ml-1 underline underline-offset-4 hover:opacity-70 transition-opacity" style="color: var(--accent)">
-            See /teams →
+          <RouterLink to="/teams" class="underline underline-offset-4 hover:opacity-70 transition-opacity" style="color: var(--accent)">
+            {{ t('pricing.teamsLink') }}
           </RouterLink>
         </p>
       </section>
@@ -363,13 +348,13 @@
       >
         <div class="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-10 md:gap-16">
           <div class="reveal-item">
-            <p class="mono-eyebrow mb-4">Questions</p>
+            <p class="mono-eyebrow mb-4">{{ t('pricing.faqEyebrow') }}</p>
             <h2
               id="faq-heading"
               class="font-display leading-[1.02] tracking-editorial text-ink"
               :style="{ fontSize: 'clamp(34px, 4.8vw, 56px)' }"
             >
-              <span class="accent-italic">Frequently</span><br /><span>asked.</span>
+              {{ faqHeading.prefix }}<span class="accent-italic">{{ faqHeading.accent }}</span>{{ faqHeading.suffix }}
             </h2>
           </div>
 
@@ -416,21 +401,20 @@
         class="px-6 py-24 md:py-32 max-w-6xl mx-auto w-full text-center border-t border-overlay/8"
       >
         <p class="mono-eyebrow mb-8 reveal-item">
-          Free forever · No sign-up · Under five minutes
+          {{ t('pricing.closingTagline') }}
         </p>
         <h2
           class="font-display leading-[1.02] tracking-editorial text-ink mb-12 reveal-item"
           :style="{ fontSize: 'clamp(48px, 8vw, 96px)', animationDelay: '80ms' }"
         >
-          Start writing.<br />
-          <span class="accent-italic">Upgrade</span><span> later.</span>
+          {{ closingHeading.prefix }}<span class="accent-italic">{{ closingHeading.accent }}</span>{{ closingHeading.suffix }}
         </h2>
         <RouterLink
           to="/builder"
           class="btn-primary text-base reveal-item"
           style="animation-delay: 160ms"
         >
-          Start free
+          {{ t('pricing.closingButton') }}
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
           </svg>

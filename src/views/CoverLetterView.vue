@@ -14,8 +14,10 @@
   import { useCVStore } from '@/stores/cvStore'
   import { usePDFExport } from '@/composables/usePDFExport'
   import { usePreviewZoom } from '@/composables/usePreviewZoom'
+  import { useI18n } from '@/composables/useI18n'
 
   const coverLetterStore = useCoverLetterStore()
+  const { t } = useI18n()
   const cvStore = useCVStore()
   const { clData, saveIndicatorVisible: showSaved } = storeToRefs(coverLetterStore)
   const { status: pdfStatus, errorMessage: pdfError, exportPDF } = usePDFExport()
@@ -59,18 +61,18 @@
           <template #form>
             <div class="px-6 pt-7 pb-8 max-w-[640px] mx-auto">
               <!-- Editorial heading -->
-              <p class="mono-eyebrow mb-3">Cover Letter</p>
+              <p class="mono-eyebrow mb-3">{{ t('coverLetter.eyebrow') }}</p>
               <h2
                 class="font-display leading-[1.05] tracking-editorial text-ink mb-7"
                 :style="{ fontSize: 'clamp(28px, 3.4vw, 38px)' }"
               >
-                Three sections.<br />
-                <span class="accent-italic">One</span><span class="text-ink"> page.</span>
+                {{ t('coverLetter.headingLine1') }}<br />
+                <span class="accent-italic">{{ t('coverLetter.headingLine2.accent') }}</span><span class="text-ink">{{ t('coverLetter.headingLine2.suffix') }}</span>
               </h2>
 
               <!-- Sections -->
               <FormSection
-                title="Your Details"
+                :title="t('coverLetter.sectionDetails')"
                 icon="◉"
                 :default-open="true"
                 :completed="!!(clData.fullName && clData.email)"
@@ -80,7 +82,7 @@
               </FormSection>
 
               <FormSection
-                title="Recipient"
+                :title="t('coverLetter.sectionRecipient')"
                 icon="¶"
                 :default-open="false"
                 :completed="!!clData.companyName"
@@ -90,7 +92,7 @@
               </FormSection>
 
               <FormSection
-                title="Letter Content"
+                :title="t('coverLetter.sectionContent')"
                 icon="✎"
                 :default-open="false"
                 :completed="!!(clData.opening && clData.closing)"
@@ -105,7 +107,7 @@
                 class="w-full mt-6 py-2 mono-eyebrow text-[10.5px] text-muted hover:text-ink transition-colors"
                 @click="coverLetterStore.clearData()"
               >
-                · Clear all data ·
+                {{ t('coverLetter.clearData') }}
               </button>
             </div>
           </template>
@@ -121,7 +123,7 @@
                 style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); color: #B42727"
                 role="alert"
               >
-                {{ pdfError || 'PDF generation failed. Please try again.' }}
+                {{ pdfError || t('coverLetter.pdfError') }}
               </div>
 
               <!-- A4 scroll area — fills the full panel height -->
@@ -160,7 +162,7 @@
                   role="status"
                 >
                   <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background: #22C55E" aria-hidden="true" />
-                  <span class="mono-eyebrow text-[10.5px]">Saved to this browser · just now</span>
+                  <span class="mono-eyebrow text-[10.5px]">{{ t('coverLetter.saved') }}</span>
                 </div>
               </Transition>
 
@@ -173,7 +175,7 @@
                   type="button"
                   :disabled="previewScale <= ZOOM_MIN"
                   class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Zoom out"
+                  :aria-label="t('aria.zoomOut')"
                   @click="zoomOut"
                 >
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -189,7 +191,7 @@
                   type="button"
                   :disabled="previewScale >= ZOOM_MAX"
                   class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Zoom in"
+                  :aria-label="t('aria.zoomIn')"
                   @click="zoomIn"
                 >
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -202,8 +204,8 @@
                 <button
                   type="button"
                   class="w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
-                  aria-label="Fit to panel"
-                  title="Fit to panel"
+                  :aria-label="t('aria.fitToPanel')"
+                  :title="t('builder.fitPanel')"
                   @click="fitToPanel"
                 >
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -219,12 +221,12 @@
                   :disabled="pdfStatus === 'generating'"
                   class="btn-primary text-[13px]"
                   style="box-shadow: 0 4px 16px rgba(184,83,42,0.22)"
-                  aria-label="Download cover letter as PDF"
+                  :aria-label="t('aria.downloadCl')"
                   @click="handleDownload"
                 >
                   <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
                   <span v-else aria-hidden="true">↓</span>
-                  {{ pdfStatus === 'generating' ? 'Generating…' : 'Download PDF' }}
+                  {{ pdfStatus === 'generating' ? t('builder.generating') : t('builder.downloadPdf') }}
                 </button>
               </div>
 

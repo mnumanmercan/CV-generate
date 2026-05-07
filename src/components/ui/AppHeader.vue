@@ -1,9 +1,11 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
+  import { ref, computed } from 'vue'
   import { RouterLink, useRoute, useRouter } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
   import { useCVStore } from '@/stores/cvStore'
   import { useCoverLetterStore } from '@/stores/coverLetterStore'
+  import { useLocaleStore } from '@/stores/localeStore'
+  import { useI18n } from '@/composables/useI18n'
   import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 
   const route       = useRoute()
@@ -11,11 +13,13 @@
   const userStore   = useUserStore()
   const cvStore     = useCVStore()
   const coverLetter = useCoverLetterStore()
+  const localeStore = useLocaleStore()
+  const { t }       = useI18n()
 
-  const navLinks = [
-    { name: 'builder', label: 'Builder' },
-    { name: 'pricing', label: 'Pricing' },
-  ]
+  const navLinks = computed(() => [
+    { name: 'builder', label: t('nav.builder') },
+    { name: 'pricing', label: t('nav.pricing') },
+  ])
 
   const showUserMenu = ref(false)
 
@@ -49,7 +53,7 @@
     <RouterLink
       to="/"
       class="flex items-center gap-2.5 group w-fit"
-      aria-label="Resumark home"
+      :aria-label="t('aria.resumeHome')"
     >
       <span
         class="w-2 h-2 rounded-full shrink-0 transition-transform duration-300 group-hover:scale-125"
@@ -62,7 +66,7 @@
     </RouterLink>
 
     <!-- ── Nav (centered via grid) ────────────────────────────── -->
-    <nav class="flex items-center gap-7" aria-label="Main navigation">
+    <nav class="flex items-center gap-7" :aria-label="t('aria.mainNav')">
       <RouterLink
         v-for="link in navLinks"
         :key="link.name"
@@ -82,8 +86,32 @@
       </RouterLink>
     </nav>
 
-    <!-- ── Right side: ThemeToggle + auth actions ─────────────── -->
+    <!-- ── Right side: Lang switcher + ThemeToggle + auth actions ─ -->
     <div class="flex items-center justify-end gap-2.5">
+
+      <!-- Language switcher -->
+      <div
+        class="flex items-center font-mono text-[11px] tracking-[0.14em] uppercase select-none"
+        role="group"
+        aria-label="Language"
+      >
+        <button
+          type="button"
+          class="px-1.5 py-0.5 transition-colors"
+          :style="{ color: localeStore.locale === 'en' ? 'var(--accent)' : 'var(--muted)' }"
+          :aria-pressed="localeStore.locale === 'en'"
+          @click="localeStore.setLocale('en')"
+        >EN</button>
+        <span class="opacity-30 text-ink" aria-hidden="true">·</span>
+        <button
+          type="button"
+          class="px-1.5 py-0.5 transition-colors"
+          :style="{ color: localeStore.locale === 'tr' ? 'var(--accent)' : 'var(--muted)' }"
+          :aria-pressed="localeStore.locale === 'tr'"
+          @click="localeStore.setLocale('tr')"
+        >TR</button>
+      </div>
+
       <ThemeToggle />
 
       <!-- Guest -->
@@ -92,13 +120,13 @@
           to="/login"
           class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg text-sm text-ink hover:bg-overlay/5 transition-colors"
         >
-          Log in
+          {{ t('nav.login') }}
         </RouterLink>
         <RouterLink
           to="/register"
           class="btn-primary text-sm"
         >
-          Register
+          {{ t('nav.register') }}
           <svg
             class="w-3.5 h-3.5 opacity-90"
             fill="none"
@@ -161,7 +189,7 @@
                 @click="showUserMenu = false"
               >
                 <span class="w-1 h-1 rounded-full" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
-                Dashboard
+                {{ t('nav.dashboard') }}
               </RouterLink>
               <RouterLink
                 to="/builder"
@@ -169,7 +197,7 @@
                 @click="showUserMenu = false"
               >
                 <span class="w-1 h-1 rounded-full" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
-                My résumé
+                {{ t('nav.myResume') }}
               </RouterLink>
               <RouterLink
                 to="/cover-letter"
@@ -177,7 +205,7 @@
                 @click="showUserMenu = false"
               >
                 <span class="w-1 h-1 rounded-full" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
-                Cover letter
+                {{ t('nav.coverLetter') }}
               </RouterLink>
               <div class="h-px bg-overlay/10 my-1" />
               <button
@@ -186,7 +214,7 @@
                 @click="handleLogout"
               >
                 <span class="w-1 h-1 rounded-full bg-muted" aria-hidden="true" />
-                Sign out
+                {{ t('nav.signOut') }}
               </button>
             </div>
           </Transition>

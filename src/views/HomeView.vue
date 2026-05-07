@@ -9,10 +9,17 @@
   import { useScrollReveal } from '@/composables/useScrollReveal'
   import { useAutoSave } from '@/composables/useAutoSave'
   import { useCVStore } from '@/stores/cvStore'
+  import { useI18n } from '@/composables/useI18n'
   import { createWorkExperience } from '@/types/cv.types'
+  import type { Step } from '@/i18n/index'
 
   const cvStore = useCVStore()
   const { vReveal } = useScrollReveal()
+  const { t, t_obj } = useI18n()
+
+  const steps       = computed(() => t_obj<Step[]>('home.steps'))
+  const heroHeading = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('home.hero.heading'))
+  const ctaHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('home.cta.heading'))
 
   // Mirror the auto-save loop /builder uses, so edits in HeroMiniDemo
   // persist with the same debounced, fire-and-forget guarantee.
@@ -103,26 +110,6 @@
     }
   })
 
-  const steps = [
-    {
-      eyebrow:     'Open the editor',
-      numeral:     '01',
-      title:       'Write your story',
-      description: 'Pick a section, start typing. Resumark keeps the structure tight so you can focus on the words — no blank page, no formatting headaches.',
-    },
-    {
-      eyebrow:     'See the result',
-      numeral:     '02',
-      title:       'Preview as you type',
-      description: 'Your résumé updates live on the right — pinned to A4, exactly as the recruiter will see it.',
-    },
-    {
-      eyebrow:     'Ship it',
-      numeral:     '03',
-      title:       'Export and go',
-      description: 'One click. Pixel-perfect PDF, ATS-readable, consistent every time.',
-    },
-  ]
 
 </script>
 
@@ -144,7 +131,7 @@
             <!-- Eyebrow -->
             <div class="flex items-center gap-2.5 mb-8 stagger-item">
               <span class="w-1.5 h-1.5 rounded-full" :style="{ background:'var(--accent)' }" aria-hidden="true" />
-              <span class="mono-eyebrow">A Résumé Builder · Pixel-perfect PDF Export</span>
+              <span class="mono-eyebrow">{{ t('home.eyebrow') }}</span>
             </div>
 
             <!-- Display headline -->
@@ -153,11 +140,9 @@
               class="font-display leading-[1.02] tracking-editorial stagger-item"
               :style="{ fontSize:'clamp(48px, 7.4vw, 96px)', animationDelay:'60ms' }"
             >
-            <!--             
-              <span class="text-ink">Open the page.</span>
-              <br /> 
-            -->
-              <div class="text-nowrap"><span class="accent-italic">Build</span><span class="text-ink"> in minutes.</span></div>
+              <div class="text-nowrap">
+                <span v-if="heroHeading.prefix" class="text-ink">{{ heroHeading.prefix }}</span><span class="accent-italic">{{ heroHeading.accent }}</span><span class="text-ink">{{ heroHeading.suffix }}</span>
+              </div>
             </h1>
 
             <!-- Lede -->
@@ -165,9 +150,7 @@
               class="mt-7 max-w-[540px] text-[18px] leading-[1.55] text-muted stagger-item"
               style="animation-delay: 120ms"
             >
-              Resumark takes the friction out of résumé writing — structured sections
-              guide you, a live preview shows exactly what the <span>HR</span> sees.
-              <span class="accent-italic">No account required.</span>
+              {{ t('home.hero.lede') }}
             </p>
 
             <!-- Mini demo -->
@@ -183,7 +166,7 @@
 
             <!-- Foot line -->
             <p class="mt-6 mono-eyebrow stagger-item" style="animation-delay: 240ms">
-              Free to start · No account required · ATS-ready PDF
+              {{ t('home.hero.tagline') }}
             </p>
           </div>
 
@@ -209,7 +192,7 @@
       >
         <div class="flex flex-col md:flex-row gap-8 md:gap-16 mb-14 md:mb-20">
           <div class="md:w-1/3 reveal-item">
-            <p class="mono-eyebrow">The Method</p>
+            <p class="mono-eyebrow">{{ t('home.method.eyebrow') }}</p>
           </div>
           <div class="md:w-2/3 reveal-item" style="animation-delay: 80ms">
             <h2
@@ -217,7 +200,7 @@
               class="font-display leading-[1.02] tracking-editorial text-ink"
               :style="{ fontSize:'clamp(40px, 6vw, 80px)' }"
             >
-              Just three steps<br />
+              {{ t_obj<{prefix:string;accent:string;suffix:string}>('home.method.heading').prefix }}<span class="accent-italic">{{ t_obj<{prefix:string;accent:string;suffix:string}>('home.method.heading').accent }}</span>{{ t_obj<{prefix:string;accent:string;suffix:string}>('home.method.heading').suffix }}
             </h2>
           </div>
         </div>
@@ -239,15 +222,14 @@
         class="px-6 py-24 md:py-32 max-w-6xl mx-auto w-full text-center border-t border-overlay/8"
       >
         <p class="mono-eyebrow mb-8 reveal-item">
-          Free to start · No account required · ATS-ready PDF
+          {{ t('home.cta.tagline') }}
         </p>
 
         <h2
           class="font-display leading-[1.02] tracking-editorial text-ink mb-12 reveal-item"
           :style="{ fontSize:'clamp(56px, 9vw, 120px)', animationDelay:'80ms' }"
         >
-          The page is open.<br />
-          The <span class="accent-italic">rest</span> is yours.
+          {{ ctaHeading.prefix }}<span class="accent-italic">{{ ctaHeading.accent }}</span>{{ ctaHeading.suffix }}
         </h2>
 
         <RouterLink
@@ -255,7 +237,7 @@
           class="btn-primary text-base reveal-item"
           style="animation-delay: 160ms"
         >
-          Start writing
+          {{ t('home.cta.button') }}
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
           </svg>

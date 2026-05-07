@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import { RouterLink } from 'vue-router'
+  import { useI18n } from '@/composables/useI18n'
+
+  const { t } = useI18n()
 
   /**
    * Two-way bindings for the five mini-demo fields. The parent (HomeView)
@@ -37,10 +40,10 @@
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-2">
         <span class="w-1.5 h-1.5 rounded-full" :style="{ background:'var(--accent)' }" aria-hidden="true" />
-        <span class="mono-eyebrow">Try demo · Your CV</span>
+        <span class="mono-eyebrow">{{ t('home.miniDemo.eyebrow') }}</span>
       </div>
       <span class="mono-eyebrow" :style="{ color:'var(--accent)' }">
-        Step {{ currentStep }} / {{ totalSteps }}
+        {{ t('home.miniDemo.stepLabel', { current: String(currentStep), total: String(totalSteps) }) }}
       </span>
     </div>
 
@@ -52,7 +55,7 @@
         of the live preview.
       -->
       <label class="block">
-        <span class="mono-eyebrow block mb-1.5">Full name</span>
+        <span class="mono-eyebrow block mb-1.5">{{ t('home.miniDemo.fields.fullName') }}</span>
         <input
           v-model="fullName"
           type="text"
@@ -62,7 +65,7 @@
         />
       </label>
       <label class="block">
-        <span class="mono-eyebrow block mb-1.5">Role</span>
+        <span class="mono-eyebrow block mb-1.5">{{ t('home.miniDemo.fields.role') }}</span>
         <input
           v-model="role"
           type="text"
@@ -72,7 +75,7 @@
       </label>
       <div class="grid grid-cols-2 gap-3">
         <label class="block">
-          <span class="mono-eyebrow block mb-1.5">Company</span>
+          <span class="mono-eyebrow block mb-1.5">{{ t('home.miniDemo.fields.company') }}</span>
           <input
             v-model="company"
             type="text"
@@ -81,7 +84,7 @@
           />
         </label>
         <label class="block">
-          <span class="mono-eyebrow block mb-1.5">Started</span>
+          <span class="mono-eyebrow block mb-1.5">{{ t('home.miniDemo.fields.started') }}</span>
           <input
             v-model="started"
             type="text"
@@ -91,7 +94,7 @@
         </label>
       </div>
       <label class="block">
-        <span class="mono-eyebrow block mb-1.5">Highlight</span>
+        <span class="mono-eyebrow block mb-1.5">{{ t('home.miniDemo.fields.highlight') }}</span>
         <textarea
           v-model="highlight"
           rows="2"
@@ -107,7 +110,7 @@
       :style="{ color:'var(--accent)' }"
     >
       <span class="text-[12px] mt-[3px]" aria-hidden="true">✦</span>
-      <span>Try to start with a verb. The reviewer is reading thirty more after yours.</span>
+      <span>{{ t('home.miniDemo.hint') }}</span>
     </p>
 
     <!-- Progress + CTA -->
@@ -122,7 +125,7 @@
         />
       </div>
       <RouterLink to="/builder" class="btn-primary text-sm">
-        <span>Complete your CV</span>
+        <span>{{ t('home.miniDemo.cta') }}</span>
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
         </svg>
