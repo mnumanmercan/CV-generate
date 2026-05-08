@@ -393,5 +393,7 @@ export interface Translations {
     footerNav: string
     builderTools: string
     resumeHome: string
+    openMenu: string
+    closeMenu: string
   }
 }

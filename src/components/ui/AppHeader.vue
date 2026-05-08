@@ -1,12 +1,12 @@
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
+  import { ref } from 'vue'
   import { RouterLink, useRoute, useRouter } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
   import { useCVStore } from '@/stores/cvStore'
   import { useCoverLetterStore } from '@/stores/coverLetterStore'
   import { useLocaleStore } from '@/stores/localeStore'
   import { useI18n } from '@/composables/useI18n'
-  import ThemeToggle from '@/components/ui/ThemeToggle.vue'
+  import AppDrawer from '@/components/ui/AppDrawer.vue'
 
   const route       = useRoute()
   const router      = useRouter()
@@ -16,12 +16,8 @@
   const localeStore = useLocaleStore()
   const { t }       = useI18n()
 
-  const navLinks = computed(() => [
-    { name: 'builder', label: t('nav.builder') },
-    { name: 'pricing', label: t('nav.pricing') },
-  ])
-
   const showUserMenu = ref(false)
+  const showMobileDrawer = ref(false)
 
   /**
    * Logout flow preserved from v1: server-side logout (best-effort) then
@@ -40,13 +36,14 @@
 </script>
 
 <!--
-  Editorial header — paper bg, sienna-dot wordmark, mono nav, embedded
-  ThemeToggle pill. The 3-column grid (`logo | nav | right cluster`)
-  centres nav perfectly without manual flex math.
+  Editorial header — paper bg, sienna-dot wordmark, mono nav. The 3-column
+  grid (`logo | nav | right cluster`) centres nav perfectly on desktop.
+  On mobile the grid collapses to flex-between with a hamburger that opens
+  AppDrawer.
 -->
 <template>
   <header
-    class="sticky top-0 z-50 grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4 border-b border-overlay/8"
+    class="sticky top-0 z-50 flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] px-4 md:px-6 py-3 md:py-4 border-b border-overlay/8"
     style="background: var(--header-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px)"
   >
     <!-- ── Logo ──────────────────────────────────────────────── -->
@@ -60,34 +57,56 @@
         :style="{ background: 'var(--accent)' }"
         aria-hidden="true"
       />
-      <span class="font-display text-[26px] leading-none tracking-editorial text-ink">
+      <span class="font-display text-[20px] md:text-[26px] leading-none tracking-editorial text-ink">
         Resumark
       </span>
     </RouterLink>
 
-    <!-- ── Nav (centered via grid) ────────────────────────────── -->
-    <nav class="flex items-center gap-7" :aria-label="t('aria.mainNav')">
+    <!-- ── Nav (centered via grid, desktop only) ──────────────── -->
+    <nav class="hidden md:flex items-center gap-5" :aria-label="t('aria.mainNav')">
       <RouterLink
-        v-for="link in navLinks"
-        :key="link.name"
-        :to="`/${link.name}`"
+        to="/builder"
         :class="[
-          'relative font-sans text-[12px] tracking-[0.14em] uppercase font-medium transition-colors',
-          route.name === link.name ? 'text-accent' : 'text-muted hover:text-ink',
+          'group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full font-sans text-[12px] tracking-[0.14em] uppercase font-medium border transition-all duration-200',
+          route.name === 'builder'
+            ? 'border-accent text-accent'
+            : 'border-accent/25 text-ink hover:border-accent hover:-translate-y-px',
         ]"
+        :style="route.name === 'builder'
+          ? { background: 'color-mix(in oklab, var(--accent) 10%, transparent)' }
+          : { background: 'color-mix(in oklab, var(--accent) 4%, transparent)' }"
       >
-        {{ link.label }}
         <span
-          v-if="route.name === link.name"
-          class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+          class="w-1.5 h-1.5 rounded-full shrink-0 transition-transform duration-200 group-hover:scale-125"
           :style="{ background: 'var(--accent)' }"
           aria-hidden="true"
         />
+        {{ t('nav.builder') }}
+        <svg
+          class="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5"
+          :style="{ color: 'var(--accent)' }"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </RouterLink>
+
+      <RouterLink
+        to="/pricing"
+        :class="[
+          'font-sans text-[12px] tracking-[0.14em] uppercase font-medium transition-colors',
+          route.name === 'pricing' ? 'text-accent' : 'text-muted hover:text-ink',
+        ]"
+      >
+        {{ t('nav.pricing') }}
       </RouterLink>
     </nav>
 
-    <!-- ── Right side: Lang switcher + ThemeToggle + auth actions ─ -->
-    <div class="flex items-center justify-end gap-2.5">
+    <!-- ── Right side: Lang switcher + auth actions (desktop only) ─ -->
+    <div class="hidden md:flex items-center justify-end gap-2.5">
 
       <!-- Language switcher -->
       <div
@@ -111,8 +130,6 @@
           @click="localeStore.setLocale('tr')"
         >TR</button>
       </div>
-
-      <ThemeToggle />
 
       <!-- Guest -->
       <template v-if="!userStore.isLoggedIn">
@@ -221,5 +238,20 @@
         </div>
       </template>
     </div>
+
+    <!-- ── Mobile hamburger ─────────────────────────────────── -->
+    <button
+      type="button"
+      class="md:hidden w-11 h-11 rounded-full flex items-center justify-center text-ink hover:bg-overlay/5 transition-colors"
+      :aria-label="t('aria.openMenu')"
+      :aria-expanded="showMobileDrawer"
+      @click="showMobileDrawer = true"
+    >
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+
+    <AppDrawer :visible="showMobileDrawer" @close="showMobileDrawer = false" />
   </header>
 </template>

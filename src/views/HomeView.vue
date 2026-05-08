@@ -121,10 +121,10 @@
 
       <!-- ── Hero ─────────────────────────────────────────────────────── -->
       <section
-        class="px-6 pt-10 md:pt-14 pb-20 md:pb-28 max-w-7xl mx-auto w-full"
+        class="px-4 sm:px-6 pt-8 md:pt-14 pb-16 md:pb-28 max-w-7xl mx-auto w-full"
         aria-labelledby="hero-heading"
       >
-        <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-10">
+        <div class="flex flex-col lg:flex-row items-center gap-10 sm:gap-12 lg:gap-10">
 
           <!-- Left column: copy + mini demo -->
           <div class="w-full shrink-0 lg:w-[44%] lg:max-w-[580px]">
@@ -138,9 +138,9 @@
             <h1
               id="hero-heading"
               class="font-display leading-[1.02] tracking-editorial stagger-item"
-              :style="{ fontSize:'clamp(48px, 7.4vw, 96px)', animationDelay:'60ms' }"
+              :style="{ fontSize:'clamp(38px, 7.4vw, 96px)', animationDelay:'60ms' }"
             >
-              <div class="text-nowrap">
+              <div class="whitespace-normal sm:whitespace-nowrap">
                 <span v-if="heroHeading.prefix" class="text-ink">{{ heroHeading.prefix }}</span><span class="accent-italic">{{ heroHeading.accent }}</span><span class="text-ink">{{ heroHeading.suffix }}</span>
               </div>
             </h1>

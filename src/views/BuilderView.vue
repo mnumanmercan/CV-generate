@@ -218,6 +218,9 @@
               ghost-class="section-ghost"
               chosen-class="section-chosen"
               handle=".drag-handle"
+              :delay="200"
+              :delay-on-touch-only="true"
+              :touch-start-threshold="5"
               @end="onSectionDragEnd"
             >
               <FormSection
@@ -269,7 +272,7 @@
               <div
                 :style="{
                   transform: `scale(${previewScale})`,
-                  transformOrigin: 'top center',
+                  transformOrigin: 'top left',
                   height: `${1122 * previewScale}px`,
                   width: `${794 * previewScale}px`,
                   flexShrink: '0',
@@ -279,7 +282,7 @@
               </div>
             </div>
 
-            <!-- Floating save indicator — top-right -->
+            <!-- Floating save indicator — top-left on desktop, top-center on mobile -->
             <Transition
               enter-active-class="transition-opacity duration-200"
               enter-from-class="opacity-0"
@@ -290,7 +293,7 @@
             >
               <div
                 v-if="showSaved"
-                class="absolute top-4 right-5 z-10 flex items-center gap-2 rounded-full px-3 py-1.5"
+                class="absolute top-4 left-1/2 -translate-x-1/2 md:top-5 md:left-5 md:translate-x-0 z-10 flex items-center gap-2 rounded-full px-3 py-1.5"
                 style="background: var(--paper); box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06)"
                 aria-live="polite"
                 role="status"
@@ -300,9 +303,9 @@
               </div>
             </Transition>
 
-            <!-- Floating zoom island — bottom-left -->
+            <!-- Floating zoom island — bottom-left (desktop only) -->
             <div
-              class="absolute bottom-5 left-5 z-10 flex items-center gap-0.5 rounded-2xl px-2 py-1.5"
+              class="hidden md:flex absolute bottom-5 left-5 z-10 items-center gap-0.5 rounded-2xl px-2 py-1.5"
               style="background: var(--paper); box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)"
             >
               <button
@@ -348,8 +351,8 @@
               </button>
             </div>
 
-            <!-- Floating download island — bottom-right -->
-            <div class="absolute bottom-5 right-5 z-10">
+            <!-- Floating download island — top-right (desktop only) -->
+            <div class="hidden md:block absolute top-5 right-5 z-10">
               <button
                 type="button"
                 :disabled="pdfStatus === 'generating'"
@@ -361,6 +364,68 @@
                 <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
                 <span v-else aria-hidden="true">↓</span>
                 {{ pdfStatus === 'generating' ? t('builder.generating') : t('builder.downloadPdf') }}
+              </button>
+            </div>
+
+            <!-- Mobile consolidated pill — zoom + download icon -->
+            <div
+              class="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 rounded-2xl px-2 py-1.5"
+              style="background: var(--paper); box-shadow: 0 4px 16px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)"
+            >
+              <button
+                type="button"
+                :disabled="previewScale <= ZOOM_MIN"
+                class="w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                :aria-label="t('aria.zoomOut')"
+                @click="zoomOut"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+                </svg>
+              </button>
+
+              <span class="mono-eyebrow text-[11px] tabular-nums w-9 text-center select-none">
+                {{ Math.round(previewScale * 100) }}%
+              </span>
+
+              <button
+                type="button"
+                :disabled="previewScale >= ZOOM_MAX"
+                class="w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                :aria-label="t('aria.zoomIn')"
+                @click="zoomIn"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                class="w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
+                :aria-label="t('aria.fitToPanel')"
+                :title="t('builder.fitPanel')"
+                @click="fitToPanel"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
+                </svg>
+              </button>
+
+              <div class="w-px h-4 mx-1 shrink-0 bg-overlay/15" aria-hidden="true" />
+
+              <button
+                type="button"
+                :disabled="pdfStatus === 'generating'"
+                class="w-9 h-8 rounded-full flex items-center justify-center text-white transition-colors disabled:opacity-60"
+                style="background: var(--accent)"
+                :aria-label="t('aria.downloadCv')"
+                @click="handleDownload"
+              >
+                <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
+                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5m0 0l5-5m-5 5V4" />
+                </svg>
               </button>
             </div>
 

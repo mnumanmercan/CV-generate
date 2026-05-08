@@ -69,7 +69,7 @@ const en: Translations = {
     headingLine2: { prefix: '', accent: 'Drag', suffix: ' to reorder.' },
     clearData: '· Clear all data ·',
     saved: 'Saved to this browser · just now',
-    downloadPdf: '↓ Download PDF',
+    downloadPdf: 'Download PDF',
     generating: 'Generating…',
     zoomIn: 'Zoom in',
     zoomOut: 'Zoom out',
@@ -437,6 +437,8 @@ const en: Translations = {
     footerNav: 'Footer navigation',
     builderTools: 'Builder tools',
     resumeHome: 'Resumark home',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
   },
 }
 

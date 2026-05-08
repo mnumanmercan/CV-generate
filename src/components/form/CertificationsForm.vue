@@ -62,8 +62,8 @@
         </button>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div class="col-span-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="sm:col-span-2">
           <FormField
             :id="`cert-name-${cert.id}`"
             v-model="cert.name"

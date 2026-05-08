@@ -143,7 +143,7 @@
             <!-- The actual paper card. Pro is scaled 1.02 and gets a sienna
                  border + tinted shadow so it pops out of the row visually. -->
             <div
-              class="paper-card relative w-full p-8 flex flex-col"
+              class="paper-card relative w-full p-6 sm:p-8 flex flex-col"
               :style="currentTier === plan.id
                 ? { border: '1.5px solid var(--accent)', boxShadow: '0 8px 32px rgba(0,0,0,0.14)' }
                 : plan.id === 'pro'
@@ -282,10 +282,10 @@
         </div>
 
         <div
-          class="rounded-2xl border border-overlay/10 overflow-hidden reveal-item"
+          class="rounded-2xl border border-overlay/10 overflow-x-auto reveal-item"
           style="background: var(--card)"
         >
-          <table class="w-full text-[14px]" role="table">
+          <table class="w-full min-w-[560px] text-[14px]" role="table">
             <thead>
               <tr class="border-b border-overlay/10">
                 <th class="text-left px-5 py-4 mono-eyebrow font-medium w-1/2" scope="col">
