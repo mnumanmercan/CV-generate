@@ -69,7 +69,7 @@
         </button>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormField
           :id="`lang-name-${lang.id}`"
           v-model="lang.name"

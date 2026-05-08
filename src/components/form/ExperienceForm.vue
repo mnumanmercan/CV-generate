@@ -114,7 +114,7 @@
         </button>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormField
           :id="`exp-position-${exp.id}`"
           v-model="exp.position"
@@ -164,7 +164,7 @@
             <span class="text-xs text-secondary">{{ t('forms.currentlyWorkHere') }}</span>
           </label>
         </div>
-        <div class="col-span-2">
+        <div class="sm:col-span-2">
           <FormField
             :id="`exp-location-${exp.id}`"
             v-model="exp.location"

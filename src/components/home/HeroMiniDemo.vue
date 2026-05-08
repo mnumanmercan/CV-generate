@@ -73,7 +73,7 @@
           class="w-full text-sm"
         />
       </label>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <label class="block">
           <span class="mono-eyebrow block mb-1.5">{{ t('home.miniDemo.fields.company') }}</span>
           <input

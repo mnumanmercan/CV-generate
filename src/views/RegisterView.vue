@@ -260,7 +260,7 @@
                   </div>
 
                   <!-- Requirements: 2×2 grid, no panel/border -->
-                  <div class="grid grid-cols-2 gap-x-5 gap-y-2">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-2">
                     <div
                       v-for="rule in passwordRules"
                       :key="rule.label"

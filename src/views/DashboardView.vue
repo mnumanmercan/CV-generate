@@ -103,8 +103,8 @@
       <template v-if="!userStore.isPremium">
 
         <!-- CV card — single full-width row -->
-        <div class="paper-card p-6 mb-10 stagger-item">
-          <div class="flex items-center gap-5">
+        <div class="paper-card p-5 sm:p-6 mb-10 stagger-item">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
             <span
               class="font-display text-[28px] leading-none shrink-0"
               :style="{ color: 'var(--accent)' }"
@@ -287,7 +287,7 @@
         <!-- Stats row -->
         <div class="stagger-item">
           <p class="mono-eyebrow mb-4">{{ t('dashboard.statsEyebrow') }}</p>
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div
               v-for="stat in [
                 { label: t('dashboard.statsCvsCreated'),   value: '1' },

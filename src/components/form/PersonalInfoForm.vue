@@ -131,7 +131,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <FormField
         id="email"
         v-model="cvData.personal.email"

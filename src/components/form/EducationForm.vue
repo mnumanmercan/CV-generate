@@ -85,7 +85,7 @@
           placeholder="University of Technology"
           required
         />
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormField
             :id="`edu-degree-${edu.id}`"
             v-model="edu.degree"

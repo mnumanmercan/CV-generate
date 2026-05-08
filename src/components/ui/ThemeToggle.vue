@@ -62,33 +62,47 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
   background: var(--card);
   color: var(--muted);
   cursor: pointer;
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+    0 4px 14px color-mix(in srgb, var(--ink) 10%, transparent);
   transition:
-    background 200ms ease,
-    border-color 200ms ease,
-    color 200ms ease,
-    box-shadow 200ms ease;
+    background 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-toggle:hover {
   border-color: color-mix(in srgb, var(--ink) 28%, transparent);
   color: var(--ink);
-  box-shadow: 0 1px 4px color-mix(in srgb, var(--ink) 8%, transparent);
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px color-mix(in srgb, var(--ink) 8%, transparent),
+    0 8px 22px color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+    0 3px 10px color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 .theme-icon {
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 19px;
+  height: 19px;
   transition:
-    opacity 250ms ease,
-    transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .icon-visible {
