@@ -24,7 +24,20 @@ export interface Translations {
     coverLetter: string
     signOut: string
   }
-
+  ai: {
+    analyzeButton: {
+      text: string
+      analyzing: string
+    }
+    feedback: {
+      label: string
+    }
+    suggestion: {
+      label: string
+      apply: string
+      discard: string
+    }
+  }
   home: {
     eyebrow: string
     hero: {
@@ -146,8 +159,17 @@ export interface Translations {
     compareFeatureCol: string
     teamsLink: string
     comparisonRows: [
-      string, string, string, string, string,
-      string, string, string, string, string, string
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
     ]
     faqEyebrow: string
     faqHeading: SplitHeading

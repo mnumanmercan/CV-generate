@@ -11,7 +11,20 @@ const en: Translations = {
     coverLetter: 'Cover letter',
     signOut: 'Sign out',
   },
-
+  ai: {
+    analyzeButton: {
+      text: 'Analyze with AI',
+      analyzing: 'Analyzing...',
+    },
+    feedback: {
+      label: 'AI Feedback',
+    },
+    suggestion: {
+      label: 'Suggested Rewrite',
+      apply: 'Apply Suggestion',
+      discard: 'Discard',
+    },
+  },
   home: {
     eyebrow: 'A Résumé Builder · Pixel-perfect PDF Export',
     hero: {

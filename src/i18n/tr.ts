@@ -11,7 +11,20 @@ const tr: Translations = {
     coverLetter: 'Ön Yazı',
     signOut: 'Çıkış',
   },
-
+  ai: {
+    analyzeButton: {
+      text: 'AI ile Analiz Et',
+      analyzing: 'Analiz ediliyor...',
+    },
+    feedback: {
+      label: 'AI Geri Bildirimi',
+    },
+    suggestion: {
+      label: 'Önerilen Yazım',
+      apply: 'Öneriyi Uygula',
+      discard: 'İptal Et',
+    },
+  },
   home: {
     eyebrow: 'CV Oluşturucu · Kusursuz PDF',
     hero: {
