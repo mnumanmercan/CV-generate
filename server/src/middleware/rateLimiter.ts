@@ -68,3 +68,16 @@ export const waitlistLimiter = rateLimit({
   legacyHeaders: false,
   store: makeStore('waitlist'),
 })
+
+export const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5,
+  keyGenerator: (req) => req.user?.sub || 'unknown',
+  message: {
+    success: false,
+    error: { code: 'RATE_LIMITED', message: 'Too many AI requests. Please try again in a moment.' },
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: makeStore('ai'),
+})

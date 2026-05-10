@@ -5,6 +5,7 @@ import coverLetterRoutes from './coverLetter.routes.js'
 import userRoutes from './user.routes.js'
 import billingRoutes from './billing.routes.js'
 import waitlistRoutes from './waitlist.routes.js'
+import aiRoutes from './ai.routes.js'
 
 const router = Router()
 
@@ -13,6 +14,8 @@ router.use('/cv',            cvRoutes)
 router.use('/cover-letter',  coverLetterRoutes)
 router.use('/user',          userRoutes)
 router.use('/waitlist',      waitlistRoutes)
+router.use('/ai',            aiRoutes) // POST /api/v1/ai/analyze-summary
+
 
 // Billing routes are mounted at /api/v1 — the webhook is at /api/v1/webhooks/stripe
 // and billing routes at /api/v1/billing/*
