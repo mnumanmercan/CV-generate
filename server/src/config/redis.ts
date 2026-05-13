@@ -4,12 +4,12 @@ import { env } from './env.js'
 // store use. Extended with `incr` + `expire` so we can back express-rate-limit
 // with a shared Redis counter across processes.
 export type RedisLike = {
-  get(key: string):   Promise<string | null>
+  get(key: string): Promise<string | null>
   set(key: string, value: string, opts?: { ex?: number }): Promise<unknown>
-  incr(key: string):  Promise<number>
+  incr(key: string): Promise<number>
   expire(key: string, seconds: number): Promise<unknown>
-  decr(key: string):  Promise<number>
-  del(key: string):   Promise<unknown>
+  decr(key: string): Promise<number>
+  del(key: string): Promise<unknown>
 }
 
 // Tracks whether the rate-limit warning has been logged. Separate from the
@@ -20,18 +20,30 @@ const warnings = { limiter: false, blacklist: false }
 // Token blacklisting and distributed rate limiting fall back to per-process
 // state — acceptable for local testing only.
 const noOpRedis: RedisLike = {
-  async get(_k)  {
+  async get(_k) {
     if (!warnings.blacklist) {
-      console.warn('⚠️   Redis not configured — token blacklisting & distributed rate-limiting disabled (dev only)')
+      console.warn(
+        '⚠️   Redis not configured — token blacklisting & distributed rate-limiting disabled (dev only)',
+      )
       warnings.blacklist = true
     }
     return null
   },
-  async set()    { return undefined },
-  async incr()   { return 0 },
-  async expire() { return undefined },
-  async decr()   { return 0 },
-  async del()    { return undefined },
+  async set() {
+    return undefined
+  },
+  async incr() {
+    return 0
+  },
+  async expire() {
+    return undefined
+  },
+  async decr() {
+    return 0
+  },
+  async del() {
+    return undefined
+  },
 }
 
 let _redis: RedisLike
@@ -39,7 +51,7 @@ let _redis: RedisLike
 if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
   const { Redis } = await import('@upstash/redis')
   _redis = new Redis({
-    url:   env.UPSTASH_REDIS_REST_URL,
+    url: env.UPSTASH_REDIS_REST_URL,
     token: env.UPSTASH_REDIS_REST_TOKEN,
   }) as unknown as RedisLike
 } else {
@@ -52,6 +64,8 @@ export const redis = _redis
 export const isRedisConfigured = _redis !== noOpRedis
 
 if (!isRedisConfigured) {
-  console.warn('⚠️   Rate limiter falling back to per-process memory store — do not run multiple dynos without Redis')
+  console.warn(
+    '⚠️   Rate limiter falling back to per-process memory store — do not run multiple dynos without Redis',
+  )
   warnings.limiter = true
 }

@@ -18,7 +18,7 @@ export class StorageError extends Error {
   constructor(reason: StorageErrorReason, message: string) {
     super(message)
     this.reason = reason
-    this.name   = 'StorageError'
+    this.name = 'StorageError'
   }
 }
 
@@ -58,11 +58,21 @@ export class ApiCVStorageService implements StorageService {
 
   async load(): Promise<CVData | null> {
     try {
-      const res = await apiClient.get<{ success: boolean; data: Array<{ id: string; content: CVData }> }>('/cv')
-      const first = res.data?.[0]
+      // The list endpoint is slim (no `content` JSONB) — it just gives us the
+      // id of the most-recently-edited CV. Fetch the full document with a
+      // targeted GET so the dashboard doesn't pay for every row's payload.
+      const list = await apiClient.get<{
+        success: boolean
+        data: Array<{ id: string; title: string; updatedAt: string }>
+      }>('/cv')
+      const first = list.data?.[0]
       if (!first) return null
       this.cvId = first.id
-      return first.content
+      const detail = await apiClient.get<{
+        success: boolean
+        data: { id: string; content: CVData }
+      }>(`/cv/${first.id}`)
+      return detail.data.content
     } catch (err) {
       const storageErr = classifyError(err)
       // not_found is normal (new user with no CV yet) — treat as null.
@@ -77,7 +87,9 @@ export class ApiCVStorageService implements StorageService {
       if (this.cvId) {
         await apiClient.put(`/cv/${this.cvId}`, { content: data })
       } else {
-        const res = await apiClient.post<{ success: boolean; data: { id: string } }>('/cv', { content: data })
+        const res = await apiClient.post<{ success: boolean; data: { id: string } }>('/cv', {
+          content: data,
+        })
         this.cvId = res.data?.id ?? null
       }
     } catch (err) {
@@ -105,7 +117,9 @@ export class ApiCVStorageService implements StorageService {
 export class ApiCoverLetterStorageService implements CoverLetterStorageService {
   async load(): Promise<CoverLetterData | null> {
     try {
-      const res = await apiClient.get<{ success: boolean; data: CoverLetterData | null }>('/cover-letter')
+      const res = await apiClient.get<{ success: boolean; data: CoverLetterData | null }>(
+        '/cover-letter',
+      )
       return res.data ?? null
     } catch (err) {
       const storageErr = classifyError(err)

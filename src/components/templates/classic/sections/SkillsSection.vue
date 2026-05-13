@@ -14,17 +14,17 @@
   <section
     v-if="hasSkills"
     :class="isPulsed('skills') ? 'section-pulse' : ''"
-    style="margin-bottom: 12px;"
+    style="margin-bottom: 12px"
   >
     <h2 class="cv-section-heading">Skills</h2>
     <div
       v-for="(skill, index) in cvData.skills"
       :key="skill.id"
       :style="index > 0 ? 'margin-top: 3px;' : ''"
-      style="font-size: 10.5px;"
+      style="font-size: 10.5px"
     >
-      <span style="font-weight: 700; color: #111827;">{{ skill.category }}: </span>
-      <span style="color: #374151;">{{ skill.items.join(', ') }}</span>
+      <span style="font-weight: 700; color: #111827">{{ skill.category }}: </span>
+      <span style="color: #374151">{{ skill.items.join(', ') }}</span>
     </div>
   </section>
 </template>

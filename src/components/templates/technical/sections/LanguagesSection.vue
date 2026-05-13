@@ -14,14 +14,14 @@
   <section
     v-if="hasLanguages"
     :class="isPulsed('languages') ? 'section-pulse' : ''"
-    style="margin-bottom: 14px;"
+    style="margin-bottom: 14px"
   >
     <h2 class="cv-section-heading">// Languages</h2>
     <div
       v-for="(lang, index) in cvData.languages"
       :key="lang.id"
       :style="index > 0 ? 'margin-top: 4px;' : ''"
-      style="display: flex; align-items: baseline; gap: 8px;"
+      style="display: flex; align-items: baseline; gap: 8px"
     >
       <span class="lang-name">{{ lang.name }}</span>
       <span v-if="lang.proficiency" class="lang-prof">{{ lang.proficiency }}</span>

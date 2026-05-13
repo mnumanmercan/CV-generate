@@ -14,7 +14,7 @@
   <section
     v-if="hasExperience"
     :class="isPulsed('experience') ? 'section-pulse' : ''"
-    style="margin-bottom: 14px;"
+    style="margin-bottom: 14px"
   >
     <h2 class="cv-section-heading">// Experience</h2>
     <div
@@ -22,20 +22,22 @@
       :key="exp.id"
       :style="index > 0 ? 'margin-top: 11px;' : ''"
     >
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
         <div>
-          <p style="font-size: 11.5px; font-weight: 700; color: #0f172a; margin: 0;">{{ exp.position }}</p>
-          <p style="font-size: 10px; color: #475569; margin: 1px 0 0 0;">
+          <p style="font-size: 11.5px; font-weight: 700; color: #0f172a; margin: 0">
+            {{ exp.position }}
+          </p>
+          <p style="font-size: 10px; color: #475569; margin: 1px 0 0 0">
             {{ exp.company }}<span v-if="exp.location"> · {{ exp.location }}</span>
           </p>
         </div>
         <p class="date-label">{{ exp.startDate }} – {{ exp.endDate || 'Present' }}</p>
       </div>
-      <ul style="margin: 4px 0 0 0; padding-left: 14px;" aria-label="Responsibilities">
+      <ul style="margin: 4px 0 0 0; padding-left: 14px" aria-label="Responsibilities">
         <li
           v-for="(bullet, bIdx) in exp.bullets.filter((b) => b.trim())"
           :key="bIdx"
-          style="font-size: 10.5px; color: #334155; line-height: 1.55; margin-bottom: 1px;"
+          style="font-size: 10.5px; color: #334155; line-height: 1.55; margin-bottom: 1px"
         >
           {{ bullet }}
         </li>

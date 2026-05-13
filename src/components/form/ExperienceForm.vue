@@ -5,11 +5,7 @@
   import { useDragSort } from '@/composables/useDragSort'
   import FormField from './FormField.vue'
   import { createWorkExperience } from '@/types/cv.types'
-  import {
-    validateDateFormat,
-    validateDateRange,
-    analyzeBullet,
-  } from '@/services/atsFormatter'
+  import { validateDateFormat, validateDateRange, analyzeBullet } from '@/services/atsFormatter'
   import { useI18n } from '@/composables/useI18n'
 
   const { t } = useI18n()
@@ -152,13 +148,16 @@
             "
             @blur="markTouched(exp.id, 'endDate')"
           />
-          <label :for="`exp-current-${exp.id}`" class="mt-1.5 flex items-center gap-2 cursor-pointer w-fit">
+          <label
+            :for="`exp-current-${exp.id}`"
+            class="mt-1.5 flex items-center gap-2 cursor-pointer w-fit"
+          >
             <input
               :id="`exp-current-${exp.id}`"
               type="checkbox"
               :checked="exp.endDate === 'Present'"
               class="rounded accent-cyan-500"
-              style="width: 14px; height: 14px;"
+              style="width: 14px; height: 14px"
               @change="toggleCurrentlyEmployed(index)"
             />
             <span class="text-xs text-secondary">{{ t('forms.currentlyWorkHere') }}</span>
@@ -180,11 +179,7 @@
           {{ t('forms.bulletPoints') }}
         </p>
         <div class="flex flex-col gap-2">
-          <div
-            v-for="(bullet, bIdx) in exp.bullets"
-            :key="bIdx"
-            class="flex flex-col gap-1"
-          >
+          <div v-for="(bullet, bIdx) in exp.bullets" :key="bIdx" class="flex flex-col gap-1">
             <div class="flex items-start gap-2">
               <span class="text-secondary mt-2 text-xs shrink-0" aria-hidden="true">•</span>
               <div class="flex-1">
@@ -205,9 +200,19 @@
                   class="mt-1 text-xs text-yellow-400 flex items-center gap-1"
                   role="alert"
                 >
-                  <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                      d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  <svg
+                    class="w-3 h-3 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                    />
                   </svg>
                   {{ warn.message }}
                 </div>
@@ -220,7 +225,12 @@
                 @click="removeBullet(index, bIdx)"
               >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>

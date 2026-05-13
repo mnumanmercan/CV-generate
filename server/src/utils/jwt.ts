@@ -4,9 +4,9 @@ import type { Plan } from '@prisma/client'
 
 // SignPayload: what callers pass to signAccessToken (no jti/iat/exp — set automatically)
 export interface SignPayload {
-  sub:   string
+  sub: string
   email: string
-  plan:  Plan
+  plan: Plan
 }
 
 // TokenPayload: what you get back after verifying (includes JWT standard claims)
@@ -17,7 +17,7 @@ export interface TokenPayload extends SignPayload {
 }
 
 const privateKey = Buffer.from(env.JWT_PRIVATE_KEY_B64, 'base64').toString('utf8')
-const publicKey  = Buffer.from(env.JWT_PUBLIC_KEY_B64,  'base64').toString('utf8')
+const publicKey = Buffer.from(env.JWT_PUBLIC_KEY_B64, 'base64').toString('utf8')
 
 export function signAccessToken(payload: SignPayload): string {
   const jti = crypto.randomUUID()

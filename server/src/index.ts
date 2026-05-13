@@ -60,8 +60,12 @@ async function main(): Promise<void> {
   })
 
   // Register signal handlers
-  process.on('SIGTERM', () => { void shutdown(server, 'SIGTERM') })
-  process.on('SIGINT',  () => { void shutdown(server, 'SIGINT')  })
+  process.on('SIGTERM', () => {
+    void shutdown(server, 'SIGTERM')
+  })
+  process.on('SIGINT', () => {
+    void shutdown(server, 'SIGINT')
+  })
 
   // Surface unhandled errors — exit so the orchestrator restarts us.
   process.on('unhandledRejection', (reason) => {

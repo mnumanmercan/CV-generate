@@ -10,25 +10,18 @@
   Single thin top rule. Three-column on desktop, stacks on mobile.
 -->
 <template>
-  <footer
-    class="border-t border-overlay/8 py-7 px-6"
-    style="background: var(--paper)"
-  >
-    <div
-      class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4"
-    >
+  <footer class="border-t border-overlay/8 py-7 px-6" style="background: var(--paper)">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
       <!-- Wordmark -->
-      <RouterLink
-        to="/"
-        class="flex items-center gap-2 group"
-        aria-label="Resumark home"
-      >
+      <RouterLink to="/" class="flex items-center gap-2 group" aria-label="Resumark home">
         <span
           class="w-1.5 h-1.5 rounded-full shrink-0"
           :style="{ background: 'var(--accent)' }"
           aria-hidden="true"
         />
-        <span class="font-display text-[18px] leading-none tracking-editorial text-ink group-hover:text-accent transition-colors">
+        <span
+          class="font-display text-[18px] leading-none tracking-editorial text-ink group-hover:text-accent transition-colors"
+        >
           Resumark
         </span>
       </RouterLink>

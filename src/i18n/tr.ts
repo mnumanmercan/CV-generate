@@ -24,12 +24,19 @@ const tr: Translations = {
       apply: 'Öneriyi Uygula',
       discard: 'İptal Et',
     },
+    errors: {
+      unauthorized: 'AI özelliklerini kullanmak için tekrar giriş yap.',
+      tooManyRequests: 'Çok hızlı gidiyorsun, biraz sonra tekrar dene.',
+      serviceUnavailable: 'AI servisine şu an ulaşılamıyor. Birazdan tekrar dene.',
+      invalidInput: 'Özetin 50–500 karakter arasında olmalı.',
+      unexpected: 'Beklenmedik bir sorun oldu. Tekrar dener misin?',
+    },
   },
   home: {
     eyebrow: 'CV Oluşturucu · Kusursuz PDF',
     hero: {
       heading: { prefix: '', accent: '5 dakika', suffix: ' yeter.' },
-      lede: "CV yazmak artık dert değil. Bölümleri doldur, sağda anında nasıl göründüğünü gör. Hesap açmana bile gerek yok.",
+      lede: 'CV yazmak artık dert değil. Bölümleri doldur, sağda anında nasıl göründüğünü gör. Hesap açmana bile gerek yok.',
       tagline: 'Ücretsiz · Hesapsız · ATS uyumlu PDF',
     },
     miniDemo: {
@@ -54,7 +61,8 @@ const tr: Translations = {
         eyebrow: 'Editörü aç',
         numeral: '01',
         title: 'Hikayeni yaz',
-        description: 'Bir bölüm seç, yazmaya başla. Yapı bizden, kelimeler senden. Boş sayfa korkusu yok, biçim derdi yok.',
+        description:
+          'Bir bölüm seç, yazmaya başla. Yapı bizden, kelimeler senden. Boş sayfa korkusu yok, biçim derdi yok.',
       },
       {
         eyebrow: 'Sonucu gör',
@@ -117,7 +125,8 @@ const tr: Translations = {
     welcomePrefix: 'Tekrar hoş geldin,',
     welcomeFallback: 'arkadaş',
     welcomeDescFree: 'Ücretsiz plandasın. Yaz, düzenle, indir. Daha fazlası gerekirse Pro var.',
-    welcomeDescPro: 'Tüm Pro özellikleri açık: bulut senkronizasyonu, birden fazla CV, premium şablonlar ve dahası.',
+    welcomeDescPro:
+      'Tüm Pro özellikleri açık: bulut senkronizasyonu, birden fazla CV, premium şablonlar ve dahası.',
     yourCv: "CV'n",
     sectionsLabel: '{n}/8 bölüm hazır',
     editCv: "CV'ni düzenle",
@@ -129,7 +138,8 @@ const tr: Translations = {
     unlock: "Pro'ya geç",
     proCardBadge: 'Yakında',
     proCardName: 'Pro Plan',
-    proCardDesc: 'Bulut senkronizasyonu, birden fazla CV, premium şablonlar ve dahası. Çok yakında.',
+    proCardDesc:
+      'Bulut senkronizasyonu, birden fazla CV, premium şablonlar ve dahası. Çok yakında.',
     getNotified: 'Beni haberdar et',
     cloudSyncTitle: 'Bulut Senkronizasyonu',
     cloudSyncDesc: "Her cihazdan CV'ne ulaş",
@@ -148,7 +158,7 @@ const tr: Translations = {
   pricing: {
     eyebrow: 'Sade Fiyatlandırma',
     heading: { prefix: 'Önce ', accent: 'ücretsiz', suffix: '. Sonra Pro.' },
-    lede: "CV oluşturucu hep ücretsiz. Pro; bulut senkronizasyonu, birden fazla CV, premium şablonlar ve dahasını açar.",
+    lede: 'CV oluşturucu hep ücretsiz. Pro; bulut senkronizasyonu, birden fazla CV, premium şablonlar ve dahasını açar.',
     billingMonthly: 'Aylık',
     billingAnnual: 'Yıllık',
     free: 'Ücretsiz',
@@ -159,7 +169,7 @@ const tr: Translations = {
     perMonth: '/ ay',
     billedAnnually: 'Yıllık tutar: ${total}',
     noCreditCard: 'Kredi kartı yok.',
-    everythingInFree: "Ücretsiz plandaki her şey, üstüne dahası.",
+    everythingInFree: 'Ücretsiz plandaki her şey, üstüne dahası.',
     compareEyebrow: 'Ücretsiz mi, Pro mu?',
     compareHeading: { prefix: '', accent: 'Her şey', suffix: ' tek tabloda.' },
     compareFeatureCol: 'Özellik',
@@ -182,7 +192,7 @@ const tr: Translations = {
     faqItems: [
       {
         q: 'ATS uyumlu CV gerçekte nasıl olur?',
-        a: "İki sütun, özel yazı tipleri, fotoğraflı başlık insana harika görünür ama ATS bunu çöp olarak okur. ATS uyumlu CV tek sütundur, standart başlıkları kullanır (Deneyim, Eğitim, Beceriler), makineyle okunabilen düz metne dayanır, tablo veya grafik içermez. Resumark her dışa aktarmada bunu varsayılan olarak verir.",
+        a: 'İki sütun, özel yazı tipleri, fotoğraflı başlık insana harika görünür ama ATS bunu çöp olarak okur. ATS uyumlu CV tek sütundur, standart başlıkları kullanır (Deneyim, Eğitim, Beceriler), makineyle okunabilen düz metne dayanır, tablo veya grafik içermez. Resumark her dışa aktarmada bunu varsayılan olarak verir.',
       },
       {
         q: "Resumark'ın Canva veya Zety'den farkı ne?",
@@ -240,7 +250,8 @@ const tr: Translations = {
       forgotEmailLabel: 'E-posta',
       forgotSendLink: 'Bağlantıyı gönder',
       forgotSending: 'Gönderiliyor…',
-      forgotSentConfirm: '{email} için hesabın varsa, sıfırlama bağlantısı yolda. Gelen kutuna ve spam klasörüne bak.',
+      forgotSentConfirm:
+        '{email} için hesabın varsa, sıfırlama bağlantısı yolda. Gelen kutuna ve spam klasörüne bak.',
       forgotClose: 'Kapat',
       forgotEmailRequired: 'E-posta adresini yaz.',
       forgotSendError: 'Bağlantı gönderilemedi. Tekrar dene.',
@@ -317,7 +328,13 @@ const tr: Translations = {
     contentClosing: 'Kapanış',
     contentClosingHint: 'Teşekkür et, görüşmek istediğini belirt',
     contentSignOff: 'İmza',
-    signatures: ['Saygılarımla,', 'Sevgilerimle,', 'İyi dileklerimle,', 'Saygıyla,', 'Sıcak selamlarımla,'],
+    signatures: [
+      'Saygılarımla,',
+      'Sevgilerimle,',
+      'İyi dileklerimle,',
+      'Saygıyla,',
+      'Sıcak selamlarımla,',
+    ],
     pdfError: 'PDF hazırlanamadı. Tekrar dene.',
     downloadAriaLabel: 'Ön yazıyı PDF olarak indir',
   },
@@ -404,7 +421,8 @@ const tr: Translations = {
   teams: {
     eyebrow: 'Ekipler İçin',
     heading: { prefix: 'Bir kişiye ', accent: 'yetiyor', suffix: '. Ekibe de yeter.' },
-    desc1: "İşe alım şirketi, kariyer merkezi veya bir İK ekibi olabilirsin. Resumark'ın ekip planı; tek hesap, ortak fatura, herkese aynı ATS uyumlu oluşturucu.",
+    desc1:
+      "İşe alım şirketi, kariyer merkezi veya bir İK ekibi olabilirsin. Resumark'ın ekip planı; tek hesap, ortak fatura, herkese aynı ATS uyumlu oluşturucu.",
     desc2: 'Ekip hesapları şu an self servis değil. Bize yaz, kurulumu birlikte yapalım.',
     cta: 'Bize ulaş',
   },

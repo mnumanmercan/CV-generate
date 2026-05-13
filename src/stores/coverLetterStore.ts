@@ -63,8 +63,8 @@ export const useCoverLetterStore = defineStore('coverLetter', () => {
   function populateFromCV(personal: PersonalInfo): void {
     clData.value.fullName = personal.fullName
     clData.value.jobTitle = personal.jobTitle
-    clData.value.email    = personal.email
-    clData.value.phone    = personal.phone
+    clData.value.email = personal.email
+    clData.value.phone = personal.phone
     clData.value.location = personal.location
   }
 

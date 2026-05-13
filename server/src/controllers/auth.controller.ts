@@ -1,8 +1,9 @@
-import type { Request, Response, NextFunction } from 'express'
+import type { Request, Response } from 'express'
 import { prisma } from '../db/prisma.js'
 import { redis } from '../config/redis.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { AppError } from '../utils/apiError.js'
+import { toPrismaJson } from '../utils/jsonb.js'
 import {
   register,
   login,
@@ -14,6 +15,8 @@ import {
   buildUserResponse,
   COOKIE_OPTIONS,
   buildCookieOptions,
+  REFRESH_COOKIE_NAME,
+  REFRESH_COOKIE_CLEAR_OPTIONS,
 } from '../services/auth.service.js'
 import { emailService } from '../services/email.service.js'
 import { CVDataSchema, CoverLetterDataSchema } from '@resumark/shared'
@@ -33,23 +36,28 @@ export const registerHandler = asyncHandler(async (req: Request, res: Response) 
   const { user, accessToken, refreshTokenRaw, verifyTokenRaw } = result
 
   // Fire-and-forget verification email — we don't block registration on SMTP
-  // latency. If Resend is unconfigured (local dev) or down, log and move on;
-  // the user can re-request verification later.
+  // latency. If Resend is unconfigured (local dev) or down, log structured
+  // details so ops can detect a provider outage; the user can re-request
+  // verification later.
   emailService.sendEmailVerification(user.email, user.name, verifyTokenRaw).catch((err) => {
-    console.warn('[auth.register] verification email failed:', err)
+    req.log.warn({ err, userId: user.id, emailType: 'verification' }, 'verification email failed')
   })
 
-  res.cookie('refreshToken', refreshTokenRaw, COOKIE_OPTIONS)
+  res.cookie(REFRESH_COOKIE_NAME, refreshTokenRaw, COOKIE_OPTIONS)
   res.status(201).json({
-    success:     true,
+    success: true,
     accessToken,
-    user:        buildUserResponse(user),
+    user: buildUserResponse(user),
   })
 })
 
 // POST /auth/login
 export const loginHandler = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password, rememberMe } = req.body as { email: string; password: string; rememberMe?: boolean }
+  const { email, password, rememberMe } = req.body as {
+    email: string
+    password: string
+    rememberMe?: boolean
+  }
   const remember = rememberMe === true
 
   let result: Awaited<ReturnType<typeof login>>
@@ -64,17 +72,17 @@ export const loginHandler = asyncHandler(async (req: Request, res: Response) => 
 
   // Cookie TTL must match the DB token TTL (30d if rememberMe, else 7d) so
   // the browser doesn't forget the token while the DB row is still valid.
-  res.cookie('refreshToken', refreshTokenRaw, buildCookieOptions(remember))
+  res.cookie(REFRESH_COOKIE_NAME, refreshTokenRaw, buildCookieOptions(remember))
   res.json({
-    success:     true,
+    success: true,
     accessToken,
-    user:        buildUserResponse(user),
+    user: buildUserResponse(user),
   })
 })
 
 // POST /auth/refresh
 export const refreshHandler = asyncHandler(async (req: Request, res: Response) => {
-  const rawToken = req.cookies?.['refreshToken'] as string | undefined
+  const rawToken = req.cookies?.[REFRESH_COOKIE_NAME] as string | undefined
   if (!rawToken) throw new AppError('No refresh token', 401, 'MISSING_REFRESH_TOKEN')
 
   let result: Awaited<ReturnType<typeof refreshTokens>>
@@ -83,19 +91,19 @@ export const refreshHandler = asyncHandler(async (req: Request, res: Response) =
   } catch (err: unknown) {
     const e = err as { statusCode?: number; code?: string; message: string }
     // Clear the invalid cookie
-    res.clearCookie('refreshToken', { path: '/api/v1/auth' })
+    res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_CLEAR_OPTIONS)
     throw new AppError(e.message, e.statusCode ?? 401, e.code)
   }
 
   const { accessToken, newRefreshTokenRaw } = result
 
-  res.cookie('refreshToken', newRefreshTokenRaw, COOKIE_OPTIONS)
+  res.cookie(REFRESH_COOKIE_NAME, newRefreshTokenRaw, COOKIE_OPTIONS)
   res.json({ success: true, accessToken })
 })
 
 // POST /auth/logout
 export const logoutHandler = asyncHandler(async (req: Request, res: Response) => {
-  const { jti, exp } = req.user
+  const { jti, exp } = req.user!
 
   // Blacklist current access token until its natural expiry
   const ttlSeconds = exp - Math.floor(Date.now() / 1000)
@@ -104,12 +112,12 @@ export const logoutHandler = asyncHandler(async (req: Request, res: Response) =>
   }
 
   // Revoke refresh token from DB
-  const rawToken = req.cookies?.['refreshToken'] as string | undefined
+  const rawToken = req.cookies?.[REFRESH_COOKIE_NAME] as string | undefined
   if (rawToken) {
     await revokeRefreshToken(rawToken)
   }
 
-  res.clearCookie('refreshToken', { path: '/api/v1/auth' })
+  res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_CLEAR_OPTIONS)
   res.status(204).send()
 })
 
@@ -119,12 +127,24 @@ export const forgotPasswordHandler = asyncHandler(async (req: Request, res: Resp
 
   const result = await createPasswordResetToken(email)
   if (result) {
-    // Fire-and-forget email — don't fail the request if email fails
-    emailService.sendPasswordReset(result.user.email, result.user.name, result.token).catch(console.error)
+    // Fire-and-forget email — don't fail the request if email fails. We
+    // intentionally don't return the failure to the caller because that would
+    // leak whether the email exists; ops can detect outages via these logs.
+    emailService
+      .sendPasswordReset(result.user.email, result.user.name, result.token)
+      .catch((err) => {
+        req.log.warn(
+          { err, userId: result.user.email, emailType: 'password_reset' },
+          'password reset email failed',
+        )
+      })
   }
 
   // Always return success to prevent email enumeration
-  res.json({ success: true, message: 'If an account with that email exists, a reset link has been sent.' })
+  res.json({
+    success: true,
+    message: 'If an account with that email exists, a reset link has been sent.',
+  })
 })
 
 // POST /auth/reset-password
@@ -139,7 +159,7 @@ export const resetPasswordHandler = asyncHandler(async (req: Request, res: Respo
   }
 
   // Clear refresh cookie — user must log in again
-  res.clearCookie('refreshToken', { path: '/api/v1/auth' })
+  res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_CLEAR_OPTIONS)
   res.json({ success: true, message: 'Password updated. Please log in with your new password.' })
 })
 
@@ -159,7 +179,7 @@ export const verifyEmailHandler = asyncHandler(async (req: Request, res: Respons
 
 // POST /auth/migrate-local-data
 export const migrateLocalDataHandler = asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.user.sub
+  const userId = req.user!.sub
   const { cvData, coverLetterData } = req.body
 
   const results: Record<string, string> = {}
@@ -171,7 +191,7 @@ export const migrateLocalDataHandler = asyncHandler(async (req: Request, res: Re
       results.cv = 'skipped_invalid'
     } else {
       const existing = await prisma.cV.findFirst({
-        where:   { userId },
+        where: { userId },
         orderBy: { updatedAt: 'desc' },
       })
 
@@ -179,8 +199,8 @@ export const migrateLocalDataHandler = asyncHandler(async (req: Request, res: Re
         await prisma.cV.create({
           data: {
             userId,
-            content: parsed.data as object,
-            title:   parsed.data.personal.fullName || 'My CV',
+            content: toPrismaJson(parsed.data),
+            title: parsed.data.personal.fullName || 'My CV',
           },
         })
         results.cv = 'imported'
@@ -192,8 +212,8 @@ export const migrateLocalDataHandler = asyncHandler(async (req: Request, res: Re
           await prisma.cV.update({
             where: { id: existing.id },
             data: {
-              content: parsed.data as object,
-              title:   parsed.data.personal.fullName || existing.title,
+              content: toPrismaJson(parsed.data),
+              title: parsed.data.personal.fullName || existing.title,
             },
           })
           results.cv = 'local_overwrote_cloud'
@@ -214,7 +234,7 @@ export const migrateLocalDataHandler = asyncHandler(async (req: Request, res: Re
 
       if (!existing) {
         await prisma.coverLetter.create({
-          data: { userId, content: parsed.data as object },
+          data: { userId, content: toPrismaJson(parsed.data) },
         })
         results.coverLetter = 'imported'
       } else {
@@ -224,7 +244,7 @@ export const migrateLocalDataHandler = asyncHandler(async (req: Request, res: Re
         if (localUpdatedAt > cloudUpdatedAt) {
           await prisma.coverLetter.update({
             where: { id: existing.id },
-            data:  { content: parsed.data as object },
+            data: { content: toPrismaJson(parsed.data) },
           })
           results.coverLetter = 'local_overwrote_cloud'
         } else {

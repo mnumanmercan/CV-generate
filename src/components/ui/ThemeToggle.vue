@@ -57,62 +57,62 @@
 </template>
 
 <style scoped>
-.theme-toggle {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
-  background: var(--card);
-  color: var(--muted);
-  cursor: pointer;
-  box-shadow:
-    0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
-    0 4px 14px color-mix(in srgb, var(--ink) 10%, transparent);
-  transition:
-    background 280ms cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 280ms cubic-bezier(0.4, 0, 0.2, 1),
-    color 280ms cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1),
-    transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
-}
+  .theme-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+      0 4px 14px color-mix(in srgb, var(--ink) 10%, transparent);
+    transition:
+      background 280ms cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 280ms cubic-bezier(0.4, 0, 0.2, 1),
+      color 280ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-.theme-toggle:hover {
-  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
-  color: var(--ink);
-  transform: translateY(-1px);
-  box-shadow:
-    0 2px 4px color-mix(in srgb, var(--ink) 8%, transparent),
-    0 8px 22px color-mix(in srgb, var(--ink) 14%, transparent);
-}
+  .theme-toggle:hover {
+    border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+    color: var(--ink);
+    transform: translateY(-1px);
+    box-shadow:
+      0 2px 4px color-mix(in srgb, var(--ink) 8%, transparent),
+      0 8px 22px color-mix(in srgb, var(--ink) 14%, transparent);
+  }
 
-.theme-toggle:active {
-  transform: translateY(0);
-  box-shadow:
-    0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
-    0 3px 10px color-mix(in srgb, var(--ink) 8%, transparent);
-}
+  .theme-toggle:active {
+    transform: translateY(0);
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+      0 3px 10px color-mix(in srgb, var(--ink) 8%, transparent);
+  }
 
-.theme-icon {
-  position: absolute;
-  width: 19px;
-  height: 19px;
-  transition:
-    opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
-    transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+  .theme-icon {
+    position: absolute;
+    width: 19px;
+    height: 19px;
+    transition:
+      opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 
-.icon-visible {
-  opacity: 1;
-  transform: rotate(0deg) scale(1);
-}
+  .icon-visible {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
 
-.icon-hidden {
-  opacity: 0;
-  transform: rotate(90deg) scale(0.6);
-  pointer-events: none;
-}
+  .icon-hidden {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.6);
+    pointer-events: none;
+  }
 </style>

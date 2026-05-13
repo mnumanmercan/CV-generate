@@ -14,11 +14,11 @@
   const drag = useDragSort(computed(() => cvData.value.languages))
 
   const PROFICIENCY_KEY_MAP: Record<string, string> = {
-    'Native': 'forms.levelNative',
-    'Fluent': 'forms.levelFluent',
-    'Professional': 'forms.levelProfessional',
-    'Conversational': 'forms.levelConversational',
-    'Basic': 'forms.levelBasic',
+    Native: 'forms.levelNative',
+    Fluent: 'forms.levelFluent',
+    Professional: 'forms.levelProfessional',
+    Conversational: 'forms.levelConversational',
+    Basic: 'forms.levelBasic',
   }
 
   function proficiencyLabel(level: string): string {
@@ -54,7 +54,9 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab" role="img" :aria-label="t('forms.dragToReorder')">⠿</span>
+          <span class="text-secondary cursor-grab" role="img" :aria-label="t('forms.dragToReorder')"
+            >⠿</span
+          >
           <span class="text-sm font-semibold text-primary">
             {{ lang.name || t('forms.langEntryLabel', { n: String(index + 1) }) }}
           </span>
@@ -97,11 +99,7 @@
             :aria-label="`${t('forms.proficiency')} ${lang.name || ''}`"
           >
             <option value="">{{ t('forms.selectLevel') }}</option>
-            <option
-              v-for="level in LANGUAGE_PROFICIENCY_LEVELS"
-              :key="level"
-              :value="level"
-            >
+            <option v-for="level in LANGUAGE_PROFICIENCY_LEVELS" :key="level" :value="level">
               {{ proficiencyLabel(level) }}
             </option>
           </select>

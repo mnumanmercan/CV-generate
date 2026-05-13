@@ -7,11 +7,12 @@ declare global {
        * Populated by `authenticate` (strict — request is rejected if absent)
        * or `authenticateOptional` (best-effort — may be undefined).
        *
-       * Routes chained after `authenticate` can rely on this being defined.
-       * Routes chained after `authenticateOptional` must null-check
-       * (e.g. `req.user?.sub`).
+       * Typed as optional so `authenticateOptional` consumers don't have to
+       * cast through `unknown`. Routes chained after `authenticate` can
+       * safely use the non-null assertion `req.user!` since the middleware
+       * has guaranteed presence by the time the handler runs.
        */
-      user: TokenPayload
+      user?: TokenPayload
 
       /**
        * Raw request body. Populated by the `verify` callback on

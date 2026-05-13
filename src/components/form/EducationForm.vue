@@ -62,7 +62,12 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab active:cursor-grabbing" role="img" :aria-label="t('forms.dragToReorder')">⠿</span>
+          <span
+            class="text-secondary cursor-grab active:cursor-grabbing"
+            role="img"
+            :aria-label="t('forms.dragToReorder')"
+            >⠿</span
+          >
           <span class="text-sm font-semibold text-primary">
             {{ edu.institution || t('forms.eduEntryLabel', { n: String(index + 1) }) }}
           </span>
@@ -113,7 +118,11 @@
             v-model="edu.endDate"
             :label="t('forms.eduEndDate')"
             placeholder="MM/YYYY"
-            :error="isTouched(edu.id, 'endDate') ? getDateError(edu.endDate) || getRangeError(edu.startDate, edu.endDate) : ''"
+            :error="
+              isTouched(edu.id, 'endDate')
+                ? getDateError(edu.endDate) || getRangeError(edu.startDate, edu.endDate)
+                : ''
+            "
             @blur="markTouched(edu.id, 'endDate')"
           />
           <FormField

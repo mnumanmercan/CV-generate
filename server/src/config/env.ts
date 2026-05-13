@@ -1,8 +1,9 @@
 import { z } from 'zod'
 
 // Coerce empty string → undefined so optional vars can be left blank in .env
-const opt   = (schema: z.ZodString) => z.preprocess(v => v === '' ? undefined : v, schema.optional())
-const optUrl = z.preprocess(v => v === '' ? undefined : v, z.string().url().optional())
+const opt = (schema: z.ZodString) =>
+  z.preprocess((v) => (v === '' ? undefined : v), schema.optional())
+const optUrl = z.preprocess((v) => (v === '' ? undefined : v), z.string().url().optional())
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -39,7 +40,6 @@ const EnvSchema = z.object({
 })
 
 const parsed = EnvSchema.safeParse(process.env)
-
 
 if (!parsed.success) {
   console.error('❌  Invalid environment variables:')

@@ -142,15 +142,44 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
+### Running the Full Stack
+
+The repo is a monorepo. The frontend (this directory) talks to the Express API in `server/`. For end-to-end development you need both running, plus the shared package built so its compiled types are visible to both.
+
+```bash
+# Frontend (terminal 1) — Vite on :5173, proxies /api → :3000
+npm run dev
+
+# Backend (terminal 2) — Express on :3000, watch-mode via tsx
+npm run dev:server
+
+# Shared package (rebuild after editing packages/shared/src/**)
+npm run build:shared
+```
+
+First-time backend setup also needs a Postgres database and the env vars in `server/.env`:
+
+```bash
+cp server/.env.example server/.env       # fill in DATABASE_URL, JWT keys, etc.
+npm run db:migrate --workspace=server    # create + apply Prisma migrations
+npm run db:seed   --workspace=server     # optional — seed test data
+```
+
+See [`server/.env.example`](server/.env.example) for the full list of variables (auth keys, Redis, Stripe, Resend, Anthropic). Optional integrations degrade gracefully (billing endpoints return 503 without `STRIPE_SECRET_KEY`, etc.) so a minimal local setup only needs `DATABASE_URL` and the two JWT keys.
+
 ### Available Scripts
 
 | Script | Description |
 |---|---|
 | `npm run dev` | Start Vite dev server with HMR |
+| `npm run dev:server` | Start Express + Prisma backend in watch mode on :3000 |
 | `npm run build` | Type-check with `vue-tsc` then bundle for production |
+| `npm run build:shared` | Rebuild the shared types/schemas package |
 | `npm run preview` | Serve the production build locally |
 | `npm run lint` | Run ESLint across all `.ts` and `.vue` files |
 | `npm run format` | Run Prettier across all source files |
+| `npm run test` | Run frontend Vitest suite once |
+| `npm run test:server` | Run backend Vitest suite once |
 
 ---
 

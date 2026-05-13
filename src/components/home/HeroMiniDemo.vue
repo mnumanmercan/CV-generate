@@ -18,14 +18,14 @@
    * canned LiveCV sample text — so a first-time visitor sees hints in greyed
    * placeholder type without auto-populating their stored CV with sample data.
    */
-  const fullName  = defineModel<string>('fullName',  { default: '' })
-  const role      = defineModel<string>('role',      { default: '' })
-  const company   = defineModel<string>('company',   { default: '' })
-  const started   = defineModel<string>('started',   { default: '' })
+  const fullName = defineModel<string>('fullName', { default: '' })
+  const role = defineModel<string>('role', { default: '' })
+  const company = defineModel<string>('company', { default: '' })
+  const started = defineModel<string>('started', { default: '' })
   const highlight = defineModel<string>('highlight', { default: '' })
 
-  const totalSteps   = 7
-  const currentStep  = 5
+  const totalSteps = 7
+  const currentStep = 5
 </script>
 
 <!--
@@ -39,11 +39,17 @@
     <!-- Eyebrow row -->
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full" :style="{ background:'var(--accent)' }" aria-hidden="true" />
+        <span
+          class="w-1.5 h-1.5 rounded-full"
+          :style="{ background: 'var(--accent)' }"
+          aria-hidden="true"
+        />
         <span class="mono-eyebrow">{{ t('home.miniDemo.eyebrow') }}</span>
       </div>
-      <span class="mono-eyebrow" :style="{ color:'var(--accent)' }">
-        {{ t('home.miniDemo.stepLabel', { current: String(currentStep), total: String(totalSteps) }) }}
+      <span class="mono-eyebrow" :style="{ color: 'var(--accent)' }">
+        {{
+          t('home.miniDemo.stepLabel', { current: String(currentStep), total: String(totalSteps) })
+        }}
       </span>
     </div>
 
@@ -85,12 +91,7 @@
         </label>
         <label class="block">
           <span class="mono-eyebrow block mb-1.5">{{ t('home.miniDemo.fields.started') }}</span>
-          <input
-            v-model="started"
-            type="text"
-            placeholder="Mar 2022"
-            class="w-full text-sm"
-          />
+          <input v-model="started" type="text" placeholder="Mar 2022" class="w-full text-sm" />
         </label>
       </div>
       <label class="block">
@@ -107,7 +108,7 @@
     <!-- Writing hint -->
     <p
       class="mt-4 font-display italic text-[15.5px] leading-snug flex items-start gap-2"
-      :style="{ color:'var(--accent)' }"
+      :style="{ color: 'var(--accent)' }"
     >
       <span class="text-[12px] mt-[3px]" aria-hidden="true">✦</span>
       <span>{{ t('home.miniDemo.hint') }}</span>
@@ -120,14 +121,27 @@
           v-for="i in totalSteps"
           :key="i"
           class="w-1.5 h-1.5 rounded-full transition-colors"
-          :style="{ background: i <= currentStep ? 'var(--accent)' : 'var(--rule-strong, var(--rule))' }"
+          :style="{
+            background: i <= currentStep ? 'var(--accent)' : 'var(--rule-strong, var(--rule))',
+          }"
           aria-hidden="true"
         />
       </div>
       <RouterLink to="/builder" class="btn-primary text-sm">
         <span>{{ t('home.miniDemo.cta') }}</span>
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        <svg
+          class="w-3.5 h-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M13 7l5 5m0 0l-5 5m5-5H6"
+          />
         </svg>
       </RouterLink>
     </div>

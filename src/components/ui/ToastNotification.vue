@@ -38,7 +38,10 @@
   >
     <div
       v-if="visible"
-      :class="['fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium shadow-xl', colors]"
+      :class="[
+        'fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium shadow-xl',
+        colors,
+      ]"
       role="alert"
       aria-live="polite"
     >

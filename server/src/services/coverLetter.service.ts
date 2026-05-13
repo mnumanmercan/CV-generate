@@ -1,11 +1,12 @@
 import { prisma } from '../db/prisma.js'
 import { AppError } from '../utils/apiError.js'
+import { toPrismaJson } from '../utils/jsonb.js'
 import type { CoverLetterData } from '@resumark/shared'
 
 export const coverLetterService = {
   async get(userId: string) {
     const cl = await prisma.coverLetter.findFirst({
-      where:   { userId },
+      where: { userId },
       orderBy: { updatedAt: 'desc' },
     })
     return cl ? cl.content : null
@@ -16,14 +17,14 @@ export const coverLetterService = {
     if (existing) {
       return prisma.coverLetter.update({
         where: { id: existing.id },
-        data:  { content: content as unknown as object },
+        data: { content: toPrismaJson(content) },
       })
     }
     return prisma.coverLetter.create({
       data: {
         userId,
-        content: content as unknown as object,
-        title:   `${content.fullName || 'My'} Cover Letter`,
+        content: toPrismaJson(content),
+        title: `${content.fullName || 'My'} Cover Letter`,
       },
     })
   },

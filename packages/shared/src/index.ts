@@ -1,20 +1,23 @@
 // Types
-export type { CVData, CVMeta, PersonalInfo, WorkExperience, Education, Skill, Project, Certification, Language, SectionKey } from './types/cv.types.js'
+export type {
+  CVData,
+  CVMeta,
+  PersonalInfo,
+  WorkExperience,
+  Education,
+  Skill,
+  Project,
+  Certification,
+  Language,
+  SectionKey,
+} from './types/cv.types.js'
 export type { CoverLetterData } from './types/coverLetter.types.js'
 
 // CV Schemas
-export {
-  CVDataSchema,
-  CreateCVSchema,
-  UpdateCVSchema,
-  PatchCVSchema,
-} from './schemas/cv.schema.js'
+export { CVDataSchema, CreateCVSchema, UpdateCVSchema, PatchCVSchema } from './schemas/cv.schema.js'
 
 // Cover Letter Schemas
-export {
-  CoverLetterDataSchema,
-  UpsertCoverLetterSchema,
-} from './schemas/coverLetter.schema.js'
+export { CoverLetterDataSchema, UpsertCoverLetterSchema } from './schemas/coverLetter.schema.js'
 
 // Auth Schemas
 export {
@@ -28,6 +31,14 @@ export {
 
 // Waitlist Schema
 export { WaitlistSchema } from './schemas/waitlist.schema.js'
+
+// AI Schemas
+export {
+  AnalyzeSummarySchema,
+  AnalyzeSummaryResponseSchema,
+  type AnalyzeSummaryInput,
+  type AnalyzeSummaryResponse,
+} from './schemas/ai.schema.js'
 
 // Constants
 export {

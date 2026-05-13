@@ -24,6 +24,13 @@ const en: Translations = {
       apply: 'Apply Suggestion',
       discard: 'Discard',
     },
+    errors: {
+      unauthorized: 'Please log in again to use AI features.',
+      tooManyRequests: 'Too many requests. Please wait a moment before trying again.',
+      serviceUnavailable: 'AI service is currently unavailable. Please try again later.',
+      invalidInput: 'Summary is too short or too long. Please write between 50–500 characters.',
+      unexpected: 'An unexpected error occurred. Please try again.',
+    },
   },
   home: {
     eyebrow: 'A Résumé Builder · Pixel-perfect PDF Export',
@@ -54,13 +61,15 @@ const en: Translations = {
         eyebrow: 'Open the editor',
         numeral: '01',
         title: 'Write your story',
-        description: 'Pick a section, start typing. Resumark keeps the structure tight so you can focus on the words — no blank page, no formatting headaches.',
+        description:
+          'Pick a section, start typing. Resumark keeps the structure tight so you can focus on the words — no blank page, no formatting headaches.',
       },
       {
         eyebrow: 'See the result',
         numeral: '02',
         title: 'Preview as you type',
-        description: 'Your résumé updates live on the right — pinned to A4, exactly as the recruiter will see it.',
+        description:
+          'Your résumé updates live on the right — pinned to A4, exactly as the recruiter will see it.',
       },
       {
         eyebrow: 'Ship it',
@@ -103,10 +112,12 @@ const en: Translations = {
     toast: {
       pdfSuccess: 'PDF downloaded successfully!',
       pdfError: 'PDF generation failed. Please try again.',
-      pdfOverflow: 'Your CV exceeds one page — some content at the bottom may be cut off in the PDF.',
+      pdfOverflow:
+        'Your CV exceeds one page — some content at the bottom may be cut off in the PDF.',
     },
     clearTitle: 'Clear all CV data?',
-    clearMessage: 'This will permanently remove all your CV information. This action cannot be undone.',
+    clearMessage:
+      'This will permanently remove all your CV information. This action cannot be undone.',
     clearConfirm: 'Clear data',
     proRequired: '{name} (Pro plan required)',
   },
@@ -116,8 +127,10 @@ const en: Translations = {
     planPro: 'Pro Member',
     welcomePrefix: 'Welcome back,',
     welcomeFallback: 'there',
-    welcomeDescFree: "You're on the Free plan. Build, polish, and export — upgrade when you need more.",
-    welcomeDescPro: 'Full access to every Pro feature — cloud sync, multiple CVs, premium templates, and more.',
+    welcomeDescFree:
+      "You're on the Free plan. Build, polish, and export — upgrade when you need more.",
+    welcomeDescPro:
+      'Full access to every Pro feature — cloud sync, multiple CVs, premium templates, and more.',
     yourCv: 'Your CV',
     sectionsLabel: '{n}/8 sections filled',
     editCv: 'Edit CV',
@@ -186,7 +199,7 @@ const en: Translations = {
       },
       {
         q: 'How is Resumark different from Canva or Zety?',
-        a: "Canva and Zety optimise for aesthetics. Resumark optimises for your CV to be read. Single-column layout. Standard ATS headings. No mandatory sign-up. No personal data leaving your browser on the free plan. The goal is a callback, not a compliment on the design.",
+        a: 'Canva and Zety optimise for aesthetics. Resumark optimises for your CV to be read. Single-column layout. Standard ATS headings. No mandatory sign-up. No personal data leaving your browser on the free plan. The goal is a callback, not a compliment on the design.',
       },
       {
         q: 'What happens to my data if I cancel Pro?',
@@ -240,7 +253,8 @@ const en: Translations = {
       forgotEmailLabel: 'Email address',
       forgotSendLink: 'Send reset link',
       forgotSending: 'Sending…',
-      forgotSentConfirm: 'If an account exists for {email}, a reset link is on its way. Check your inbox (and spam folder).',
+      forgotSentConfirm:
+        'If an account exists for {email}, a reset link is on its way. Check your inbox (and spam folder).',
       forgotClose: 'Close',
       forgotEmailRequired: 'Please enter your email address.',
       forgotSendError: 'Could not send reset link. Please try again.',
@@ -317,7 +331,13 @@ const en: Translations = {
     contentClosing: 'Closing Paragraph',
     contentClosingHint: 'Thank the reader and express your enthusiasm to continue the conversation',
     contentSignOff: 'Sign-off',
-    signatures: ['Sincerely,', 'Best regards,', 'Kind regards,', 'Yours faithfully,', 'Warm regards,'],
+    signatures: [
+      'Sincerely,',
+      'Best regards,',
+      'Kind regards,',
+      'Yours faithfully,',
+      'Warm regards,',
+    ],
     pdfError: 'PDF generation failed. Please try again.',
     downloadAriaLabel: 'Download cover letter as PDF',
   },
@@ -404,7 +424,8 @@ const en: Translations = {
   teams: {
     eyebrow: 'For Teams',
     heading: { prefix: 'Built for one. ', accent: 'Scalable', suffix: ' for many.' },
-    desc1: "Whether you run a recruiting firm, a career centre, or a team of hiring managers — Resumark's team tier gives everyone the same ATS-safe builder under a single account with centralised billing.",
+    desc1:
+      "Whether you run a recruiting firm, a career centre, or a team of hiring managers — Resumark's team tier gives everyone the same ATS-safe builder under a single account with centralised billing.",
     desc2: 'Team accounts are not self-serve yet. Send us a note and we will set you up directly.',
     cta: 'Get in touch',
   },
@@ -419,8 +440,10 @@ const en: Translations = {
   upgrade: {
     eyebrow: 'Pro feature',
     heading: { prefix: 'Coming to ', accent: 'Pro', suffix: '.' },
-    triggerDesc: '{trigger} is coming to the Pro plan. Drop your email — we\'ll let you know the moment it launches.',
-    proDesc: 'The Pro Plan will be available soon. Drop your email — we\'ll let you know the moment it launches.',
+    triggerDesc:
+      "{trigger} is coming to the Pro plan. Drop your email — we'll let you know the moment it launches.",
+    proDesc:
+      "The Pro Plan will be available soon. Drop your email — we'll let you know the moment it launches.",
     emailLabel: 'Email address',
     notify: 'Get notified',
     notifying: 'Sending…',

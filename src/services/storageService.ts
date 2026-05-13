@@ -65,9 +65,15 @@ export class DelegatingStorageService implements StorageService {
     this._impl = impl
   }
 
-  async save(data: CVData): Promise<void>   { return this._impl.save(data) }
-  async load(): Promise<CVData | null>       { return this._impl.load() }
-  async clear(): Promise<void>               { return this._impl.clear() }
+  async save(data: CVData): Promise<void> {
+    return this._impl.save(data)
+  }
+  async load(): Promise<CVData | null> {
+    return this._impl.load()
+  }
+  async clear(): Promise<void> {
+    return this._impl.clear()
+  }
 }
 
 export { LocalStorageService }

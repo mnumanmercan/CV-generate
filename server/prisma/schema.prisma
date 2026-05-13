@@ -111,6 +111,10 @@ model CV {
 
   @@index([userId])
   @@index([updatedAt])
+  // Composite index for the hottest query — `findMany({ where: { userId }, orderBy: { updatedAt: 'desc' } })`.
+  // Postgres can satisfy filter + sort + LIMIT from this index alone instead of
+  // scanning every user row and re-sorting in memory once tables grow.
+  @@index([userId, updatedAt(sort: Desc)])
 }
 
 // ─── CoverLetter ──────────────────────────────────────────────────────────────
@@ -129,6 +133,7 @@ model CoverLetter {
 
   @@index([userId])
   @@index([updatedAt])
+  @@index([userId, updatedAt(sort: Desc)])
 }
 
 // ─── StripeEvent ──────────────────────────────────────────────────────────────

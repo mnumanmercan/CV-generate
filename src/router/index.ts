@@ -113,9 +113,12 @@ router.beforeEach(async (to) => {
   return true
 })
 
-// Handle session expiry events dispatched by apiClient on persistent 401 responses.
-// Registered inside isReady() so it runs after Pinia is installed — calling
-// useUserStore() at module scope is fragile if import order changes.
+// Handle session expiry events dispatched by apiClient on persistent 401s.
+// Registered synchronously at module load so a hung `router.isReady()` (e.g.
+// a guard waiting on a slow async dependency) can't leave the app without a
+// listener — `useUserStore()` is only called inside the handler, which runs
+// long after Pinia is installed (the event originates from apiClient, which
+// itself only fires after the app has mounted).
 //
 // IMPORTANT: use clearLocalSession() here — NOT logout(). The server has
 // already invalidated our session (that's why we got the 401 that led here).
@@ -128,17 +131,12 @@ router.beforeEach(async (to) => {
 // Same-route guard prevents a duplicate push when the listener fires while
 // we're already on /login (defence-in-depth; the loop in the store/apiClient
 // is already broken by the changes above).
-let sessionExpiryListenerRegistered = false
-router.isReady().then(() => {
-  if (sessionExpiryListenerRegistered) return
-  sessionExpiryListenerRegistered = true
-  window.addEventListener('resumark:session-expired', () => {
-    const userStore = useUserStore()
-    userStore.clearLocalSession()
-    if (router.currentRoute.value.name !== 'login') {
-      router.push({ name: 'login' })
-    }
-  })
+window.addEventListener('resumark:session-expired', () => {
+  const userStore = useUserStore()
+  userStore.clearLocalSession()
+  if (router.currentRoute.value.name !== 'login') {
+    router.push({ name: 'login' })
+  }
 })
 
 export default router

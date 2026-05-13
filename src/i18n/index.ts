@@ -37,6 +37,13 @@ export interface Translations {
       apply: string
       discard: string
     }
+    errors: {
+      unauthorized: string
+      tooManyRequests: string
+      serviceUnavailable: string
+      invalidInput: string
+      unexpected: string
+    }
   }
   home: {
     eyebrow: string

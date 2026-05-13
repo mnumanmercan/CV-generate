@@ -27,9 +27,7 @@
     languages: LanguagesSection,
   }
 
-  const orderedSections = computed(() =>
-    props.sectionOrder.filter((key) => key in sectionMap),
-  )
+  const orderedSections = computed(() => props.sectionOrder.filter((key) => key in sectionMap))
 
   const displaySections = computed<DisplaySection[]>(() => {
     const keys = orderedSections.value
@@ -56,50 +54,76 @@
   const socialLinks = computed(() => {
     const p = props.cvData.personal
     const links: Array<{ label: string; value: string; href: string }> = []
-    if (p.linkedin) links.push({ label: 'LinkedIn', value: p.linkedin.replace('https://', ''), href: p.linkedin })
-    if (p.github) links.push({ label: 'GitHub', value: p.github.replace('https://', ''), href: p.github })
-    if (p.website) links.push({ label: 'Website', value: p.website.replace('https://', ''), href: p.website })
+    if (p.linkedin)
+      links.push({ label: 'LinkedIn', value: p.linkedin.replace('https://', ''), href: p.linkedin })
+    if (p.github)
+      links.push({ label: 'GitHub', value: p.github.replace('https://', ''), href: p.github })
+    if (p.website)
+      links.push({ label: 'Website', value: p.website.replace('https://', ''), href: p.website })
     return links
   })
 </script>
 
 <template>
-  <div style="padding: 44px 50px; box-sizing: border-box;">
-
+  <div style="padding: 44px 50px; box-sizing: border-box">
     <!-- ── Personal Info ─────────────────────────────────────────── -->
     <header
       :class="['cv-header', isPulsed('personal') ? 'section-pulse' : '']"
-      style="margin-bottom: 20px; padding-bottom: 14px; border-bottom: 3px solid #B8532A;"
+      style="margin-bottom: 20px; padding-bottom: 14px; border-bottom: 3px solid #b8532a"
     >
       <h1
         :style="{
-          fontSize: '30px', fontWeight: '300',
+          fontSize: '30px',
+          fontWeight: '300',
           color: cvData.personal.fullName ? '#111827' : '#9ca3af',
-          margin: '0 0 4px 0', lineHeight: '1.15', letterSpacing: '-0.3px'
+          margin: '0 0 4px 0',
+          lineHeight: '1.15',
+          letterSpacing: '-0.3px',
         }"
       >
         {{ cvData.personal.fullName || 'Your Name' }}
       </h1>
       <p
         :style="{
-          fontSize: '12.5px', fontWeight: '600',
+          fontSize: '12.5px',
+          fontWeight: '600',
           color: cvData.personal.jobTitle
-            ? (cvData.personal.jobTitleColor === 'dark' ? '#111827' : '#B8532A')
+            ? cvData.personal.jobTitleColor === 'dark'
+              ? '#111827'
+              : '#B8532A'
             : '#D5916F',
-          margin: '0 0 8px 0', letterSpacing: '0.01em'
+          margin: '0 0 8px 0',
+          letterSpacing: '0.01em',
         }"
       >
         {{ cvData.personal.jobTitle || 'Job Title' }}
       </p>
-      <div style="display: flex; flex-wrap: wrap; gap: 0; font-size: 10px; color: #64748b;">
+      <div style="display: flex; flex-wrap: wrap; gap: 0; font-size: 10px; color: #64748b">
         <span v-if="cvData.personal.email">{{ cvData.personal.email }}</span>
-        <span v-if="cvData.personal.email && (cvData.personal.phone || cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">·</span>
+        <span
+          v-if="
+            cvData.personal.email &&
+            (cvData.personal.phone || cvData.personal.location || socialLinks.length)
+          "
+          style="margin: 0 8px"
+          >·</span
+        >
         <span v-if="cvData.personal.phone">{{ cvData.personal.phone }}</span>
-        <span v-if="cvData.personal.phone && (cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">·</span>
+        <span
+          v-if="cvData.personal.phone && (cvData.personal.location || socialLinks.length)"
+          style="margin: 0 8px"
+          >·</span
+        >
         <span v-if="cvData.personal.location">{{ cvData.personal.location }}</span>
         <template v-for="(link, i) in socialLinks" :key="link.label">
-          <span v-if="cvData.personal.location || i > 0" style="margin: 0 8px;">·</span>
-          <a :href="link.href" target="_blank" rel="noopener noreferrer" style="color: #B8532A; text-decoration: none;">{{ link.value }}</a>
+          <span v-if="cvData.personal.location || i > 0" style="margin: 0 8px">·</span>
+          <a
+            :href="link.href"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="color: #b8532a; text-decoration: none"
+            >{{ link.value }}</a
+          >
         </template>
       </div>
     </header>
@@ -108,10 +132,18 @@
     <section
       v-if="cvData.summary"
       :class="isPulsed('summary') ? 'section-pulse' : ''"
-      style="margin-bottom: 18px;"
+      style="margin-bottom: 18px"
     >
       <h2 class="cv-section-heading">Professional Summary</h2>
-      <p style="font-size: 10.5px; color: #374151; line-height: 1.7; white-space: pre-wrap; margin: 0;">
+      <p
+        style="
+          font-size: 10.5px;
+          color: #374151;
+          line-height: 1.7;
+          white-space: pre-wrap;
+          margin: 0;
+        "
+      >
         {{ cvData.summary }}
       </p>
     </section>
@@ -119,21 +151,20 @@
     <!-- ── Ordered Sections ──────────────────────────────────────── -->
     <template v-for="item in displaySections" :key="item.paired ? 'cert-lang-pair' : item.key">
       <component
-        v-if="!item.paired"
         :is="sectionMap[item.key]"
+        v-if="!item.paired"
         :cv-data="cvData"
         :is-pulsed="isPulsed"
       />
-      <div v-else style="display: flex; gap: 24px; align-items: flex-start;">
-        <div style="flex: 1; min-width: 0;">
+      <div v-else style="display: flex; gap: 24px; align-items: flex-start">
+        <div style="flex: 1; min-width: 0">
           <component :is="sectionMap[item.first]" :cv-data="cvData" :is-pulsed="isPulsed" />
         </div>
-        <div style="flex: 1; min-width: 0;">
+        <div style="flex: 1; min-width: 0">
           <component :is="sectionMap[item.second]" :cv-data="cvData" :is-pulsed="isPulsed" />
         </div>
       </div>
     </template>
-
   </div>
 </template>
 
@@ -144,7 +175,7 @@
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: #94a3b8;
-    border-left: 3px solid #B8532A;
+    border-left: 3px solid #b8532a;
     padding-left: 8px;
     margin: 0 0 8px 0;
     line-height: 1.4;

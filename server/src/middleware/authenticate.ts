@@ -30,7 +30,11 @@ async function tryAuthenticate(req: Request): Promise<boolean> {
  * Strict authenticate — 401 if no valid token. Use on routes that require
  * the user to be logged in.
  */
-export async function authenticate(req: Request, _res: Response, next: NextFunction): Promise<void> {
+export async function authenticate(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> {
   const authHeader = req.headers.authorization
   if (!authHeader?.startsWith('Bearer ')) {
     next(new AppError('No access token provided', 401, 'UNAUTHORIZED'))
@@ -51,7 +55,11 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
  * otherwise. Use on routes that work for both guests and logged-in users but
  * want to link the action to the account when possible (e.g. waitlist).
  */
-export async function authenticateOptional(req: Request, _res: Response, next: NextFunction): Promise<void> {
+export async function authenticateOptional(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> {
   await tryAuthenticate(req)
   next()
 }

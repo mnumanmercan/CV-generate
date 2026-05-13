@@ -27,9 +27,7 @@
     languages: LanguagesSection,
   }
 
-  const orderedSections = computed(() =>
-    props.sectionOrder.filter((key) => key in sectionMap),
-  )
+  const orderedSections = computed(() => props.sectionOrder.filter((key) => key in sectionMap))
 
   const displaySections = computed<DisplaySection[]>(() => {
     const keys = orderedSections.value
@@ -56,51 +54,75 @@
   const socialLinks = computed(() => {
     const p = props.cvData.personal
     const links: Array<{ label: string; value: string; href: string }> = []
-    if (p.linkedin) links.push({ label: 'LinkedIn', value: p.linkedin.replace('https://', ''), href: p.linkedin })
-    if (p.github) links.push({ label: 'GitHub', value: p.github.replace('https://', ''), href: p.github })
-    if (p.website) links.push({ label: 'Website', value: p.website.replace('https://', ''), href: p.website })
+    if (p.linkedin)
+      links.push({ label: 'LinkedIn', value: p.linkedin.replace('https://', ''), href: p.linkedin })
+    if (p.github)
+      links.push({ label: 'GitHub', value: p.github.replace('https://', ''), href: p.github })
+    if (p.website)
+      links.push({ label: 'Website', value: p.website.replace('https://', ''), href: p.website })
     return links
   })
 </script>
 
 <template>
   <!-- 48px 52px ≈ 12.7mm 13.7mm margins — ATS resume guides recommend ≥0.5in (~13mm). -->
-  <div style="padding: 48px 52px; box-sizing: border-box;">
-
+  <div style="padding: 48px 52px; box-sizing: border-box">
     <!-- ── Personal Info ─────────────────────────────────────────── -->
     <header
       :class="['cv-header', isPulsed('personal') ? 'section-pulse' : '']"
-      style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb;"
+      style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb"
     >
       <h1
         :style="{
-          fontSize: '28px', fontWeight: '700',
+          fontSize: '28px',
+          fontWeight: '700',
           color: cvData.personal.fullName ? '#111827' : '#9ca3af',
-          margin: '0 0 2px 0', lineHeight: '1.2'
+          margin: '0 0 2px 0',
+          lineHeight: '1.2',
         }"
       >
         {{ cvData.personal.fullName || 'Your Name' }}
       </h1>
       <p
         :style="{
-          fontSize: '12px', fontWeight: '600',
+          fontSize: '12px',
+          fontWeight: '600',
           color: cvData.personal.jobTitle
-            ? (cvData.personal.jobTitleColor === 'dark' ? '#111827' : '#B8532A')
+            ? cvData.personal.jobTitleColor === 'dark'
+              ? '#111827'
+              : '#B8532A'
             : '#D5916F',
-          margin: '0 0 6px 0'
+          margin: '0 0 6px 0',
         }"
       >
         {{ cvData.personal.jobTitle || 'Job Title' }}
       </p>
-      <div style="display: flex; flex-wrap: wrap; gap: 0; font-size: 10px; color: #4b5563;">
+      <div style="display: flex; flex-wrap: wrap; gap: 0; font-size: 10px; color: #4b5563">
         <span v-if="cvData.personal.email">{{ cvData.personal.email }}</span>
-        <span v-if="cvData.personal.email && (cvData.personal.phone || cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">|</span>
+        <span
+          v-if="
+            cvData.personal.email &&
+            (cvData.personal.phone || cvData.personal.location || socialLinks.length)
+          "
+          style="margin: 0 8px"
+          >|</span
+        >
         <span v-if="cvData.personal.phone">{{ cvData.personal.phone }}</span>
-        <span v-if="cvData.personal.phone && (cvData.personal.location || socialLinks.length)" style="margin: 0 8px;">|</span>
+        <span
+          v-if="cvData.personal.phone && (cvData.personal.location || socialLinks.length)"
+          style="margin: 0 8px"
+          >|</span
+        >
         <span v-if="cvData.personal.location">{{ cvData.personal.location }}</span>
         <template v-for="(link, i) in socialLinks" :key="link.label">
-          <span v-if="cvData.personal.location || i > 0" style="margin: 0 8px;">|</span>
-          <a :href="link.href" target="_blank" rel="noopener noreferrer" style="color: #4b5563; text-decoration: none;">{{ link.value }}</a>
+          <span v-if="cvData.personal.location || i > 0" style="margin: 0 8px">|</span>
+          <a
+            :href="link.href"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="color: #4b5563; text-decoration: none"
+            >{{ link.value }}</a
+          >
         </template>
       </div>
     </header>
@@ -109,10 +131,18 @@
     <section
       v-if="cvData.summary"
       :class="isPulsed('summary') ? 'section-pulse' : ''"
-      style="margin-bottom: 12px;"
+      style="margin-bottom: 12px"
     >
       <h2 class="cv-section-heading">Professional Summary</h2>
-      <p style="font-size: 10.5px; color: #374151; line-height: 1.6; white-space: pre-wrap; margin: 0;">
+      <p
+        style="
+          font-size: 10.5px;
+          color: #374151;
+          line-height: 1.6;
+          white-space: pre-wrap;
+          margin: 0;
+        "
+      >
         {{ cvData.summary }}
       </p>
     </section>
@@ -120,21 +150,20 @@
     <!-- ── Ordered Sections ──────────────────────────────────────── -->
     <template v-for="item in displaySections" :key="item.paired ? 'cert-lang-pair' : item.key">
       <component
-        v-if="!item.paired"
         :is="sectionMap[item.key]"
+        v-if="!item.paired"
         :cv-data="cvData"
         :is-pulsed="isPulsed"
       />
-      <div v-else style="display: flex; gap: 24px; align-items: flex-start;">
-        <div style="flex: 1; min-width: 0;">
+      <div v-else style="display: flex; gap: 24px; align-items: flex-start">
+        <div style="flex: 1; min-width: 0">
           <component :is="sectionMap[item.first]" :cv-data="cvData" :is-pulsed="isPulsed" />
         </div>
-        <div style="flex: 1; min-width: 0;">
+        <div style="flex: 1; min-width: 0">
           <component :is="sectionMap[item.second]" :cv-data="cvData" :is-pulsed="isPulsed" />
         </div>
       </div>
     </template>
-
   </div>
 </template>
 

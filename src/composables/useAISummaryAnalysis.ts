@@ -1,6 +1,8 @@
 import { ref, computed } from 'vue'
 import { useCVStore } from '@/stores/cvStore'
+import { useI18n } from '@/composables/useI18n'
 import { apiClient, ApiError } from '@/services/apiClient'
+import { AnalyzeSummaryResponseSchema } from '@resumark/shared'
 
 // Module-scoped state (tüm component'lerin aynı state'i paylaşması için)
 const isLoading = ref(false)
@@ -10,6 +12,7 @@ const error = ref<string | null>(null)
 
 export function useAISummaryAnalysis() {
   const cvStore = useCVStore()
+  const { t } = useI18n()
 
   // hasResult computed: sonuç panelinin açılıp açılmayacağını kontrol eder
   const hasResult = computed(() => !!feedback.value || !!suggestion.value)
@@ -22,28 +25,32 @@ export function useAISummaryAnalysis() {
     suggestion.value = ''
 
     try {
-      const res = await apiClient.post<{ success: boolean; data: { feedback: string; suggestion: string } }>(
-        '/ai/analyze-summary',
-        { summary },
-      )
-      feedback.value = res.data.feedback
-      suggestion.value = res.data.suggestion
+      const raw = await apiClient.post<unknown>('/ai/analyze-summary', { summary })
+      // Defensive: validate the response shape even though the server is the
+      // contract owner — a future regression in the AI parser, a misbehaving
+      // proxy, or a stale cache could all break the invariant, and reading
+      // `res.data.feedback` on a malformed body would silently NaN the UI.
+      const parsed = AnalyzeSummaryResponseSchema.safeParse(raw)
+      if (!parsed.success) {
+        throw new ApiError(502, 'AI_INVALID_SHAPE', 'AI returned an unexpected response shape.')
+      }
+      feedback.value = parsed.data.data.feedback
+      suggestion.value = parsed.data.data.suggestion
     } catch (err) {
-      // Error mapping: API error'ları user-friendly mesajlara çevir
       if (err instanceof ApiError) {
         if (err.status === 401) {
-          error.value = 'Please log in again to use AI features.'
+          error.value = t('ai.errors.unauthorized')
         } else if (err.status === 429) {
-          error.value = 'Too many requests. Please wait a moment before trying again.'
-        } else if (err.status === 503) {
-          error.value = 'AI service is currently unavailable. Please try again later.'
+          error.value = t('ai.errors.tooManyRequests')
+        } else if (err.status === 503 || err.status === 504) {
+          error.value = t('ai.errors.serviceUnavailable')
         } else if (err.status === 400) {
-          error.value = 'Summary is too short or too long. Please write between 50-500 characters.'
+          error.value = t('ai.errors.invalidInput')
         } else {
-          error.value = err.message || 'An error occurred while analyzing your summary.'
+          error.value = t('ai.errors.unexpected')
         }
       } else {
-        error.value = 'An unexpected error occurred. Please try again.'
+        error.value = t('ai.errors.unexpected')
       }
       console.error('[useAISummaryAnalysis] analyze failed:', err)
     } finally {

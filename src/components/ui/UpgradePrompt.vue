@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, onMounted, onUnmounted } from 'vue'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
   import { RouterLink } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
   import { useI18n } from '@/composables/useI18n'
@@ -9,6 +9,9 @@
   const userStore = useUserStore()
   const { t, t_obj } = useI18n()
 
+  const seeSoonHeading = computed(() => t_obj<SplitHeading>('upgrade.seeSoon'))
+  const upgradeHeading = computed(() => t_obj<SplitHeading>('upgrade.heading'))
+
   // @keydown.esc on a non-focusable div never fires.
   // Register on window instead so ESC always closes the modal.
   function onWindowKeydown(e: KeyboardEvent): void {
@@ -17,10 +20,10 @@
   onMounted(() => window.addEventListener('keydown', onWindowKeydown))
   onUnmounted(() => window.removeEventListener('keydown', onWindowKeydown))
 
-  const email        = ref('')
-  const submitted    = ref(false)
+  const email = ref('')
+  const submitted = ref(false)
   const isSubmitting = ref(false)
-  const emailError   = ref('')
+  const emailError = ref('')
 
   function validateEmail(value: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
@@ -35,11 +38,11 @@
       emailError.value = t('upgrade.emailInvalid')
       return
     }
-    emailError.value   = ''
+    emailError.value = ''
     isSubmitting.value = true
     try {
       await apiClient.post('/waitlist', {
-        email:  email.value.trim(),
+        email: email.value.trim(),
         source: 'upgrade_modal',
       })
       submitted.value = true
@@ -54,8 +57,8 @@
     userStore.closeUpgradeModal()
     // Reset state for next open
     setTimeout(() => {
-      email.value      = ''
-      submitted.value  = false
+      email.value = ''
+      submitted.value = false
       emailError.value = ''
     }, 300)
   }
@@ -86,7 +89,6 @@
 
       <!-- Modal card -->
       <div class="paper-card relative z-10 w-full max-w-md p-7 shadow-2xl">
-
         <!-- ── Success state ── -->
         <template v-if="submitted">
           <div class="flex flex-col items-center text-center gap-5">
@@ -94,22 +96,23 @@
               class="font-display leading-none"
               :style="{ fontSize: '52px', color: 'var(--accent)' }"
               aria-hidden="true"
-            >✓</span>
+              >✓</span
+            >
             <div>
               <p class="mono-eyebrow mb-2">{{ t('upgrade.onList') }}</p>
-              <h2 class="font-display leading-tight tracking-editorial text-ink mb-2"
-                  style="font-size: 28px">
-                {{ t_obj<SplitHeading>('upgrade.seeSoon').prefix }}<span class="accent-italic">{{ t_obj<SplitHeading>('upgrade.seeSoon').accent }}</span>{{ t_obj<SplitHeading>('upgrade.seeSoon').suffix }}
+              <h2
+                class="font-display leading-tight tracking-editorial text-ink mb-2"
+                style="font-size: 28px"
+              >
+                {{ seeSoonHeading.prefix
+                }}<span class="accent-italic">{{ seeSoonHeading.accent }}</span
+                >{{ seeSoonHeading.suffix }}
               </h2>
               <p class="text-[13.5px] text-muted leading-[1.55]">
                 {{ t('upgrade.sentDesc') }}
               </p>
             </div>
-            <button
-              type="button"
-              class="btn-ghost w-full justify-center"
-              @click="handleClose"
-            >
+            <button type="button" class="btn-ghost w-full justify-center" @click="handleClose">
               {{ t('upgrade.close') }}
             </button>
           </div>
@@ -125,7 +128,9 @@
                 class="font-display leading-tight tracking-editorial text-ink"
                 style="font-size: 26px"
               >
-                {{ t_obj<SplitHeading>('upgrade.heading').prefix }}<span class="accent-italic">{{ t_obj<SplitHeading>('upgrade.heading').accent }}</span>{{ t_obj<SplitHeading>('upgrade.heading').suffix }}
+                {{ upgradeHeading.prefix
+                }}<span class="accent-italic">{{ upgradeHeading.accent }}</span
+                >{{ upgradeHeading.suffix }}
               </h2>
             </div>
             <button
@@ -134,8 +139,19 @@
               :aria-label="t('upgrade.close')"
               @click="handleClose"
             >
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -153,12 +169,26 @@
           <div
             v-if="emailError"
             class="mb-4 flex items-start gap-2.5 px-4 py-3 rounded-lg text-[13px]"
-            style="background: rgba(180,39,39,0.06); border: 1px solid rgba(180,39,39,0.18); color: #B42727"
+            style="
+              background: rgba(180, 39, 39, 0.06);
+              border: 1px solid rgba(180, 39, 39, 0.18);
+              color: #b42727;
+            "
             role="alert"
           >
-            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            <svg
+              class="w-4 h-4 shrink-0 mt-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+              />
             </svg>
             {{ emailError }}
           </div>
@@ -166,7 +196,9 @@
           <!-- Email waitlist -->
           <div class="flex flex-col gap-3 mb-5">
             <div>
-              <label class="mono-eyebrow block mb-1.5" for="upgrade-email">{{ t('upgrade.emailLabel') }}</label>
+              <label class="mono-eyebrow block mb-1.5" for="upgrade-email">{{
+                t('upgrade.emailLabel')
+              }}</label>
               <input
                 id="upgrade-email"
                 v-model="email"
@@ -191,9 +223,19 @@
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               {{ isSubmitting ? t('upgrade.notifying') : t('upgrade.notify') }}
             </button>

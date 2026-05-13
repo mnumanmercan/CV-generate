@@ -8,13 +8,13 @@
   import { useI18n } from '@/composables/useI18n'
   import AppDrawer from '@/components/ui/AppDrawer.vue'
 
-  const route       = useRoute()
-  const router      = useRouter()
-  const userStore   = useUserStore()
-  const cvStore     = useCVStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
+  const cvStore = useCVStore()
   const coverLetter = useCoverLetterStore()
   const localeStore = useLocaleStore()
-  const { t }       = useI18n()
+  const { t } = useI18n()
 
   const showUserMenu = ref(false)
   const showMobileDrawer = ref(false)
@@ -44,7 +44,11 @@
 <template>
   <header
     class="sticky top-0 z-50 flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] px-4 md:px-6 py-3 md:py-4 border-b border-overlay/8"
-    style="background: var(--header-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px)"
+    style="
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    "
   >
     <!-- ── Logo ──────────────────────────────────────────────── -->
     <RouterLink
@@ -57,7 +61,9 @@
         :style="{ background: 'var(--accent)' }"
         aria-hidden="true"
       />
-      <span class="font-display text-[20px] md:text-[26px] leading-none tracking-editorial text-ink">
+      <span
+        class="font-display text-[20px] md:text-[26px] leading-none tracking-editorial text-ink"
+      >
         Resumark
       </span>
     </RouterLink>
@@ -72,9 +78,11 @@
             ? 'border-accent text-accent'
             : 'border-accent/25 text-ink hover:border-accent hover:-translate-y-px',
         ]"
-        :style="route.name === 'builder'
-          ? { background: 'color-mix(in oklab, var(--accent) 10%, transparent)' }
-          : { background: 'color-mix(in oklab, var(--accent) 4%, transparent)' }"
+        :style="
+          route.name === 'builder'
+            ? { background: 'color-mix(in oklab, var(--accent) 10%, transparent)' }
+            : { background: 'color-mix(in oklab, var(--accent) 4%, transparent)' }
+        "
       >
         <span
           class="w-1.5 h-1.5 rounded-full shrink-0 transition-transform duration-200 group-hover:scale-125"
@@ -90,7 +98,12 @@
           stroke="currentColor"
           aria-hidden="true"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M13 7l5 5m0 0l-5 5m5-5H6"
+          />
         </svg>
       </RouterLink>
 
@@ -107,7 +120,6 @@
 
     <!-- ── Right side: Lang switcher + auth actions (desktop only) ─ -->
     <div class="hidden md:flex items-center justify-end gap-2.5">
-
       <!-- Language switcher -->
       <div
         class="flex items-center font-mono text-[11px] tracking-[0.14em] uppercase select-none"
@@ -120,7 +132,9 @@
           :style="{ color: localeStore.locale === 'en' ? 'var(--accent)' : 'var(--muted)' }"
           :aria-pressed="localeStore.locale === 'en'"
           @click="localeStore.setLocale('en')"
-        >EN</button>
+        >
+          EN
+        </button>
         <span class="opacity-30 text-ink" aria-hidden="true">·</span>
         <button
           type="button"
@@ -128,7 +142,9 @@
           :style="{ color: localeStore.locale === 'tr' ? 'var(--accent)' : 'var(--muted)' }"
           :aria-pressed="localeStore.locale === 'tr'"
           @click="localeStore.setLocale('tr')"
-        >TR</button>
+        >
+          TR
+        </button>
       </div>
 
       <!-- Guest -->
@@ -139,10 +155,7 @@
         >
           {{ t('nav.login') }}
         </RouterLink>
-        <RouterLink
-          to="/register"
-          class="btn-primary text-sm"
-        >
+        <RouterLink to="/register" class="btn-primary text-sm">
           {{ t('nav.register') }}
           <svg
             class="w-3.5 h-3.5 opacity-90"
@@ -151,7 +164,12 @@
             stroke="currentColor"
             aria-hidden="true"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M13 7l5 5m0 0l-5 5m5-5H6"
+            />
           </svg>
         </RouterLink>
       </template>
@@ -183,7 +201,12 @@
               stroke="currentColor"
               aria-hidden="true"
             >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
 
@@ -205,7 +228,11 @@
                 class="flex items-center gap-2.5 px-3.5 py-2 text-sm text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
                 @click="showUserMenu = false"
               >
-                <span class="w-1 h-1 rounded-full" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
+                <span
+                  class="w-1 h-1 rounded-full"
+                  :style="{ background: 'var(--accent)' }"
+                  aria-hidden="true"
+                />
                 {{ t('nav.dashboard') }}
               </RouterLink>
               <RouterLink
@@ -213,7 +240,11 @@
                 class="flex items-center gap-2.5 px-3.5 py-2 text-sm text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
                 @click="showUserMenu = false"
               >
-                <span class="w-1 h-1 rounded-full" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
+                <span
+                  class="w-1 h-1 rounded-full"
+                  :style="{ background: 'var(--accent)' }"
+                  aria-hidden="true"
+                />
                 {{ t('nav.myResume') }}
               </RouterLink>
               <RouterLink
@@ -221,7 +252,11 @@
                 class="flex items-center gap-2.5 px-3.5 py-2 text-sm text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
                 @click="showUserMenu = false"
               >
-                <span class="w-1 h-1 rounded-full" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
+                <span
+                  class="w-1 h-1 rounded-full"
+                  :style="{ background: 'var(--accent)' }"
+                  aria-hidden="true"
+                />
                 {{ t('nav.coverLetter') }}
               </RouterLink>
               <div class="h-px bg-overlay/10 my-1" />
@@ -248,7 +283,12 @@
       @click="showMobileDrawer = true"
     >
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16M4 18h16"
+        />
       </svg>
     </button>
 

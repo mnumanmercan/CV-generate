@@ -14,22 +14,18 @@
   <section
     v-if="hasSkills"
     :class="isPulsed('skills') ? 'section-pulse' : ''"
-    style="margin-bottom: 14px;"
+    style="margin-bottom: 14px"
   >
     <h2 class="cv-section-heading">// Skills</h2>
     <div
       v-for="(skill, index) in cvData.skills"
       :key="skill.id"
       :style="index > 0 ? 'margin-top: 5px;' : ''"
-      style="display: flex; align-items: flex-start; gap: 8px;"
+      style="display: flex; align-items: flex-start; gap: 8px"
     >
       <span class="skill-category-label">{{ skill.category }}</span>
-      <div style="display: flex; flex-wrap: wrap; gap: 3px; flex: 1;">
-        <span
-          v-for="item in skill.items"
-          :key="item"
-          class="tech-chip"
-        >
+      <div style="display: flex; flex-wrap: wrap; gap: 3px; flex: 1">
+        <span v-for="item in skill.items" :key="item" class="tech-chip">
           {{ item }}
         </span>
       </div>

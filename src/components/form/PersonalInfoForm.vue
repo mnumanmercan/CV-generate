@@ -31,16 +31,13 @@
         errors.location = p.location.trim() ? '' : t('forms.errorLocationRequired')
         break
       case 'linkedin':
-        errors.linkedin =
-          !p.linkedin || validateUrl(p.linkedin) ? '' : t('forms.errorUrlHttps')
+        errors.linkedin = !p.linkedin || validateUrl(p.linkedin) ? '' : t('forms.errorUrlHttps')
         break
       case 'github':
-        errors.github =
-          !p.github || validateUrl(p.github) ? '' : t('forms.errorUrlHttps')
+        errors.github = !p.github || validateUrl(p.github) ? '' : t('forms.errorUrlHttps')
         break
       case 'website':
-        errors.website =
-          !p.website || validateUrl(p.website) ? '' : t('forms.errorUrlHttps')
+        errors.website = !p.website || validateUrl(p.website) ? '' : t('forms.errorUrlHttps')
         break
     }
   }
@@ -99,14 +96,23 @@
           >
             <span
               class="w-3.5 h-3.5 rounded-full shrink-0 transition-all"
-              :style="(cvData.personal.jobTitleColor ?? 'accent') === 'accent'
-                ? { background: '#B8532A', outline: '2px solid #B8532A', outlineOffset: '2px' }
-                : { background: '#B8532A', outline: '1.5px solid rgba(0,0,0,0.12)', outlineOffset: '2px' }"
+              :style="
+                (cvData.personal.jobTitleColor ?? 'accent') === 'accent'
+                  ? { background: '#B8532A', outline: '2px solid #B8532A', outlineOffset: '2px' }
+                  : {
+                      background: '#B8532A',
+                      outline: '1.5px solid rgba(0,0,0,0.12)',
+                      outlineOffset: '2px',
+                    }
+              "
             />
             <span
               class="mono-eyebrow text-[10px] transition-colors"
-              :class="(cvData.personal.jobTitleColor ?? 'accent') === 'accent' ? 'text-ink' : 'text-muted'"
-            >{{ t('forms.titleColorSienna') }}</span>
+              :class="
+                (cvData.personal.jobTitleColor ?? 'accent') === 'accent' ? 'text-ink' : 'text-muted'
+              "
+              >{{ t('forms.titleColorSienna') }}</span
+            >
           </button>
 
           <button
@@ -118,14 +124,21 @@
           >
             <span
               class="w-3.5 h-3.5 rounded-full shrink-0 transition-all"
-              :style="cvData.personal.jobTitleColor === 'dark'
-                ? { background: '#111827', outline: '2px solid #111827', outlineOffset: '2px' }
-                : { background: '#111827', outline: '1.5px solid rgba(0,0,0,0.12)', outlineOffset: '2px' }"
+              :style="
+                cvData.personal.jobTitleColor === 'dark'
+                  ? { background: '#111827', outline: '2px solid #111827', outlineOffset: '2px' }
+                  : {
+                      background: '#111827',
+                      outline: '1.5px solid rgba(0,0,0,0.12)',
+                      outlineOffset: '2px',
+                    }
+              "
             />
             <span
               class="mono-eyebrow text-[10px] transition-colors"
               :class="cvData.personal.jobTitleColor === 'dark' ? 'text-ink' : 'text-muted'"
-            >{{ t('forms.titleColorDark') }}</span>
+              >{{ t('forms.titleColorDark') }}</span
+            >
           </button>
         </div>
       </div>

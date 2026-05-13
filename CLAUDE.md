@@ -96,7 +96,16 @@ Then run `npm run build:shared` so the server picks up the new schema. Zod's `z.
 - On persistent 401s, `apiClient` dispatches `resumark:session-expired` — the router listener calls `userStore.clearLocalSession()` (not `logout()`) to avoid a second failing API call
 
 ### CV schema versioning
-`CURRENT_VERSION = '1.2.0'` in `src/types/cv.types.ts`. `migrateCVData()` runs on every `loadFromStorage()`. Add a new `case` for each version bump; cases fall through to fill all migration steps.
+`CURRENT_VERSION = '1.3.0'` in `src/types/cv.types.ts`. `migrateCVData()` runs on every `loadFromStorage()`. Add a new `case` for each version bump; cases fall through to fill all migration steps.
+
+Migration ladder:
+- `1.0.0 → 1.1.0` — populate missing `meta.sectionOrder`
+- `1.1.0 → 1.2.0` — introduce `languages` array (and append `'languages'` to `sectionOrder`)
+- `1.2.0 → 1.3.0` — introduce `personal.jobTitleColor` (default `'accent'`)
+
+`SectionKey` lives in `packages/shared/src/types/cv.types.ts` and is re-exported from the frontend types file — when adding a new section, update the union there first or the frontend's `SECTION_LABELS: Record<SectionKey, string>` will fail to type-check.
+
+Migrations run **client-side only** — the server persists whatever the client sent. A frontend downgrade (deploying an older frontend after newer data exists) silently drops fields; gate any future schema removals with care.
 
 ### Zod validation middleware
 `validate(schema)` replaces `req.body` with `result.data` (the Zod-parsed, stripped output). All API routes that accept a body use it.

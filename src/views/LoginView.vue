@@ -5,33 +5,37 @@
   import { apiClient } from '@/services/apiClient'
   import { useI18n } from '@/composables/useI18n'
 
-  const router    = useRouter()
+  const router = useRouter()
   const userStore = useUserStore()
   const { t, t_obj } = useI18n()
 
-  const email        = ref('')
-  const password     = ref('')
+  const email = ref('')
+  const password = ref('')
   const showPassword = ref(false)
-  const rememberMe   = ref(false)
-  const isLoading    = ref(false)
-  const errorMsg     = ref('')
+  const rememberMe = ref(false)
+  const isLoading = ref(false)
+  const errorMsg = ref('')
 
   // ─── Forgot-password modal ─────────────────────────────────────────────────
   // The endpoint always returns 200 (to prevent account enumeration), so
   // "sent" here means "the request completed", not "the account exists".
   const showForgotModal = ref(false)
-  const forgotEmail     = ref('')
-  const forgotLoading   = ref(false)
-  const forgotSent      = ref(false)
-  const forgotError     = ref('')
+  const forgotEmail = ref('')
+  const forgotLoading = ref(false)
+  const forgotSent = ref(false)
+  const forgotError = ref('')
 
-  const loginHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('auth.login.heading'))
-  const forgotHeading = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('auth.login.forgotHeading'))
+  const loginHeading = computed(() =>
+    t_obj<{ prefix: string; accent: string; suffix: string }>('auth.login.heading'),
+  )
+  const forgotHeading = computed(() =>
+    t_obj<{ prefix: string; accent: string; suffix: string }>('auth.login.forgotHeading'),
+  )
 
   function openForgotModal(): void {
-    forgotEmail.value     = email.value.trim()
-    forgotSent.value      = false
-    forgotError.value     = ''
+    forgotEmail.value = email.value.trim()
+    forgotSent.value = false
+    forgotError.value = ''
     showForgotModal.value = true
   }
 
@@ -44,7 +48,7 @@
       forgotError.value = t('auth.login.forgotEmailRequired')
       return
     }
-    forgotError.value   = ''
+    forgotError.value = ''
     forgotLoading.value = true
     try {
       await apiClient.post('/auth/forgot-password', { email: forgotEmail.value.trim() })
@@ -61,7 +65,7 @@
       errorMsg.value = t('auth.login.errorRequired')
       return
     }
-    errorMsg.value  = ''
+    errorMsg.value = ''
     isLoading.value = true
 
     try {
@@ -100,11 +104,7 @@
   <div class="min-h-screen flex flex-col" style="background: var(--paper)">
     <!-- ── Editorial header ─────────────────────────────────────── -->
     <header class="flex items-center justify-between px-6 py-5 border-b border-overlay/8">
-      <RouterLink
-        to="/"
-        class="flex items-center gap-2.5 group"
-        aria-label="Resumark home"
-      >
+      <RouterLink to="/" class="flex items-center gap-2.5 group" aria-label="Resumark home">
         <span
           class="w-2 h-2 rounded-full transition-transform duration-200 group-hover:scale-110"
           :style="{ background: 'var(--accent)' }"
@@ -119,7 +119,8 @@
           to="/register"
           class="ml-1 font-medium transition-colors hover:opacity-80 underline-offset-4 hover:underline"
           :style="{ color: 'var(--accent)' }"
-        >{{ t('auth.login.signUpFree') }}</RouterLink>
+          >{{ t('auth.login.signUpFree') }}</RouterLink
+        >
       </p>
     </header>
 
@@ -132,7 +133,8 @@
           class="font-display leading-[1.02] tracking-editorial text-ink mb-3 text-center"
           :style="{ fontSize: 'clamp(44px, 5.4vw, 64px)' }"
         >
-          {{ loginHeading.prefix }}<span class="accent-italic">{{ loginHeading.accent }}</span>{{ loginHeading.suffix }}
+          {{ loginHeading.prefix }}<span class="accent-italic">{{ loginHeading.accent }}</span
+          >{{ loginHeading.suffix }}
         </h1>
         <p class="text-center text-[14.5px] text-muted mb-10 leading-[1.55]">
           {{ t('auth.login.lede') }}
@@ -144,12 +146,26 @@
           <div
             v-if="errorMsg"
             class="mb-5 flex items-start gap-2.5 px-4 py-3 rounded-lg text-[13px]"
-            style="background: rgba(180,39,39,0.06); border: 1px solid rgba(180,39,39,0.18); color: #B42727"
+            style="
+              background: rgba(180, 39, 39, 0.06);
+              border: 1px solid rgba(180, 39, 39, 0.18);
+              color: #b42727;
+            "
             role="alert"
           >
-            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            <svg
+              class="w-4 h-4 shrink-0 mt-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+              />
             </svg>
             {{ errorMsg }}
           </div>
@@ -174,13 +190,17 @@
             <!-- Password -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
-                <label class="mono-eyebrow" for="login-password">{{ t('auth.login.passwordLabel') }}</label>
+                <label class="mono-eyebrow" for="login-password">{{
+                  t('auth.login.passwordLabel')
+                }}</label>
                 <button
                   type="button"
                   class="text-[11px] font-medium tracking-wider uppercase transition-colors hover:opacity-80"
                   :style="{ color: 'var(--accent)' }"
                   @click="openForgotModal"
-                >{{ t('auth.login.forgot') }}</button>
+                >
+                  {{ t('auth.login.forgot') }}
+                </button>
               </div>
               <div class="relative">
                 <input
@@ -194,18 +214,46 @@
                 <button
                   type="button"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors"
-                  :aria-label="showPassword ? t('auth.login.hidePassword') : t('auth.login.showPassword')"
+                  :aria-label="
+                    showPassword ? t('auth.login.hidePassword') : t('auth.login.showPassword')
+                  "
                   @click="showPassword = !showPassword"
                 >
-                  <svg v-if="!showPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <svg
+                    v-if="!showPassword"
+                    class="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
                   </svg>
-                  <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  <svg
+                    v-else
+                    class="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    />
                   </svg>
                 </button>
               </div>
@@ -223,7 +271,8 @@
               <label
                 for="remember-me"
                 class="text-[13.5px] text-muted cursor-pointer select-none"
-              >{{ t('auth.login.rememberMe') }}</label>
+                >{{ t('auth.login.rememberMe') }}</label
+              >
             </div>
 
             <!-- Submit -->
@@ -239,9 +288,19 @@
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               {{ isLoading ? t('auth.login.signingIn') : t('auth.login.signIn') }}
             </button>
@@ -253,10 +312,9 @@
               <div class="w-full border-t border-overlay/8" />
             </div>
             <div class="relative flex justify-center">
-              <span
-                class="px-3 mono-eyebrow"
-                :style="{ background: 'var(--card)' }"
-              >{{ t('auth.login.orContinueWith') }}</span>
+              <span class="px-3 mono-eyebrow" :style="{ background: 'var(--card)' }">{{
+                t('auth.login.orContinueWith')
+              }}</span>
             </div>
           </div>
 
@@ -267,14 +325,22 @@
             style="background: var(--paper)"
           >
             <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-              <path fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-              <path fill="#EA4335"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
             </svg>
             {{ t('auth.login.google') }}
           </button>
@@ -321,7 +387,9 @@
                 class="font-display leading-tight tracking-editorial text-ink"
                 style="font-size: 26px"
               >
-                {{ forgotHeading.prefix }}<span class="accent-italic">{{ forgotHeading.accent }}</span>{{ forgotHeading.suffix }}
+                {{ forgotHeading.prefix
+                }}<span class="accent-italic">{{ forgotHeading.accent }}</span
+                >{{ forgotHeading.suffix }}
               </h2>
             </div>
             <button
@@ -330,8 +398,19 @@
               :aria-label="t('auth.login.forgotClose')"
               @click="closeForgotModal"
             >
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -344,11 +423,26 @@
           <div
             v-if="forgotSent"
             class="flex items-start gap-3 px-4 py-3 rounded-lg"
-            style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.22); color: #15803D"
+            style="
+              background: rgba(34, 197, 94, 0.06);
+              border: 1px solid rgba(34, 197, 94, 0.22);
+              color: #15803d;
+            "
             role="status"
           >
-            <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            <svg
+              class="w-4 h-4 mt-0.5 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             <p class="text-[13px]">
               {{ t('auth.login.forgotSentConfirm', { email: forgotEmail }) }}
@@ -360,14 +454,20 @@
             <div
               v-if="forgotError"
               class="flex items-center gap-2.5 px-4 py-3 rounded-lg text-[13px]"
-              style="background: rgba(180,39,39,0.06); border: 1px solid rgba(180,39,39,0.18); color: #B42727"
+              style="
+                background: rgba(180, 39, 39, 0.06);
+                border: 1px solid rgba(180, 39, 39, 0.18);
+                color: #b42727;
+              "
               role="alert"
             >
               {{ forgotError }}
             </div>
 
             <div>
-              <label class="mono-eyebrow block mb-1.5" for="forgot-email">{{ t('auth.login.forgotEmailLabel') }}</label>
+              <label class="mono-eyebrow block mb-1.5" for="forgot-email">{{
+                t('auth.login.forgotEmailLabel')
+              }}</label>
               <input
                 id="forgot-email"
                 v-model="forgotEmail"
@@ -390,9 +490,19 @@
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               {{ forgotLoading ? t('auth.login.forgotSending') : t('auth.login.forgotSendLink') }}
             </button>

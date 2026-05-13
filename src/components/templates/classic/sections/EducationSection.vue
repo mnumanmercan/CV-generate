@@ -14,7 +14,7 @@
   <section
     v-if="hasEducation"
     :class="isPulsed('education') ? 'section-pulse' : ''"
-    style="margin-bottom: 12px;"
+    style="margin-bottom: 12px"
   >
     <h2 class="cv-section-heading">Education</h2>
     <div
@@ -22,14 +22,24 @@
       :key="edu.id"
       :style="index > 0 ? 'margin-top: 8px;' : ''"
     >
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
         <div>
-          <p style="font-size: 12px; font-weight: 700; color: #111827; margin: 0;">{{ edu.institution }}</p>
-          <p style="font-size: 10.5px; color: #4b5563; margin: 1px 0 0 0;">
+          <p style="font-size: 12px; font-weight: 700; color: #111827; margin: 0">
+            {{ edu.institution }}
+          </p>
+          <p style="font-size: 10.5px; color: #4b5563; margin: 1px 0 0 0">
             {{ edu.degree }} in {{ edu.field }}<span v-if="edu.gpa"> | GPA: {{ edu.gpa }}</span>
           </p>
         </div>
-        <p style="font-size: 10px; color: #6b7280; white-space: nowrap; margin: 0 0 0 12px; flex-shrink: 0;">
+        <p
+          style="
+            font-size: 10px;
+            color: #6b7280;
+            white-space: nowrap;
+            margin: 0 0 0 12px;
+            flex-shrink: 0;
+          "
+        >
           {{ edu.startDate }} – {{ edu.endDate }}
         </p>
       </div>

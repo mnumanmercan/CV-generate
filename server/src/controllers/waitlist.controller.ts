@@ -14,12 +14,10 @@ export const joinWaitlist = asyncHandler(async (req: Request, res: Response) => 
   }
 
   // `authenticateOptional` middleware populates req.user when a valid,
-  // non-blacklisted access token is present. This replaces the inline
-  // verifyAccessToken() call which bypassed the Redis blacklist check.
-  // Cast via `unknown` because the global type declares user as non-optional
-  // — optional middleware genuinely leaves it undefined.
-  const user = (req as unknown as { user?: { sub: string } }).user
-  const userId = user?.sub ?? null
+  // non-blacklisted access token is present. The Request['user'] type is
+  // now declared optional, so consumers of optional auth can read it
+  // directly without casting through `unknown`.
+  const userId = req.user?.sub ?? null
 
   await prisma.waitlistEntry.create({
     data: { email, source: source ?? 'upgrade_modal', userId },

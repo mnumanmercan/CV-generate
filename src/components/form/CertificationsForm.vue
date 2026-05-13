@@ -47,7 +47,9 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab" role="img" :aria-label="t('forms.dragToReorder')">⠿</span>
+          <span class="text-secondary cursor-grab" role="img" :aria-label="t('forms.dragToReorder')"
+            >⠿</span
+          >
           <span class="text-sm font-semibold text-primary">
             {{ cert.name || t('forms.certEntryLabel', { n: String(index + 1) }) }}
           </span>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
   defineProps<{
-    eyebrow:     string
-    numeral:     string
-    title:       string
+    eyebrow: string
+    numeral: string
+    title: string
     description: string
   }>()
 </script>
@@ -18,7 +18,11 @@
 
     <div
       class="font-display leading-[0.85] mb-7"
-      :style="{ color:'var(--accent)', fontSize:'clamp(72px, 9vw, 132px)', letterSpacing:'-0.04em' }"
+      :style="{
+        color: 'var(--accent)',
+        fontSize: 'clamp(72px, 9vw, 132px)',
+        letterSpacing: '-0.04em',
+      }"
     >
       {{ numeral }}
     </div>

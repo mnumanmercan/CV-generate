@@ -29,11 +29,14 @@
   // and cause a flicker (moving a node via insertBefore resets CSS animations).
   const staggerDone = ref(false)
   onMounted(() => {
-    const delay = props.stepIndex * 60    // matches :style animationDelay
-    const duration = 450                  // matches slideUp 0.45s
-    setTimeout(() => {
-      staggerDone.value = true
-    }, delay + duration + 50)             // +50ms safety margin
+    const delay = props.stepIndex * 60 // matches :style animationDelay
+    const duration = 450 // matches slideUp 0.45s
+    setTimeout(
+      () => {
+        staggerDone.value = true
+      },
+      delay + duration + 50,
+    ) // +50ms safety margin
   })
 </script>
 
@@ -69,10 +72,10 @@
           @click.stop
         >
           <svg width="12" height="20" viewBox="0 0 12 20" fill="currentColor" aria-hidden="true">
-            <circle cx="2"  cy="4"  r="1.5" />
-            <circle cx="2"  cy="10" r="1.5" />
-            <circle cx="2"  cy="16" r="1.5" />
-            <circle cx="10" cy="4"  r="1.5" />
+            <circle cx="2" cy="4" r="1.5" />
+            <circle cx="2" cy="10" r="1.5" />
+            <circle cx="2" cy="16" r="1.5" />
+            <circle cx="10" cy="4" r="1.5" />
             <circle cx="10" cy="10" r="1.5" />
             <circle cx="10" cy="16" r="1.5" />
           </svg>
@@ -87,17 +90,15 @@
         <div
           :class="[
             'w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 transition-all',
-            completed
-              ? 'text-white'
-              : isOpen
-                ? 'text-paper'
-                : 'text-muted',
+            completed ? 'text-white' : isOpen ? 'text-paper' : 'text-muted',
           ]"
-          :style="completed
-            ? { background: 'var(--accent)' }
-            : isOpen
-              ? { background: 'var(--ink)' }
-              : { background: 'rgba(0,0,0,0.06)' }"
+          :style="
+            completed
+              ? { background: 'var(--accent)' }
+              : isOpen
+                ? { background: 'var(--ink)' }
+                : { background: 'rgba(0,0,0,0.06)' }
+          "
           aria-hidden="true"
         >
           <span v-if="completed">✓</span>
@@ -110,7 +111,8 @@
           class="font-display text-[19px] leading-none shrink-0"
           :style="{ color: 'var(--accent)' }"
           aria-hidden="true"
-        >{{ icon }}</span>
+          >{{ icon }}</span
+        >
 
         <!-- Title -->
         <span

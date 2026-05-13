@@ -15,13 +15,13 @@
   }
 
   /* ── Resizable split ──────────────────────────────────────────────────── */
-  const DEFAULT_PCT = 42   // form panel default width %
-  const MIN_PCT     = 20   // narrowest the form panel can go
-  const MAX_PCT     = 72   // widest the form panel can go
+  const DEFAULT_PCT = 42 // form panel default width %
+  const MIN_PCT = 20 // narrowest the form panel can go
+  const MAX_PCT = 72 // widest the form panel can go
 
-  const formPct      = ref(DEFAULT_PCT)
+  const formPct = ref(DEFAULT_PCT)
   const containerRef = ref<HTMLElement | null>(null)
-  const isDragging   = ref(false)
+  const isDragging = ref(false)
 
   function applyX(clientX: number): void {
     if (!containerRef.value) return
@@ -29,7 +29,9 @@
     formPct.value = Math.min(MAX_PCT, Math.max(MIN_PCT, ((clientX - left) / width) * 100))
   }
 
-  function onMouseMove(e: MouseEvent): void { applyX(e.clientX) }
+  function onMouseMove(e: MouseEvent): void {
+    applyX(e.clientX)
+  }
 
   function onTouchMove(e: TouchEvent): void {
     e.preventDefault()
@@ -39,23 +41,23 @@
   function stopDrag(): void {
     isDragging.value = false
     document.removeEventListener('mousemove', onMouseMove)
-    document.removeEventListener('mouseup',   stopDrag)
+    document.removeEventListener('mouseup', stopDrag)
     document.removeEventListener('touchmove', onTouchMove)
-    document.removeEventListener('touchend',  stopDrag)
+    document.removeEventListener('touchend', stopDrag)
   }
 
   function onHandleMouseDown(e: MouseEvent): void {
     e.preventDefault()
     isDragging.value = true
     document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup',   stopDrag)
+    document.addEventListener('mouseup', stopDrag)
   }
 
   function onHandleTouchStart(e: TouchEvent): void {
     e.preventDefault()
     isDragging.value = true
     document.addEventListener('touchmove', onTouchMove, { passive: false })
-    document.addEventListener('touchend',  stopDrag)
+    document.addEventListener('touchend', stopDrag)
   }
 
   /* ── Lifecycle ────────────────────────────────────────────────────────── */
@@ -73,7 +75,6 @@
 
 <template>
   <div class="flex flex-col h-full">
-
     <!-- ── Mobile tab bar ─────────────────────────────────────────────── -->
     <div
       class="md:hidden flex border-b border-overlay/10 sticky top-0 z-10"
@@ -130,14 +131,18 @@
           // Desktop sizing: flex-none so it respects the explicit width
           'md:flex-none',
         ]"
-        :style="isDesktop ? {
-          width: `${formPct}%`,
-          background: 'var(--bg-surface)',
-          borderRight: '1px solid var(--drag-center-line)',
-        } : {
-          width: '100%',
-          background: 'var(--bg-surface)',
-        }"
+        :style="
+          isDesktop
+            ? {
+                width: `${formPct}%`,
+                background: 'var(--bg-surface)',
+                borderRight: '1px solid var(--drag-center-line)',
+              }
+            : {
+                width: '100%',
+                background: 'var(--bg-surface)',
+              }
+        "
         aria-label="CV form"
       >
         <slot name="form" />
@@ -147,9 +152,7 @@
       <div
         class="hidden md:flex relative flex-none w-[7px] z-20 items-center justify-center cursor-col-resize"
         :style="{
-          background: isDragging
-            ? 'rgba(184,83,42,0.18)'
-            : 'var(--drag-handle-bg)',
+          background: isDragging ? 'rgba(184,83,42,0.18)' : 'var(--drag-handle-bg)',
           transition: 'background 0.15s',
         }"
         aria-hidden="true"
@@ -180,8 +183,9 @@
           />
         </div>
         <!-- Hover overlay (CSS group-hover alternative) -->
-        <div class="absolute inset-0 opacity-0 hover:opacity-100 pointer-events-none"
-          style="background: rgba(184,83,42,0.08); transition: opacity 0.15s"
+        <div
+          class="absolute inset-0 opacity-0 hover:opacity-100 pointer-events-none"
+          style="background: rgba(184, 83, 42, 0.08); transition: opacity 0.15s"
         />
       </div>
 
@@ -192,14 +196,15 @@
           mobileTab === 'preview' ? 'block' : 'hidden md:block',
           'md:flex-1',
         ]"
-        :style="isDesktop
-          ? { background: 'var(--bg-shell)' }
-          : { width: '100%', background: 'var(--bg-shell)' }"
+        :style="
+          isDesktop
+            ? { background: 'var(--bg-shell)' }
+            : { width: '100%', background: 'var(--bg-shell)' }
+        "
         aria-label="CV preview"
       >
         <slot name="preview" />
       </section>
     </div>
-
   </div>
 </template>

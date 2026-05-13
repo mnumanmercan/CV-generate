@@ -50,20 +50,14 @@
         :aria-labelledby="title ? 'confirm-title' : undefined"
       >
         <!-- Backdrop -->
-        <div
-          class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          @click="emit('cancel')"
-        />
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="emit('cancel')" />
 
         <!-- Dialog -->
         <div
           class="relative w-full max-w-sm rounded-2xl border border-overlay/10 p-6 shadow-2xl"
           style="background: var(--bg-surface)"
         >
-          <h3
-            id="confirm-title"
-            class="text-base font-semibold text-primary mb-2"
-          >
+          <h3 id="confirm-title" class="text-base font-semibold text-primary mb-2">
             {{ title || t('confirm.defaultTitle') }}
           </h3>
           <p class="text-sm text-secondary mb-6">{{ message }}</p>

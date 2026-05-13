@@ -71,7 +71,9 @@
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="text-secondary cursor-grab" role="img" :aria-label="t('forms.dragToReorder')">⠿</span>
+          <span class="text-secondary cursor-grab" role="img" :aria-label="t('forms.dragToReorder')"
+            >⠿</span
+          >
           <span class="text-sm font-semibold text-primary">
             {{ project.name || t('forms.projectEntryLabel', { n: String(index + 1) }) }}
           </span>
@@ -128,7 +130,9 @@
                 class="hover:text-primary transition-colors"
                 :aria-label="`Remove tech ${tech}`"
                 @click="removeTech(index, tIdx)"
-              >×</button>
+              >
+                ×
+              </button>
             </span>
           </div>
           <div class="flex gap-2">

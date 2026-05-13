@@ -60,8 +60,7 @@ function neutralizeAncestorTransforms(target: HTMLElement): TransformSnapshot[] 
 
   while (el && el !== document.body) {
     const computed = window.getComputedStyle(el).transform
-    const isTransformed =
-      computed !== 'none' && computed !== 'matrix(1, 0, 0, 1, 0, 0)'
+    const isTransformed = computed !== 'none' && computed !== 'matrix(1, 0, 0, 1, 0, 0)'
 
     if (isTransformed) {
       snapshots.push({ el, inlineValue: el.style.transform })
@@ -235,7 +234,11 @@ export function usePDFExport() {
     const cvStore = useCVStore()
     const rawName = cvStore.cvData.personal.fullName || 'CV'
     // Sanitize: strip characters illegal in filenames on all major platforms.
-    const safeName = rawName.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_').trim() || 'CV'
+    const safeName =
+      rawName
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '_')
+        .trim() || 'CV'
     const element = document.getElementById(elementId)
 
     if (!element) {
@@ -260,24 +263,17 @@ export function usePDFExport() {
       scrollContainer.scrollTop = 0
     }
 
-    // Wait for the browser's font loading pipeline to complete.  Google Fonts
-    // loaded via CSS @import may resolve slightly after document.fonts.ready,
-    // so we also poll document.fonts.check() for the primary typeface.
+    // Wait for the browser's font loading pipeline to complete. Google Fonts
+    // loaded via CSS @import can resolve after `document.fonts.ready`, so we
+    // explicitly request the primary typefaces via the Font Loading API —
+    // each `document.fonts.load()` call returns a promise that settles once
+    // that face is available. A 1 s race ensures a missing font on a slow
+    // connection never blocks export forever.
     await document.fonts.ready
-    const fontCheckPromise = new Promise<void>((resolve) => {
-      const check = (): void => {
-        if (document.fonts.check('1em Inter') || document.fonts.check('1em "DM Sans"')) {
-          resolve()
-        } else {
-          requestAnimationFrame(check)
-        }
-      }
-      // Give it at most 1 s; resolve regardless so export isn't blocked forever.
-      const deadline = setTimeout(resolve, 1000)
-      check()
-      void deadline
-    })
-    await fontCheckPromise
+    await Promise.race([
+      Promise.all([document.fonts.load('1em Inter'), document.fonts.load('1em "DM Sans"')]),
+      new Promise<void>((resolve) => setTimeout(resolve, 1000)),
+    ])
 
     // Issue 1: neutralize parent transforms so html2canvas renders at 100%
     const transformSnapshots = neutralizeAncestorTransforms(element)
@@ -358,9 +354,7 @@ export function usePDFExport() {
       console.error('PDF generation failed:', err)
       status.value = 'error'
       errorMessage.value =
-        err instanceof Error
-          ? err.message
-          : 'PDF generation failed. Please try again.'
+        err instanceof Error ? err.message : 'PDF generation failed. Please try again.'
       scheduleReset(PDF_ERROR_RESET_MS)
     } finally {
       // Always restore — even if export fails

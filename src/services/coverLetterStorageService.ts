@@ -59,9 +59,15 @@ export class DelegatingCoverLetterStorageService implements CoverLetterStorageSe
     this._impl = impl
   }
 
-  async save(data: CoverLetterData): Promise<void>   { return this._impl.save(data) }
-  async load(): Promise<CoverLetterData | null>       { return this._impl.load() }
-  async clear(): Promise<void>                        { return this._impl.clear() }
+  async save(data: CoverLetterData): Promise<void> {
+    return this._impl.save(data)
+  }
+  async load(): Promise<CoverLetterData | null> {
+    return this._impl.load()
+  }
+  async clear(): Promise<void> {
+    return this._impl.clear()
+  }
 }
 
 export { LocalCoverLetterStorageService }

@@ -16,7 +16,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target:       'http://localhost:3000',
+        target: 'http://localhost:3000',
         changeOrigin: true,
       },
     },
@@ -35,8 +35,8 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (/[\\/]node_modules[\\/](vue|vue-router|pinia)[\\/]/.test(id)) return 'vue-core'
-            if (id.includes('@vueuse'))                                        return 'vueuse'
-            if (id.includes('vue-draggable-plus'))                             return 'drag'
+            if (id.includes('@vueuse')) return 'vueuse'
+            if (id.includes('vue-draggable-plus')) return 'drag'
           }
           return undefined
         },

@@ -16,15 +16,14 @@ import { env } from '../config/env.js'
  * By resolving on the server we guarantee only sanctioned prices are usable.
  */
 const CheckoutSchema = z.object({
-  plan:       z.enum(['pro_monthly', 'pro_annual']),
+  plan: z.enum(['pro_monthly', 'pro_annual']),
   successUrl: z.string().url().optional(),
-  cancelUrl:  z.string().url().optional(),
+  cancelUrl: z.string().url().optional(),
 })
 
 function resolvePriceId(plan: 'pro_monthly' | 'pro_annual'): string {
-  const priceId = plan === 'pro_monthly'
-    ? env.STRIPE_PRICE_ID_PRO_MONTHLY
-    : env.STRIPE_PRICE_ID_PRO_ANNUAL
+  const priceId =
+    plan === 'pro_monthly' ? env.STRIPE_PRICE_ID_PRO_MONTHLY : env.STRIPE_PRICE_ID_PRO_ANNUAL
   if (!priceId) {
     throw new AppError(
       `Plan "${plan}" is not configured on the server.`,
@@ -45,20 +44,21 @@ export const createCheckout = asyncHandler(async (req: Request, res: Response) =
   const priceId = resolvePriceId(plan)
 
   const data = await stripeService.createCheckoutSession(
-    req.user.sub,
+    req.user!.sub,
     priceId,
     successUrl ?? `${env.FRONTEND_URL}/dashboard?checkout=success`,
-    cancelUrl  ?? `${env.FRONTEND_URL}/pricing`,
+    cancelUrl ?? `${env.FRONTEND_URL}/pricing`,
   )
   res.json({ success: true, data })
 })
 
 export const createPortal = asyncHandler(async (req: Request, res: Response) => {
-  const returnUrl = (req.body as { returnUrl?: string }).returnUrl ?? `${env.FRONTEND_URL}/dashboard`
+  const returnUrl =
+    (req.body as { returnUrl?: string }).returnUrl ?? `${env.FRONTEND_URL}/dashboard`
 
   let data: { url: string }
   try {
-    data = await stripeService.createPortalSession(req.user.sub, returnUrl)
+    data = await stripeService.createPortalSession(req.user!.sub, returnUrl)
   } catch (err: unknown) {
     const e = err as { statusCode?: number; code?: string; message: string }
     throw new AppError(e.message, e.statusCode ?? 500, e.code)
@@ -67,7 +67,7 @@ export const createPortal = asyncHandler(async (req: Request, res: Response) => 
 })
 
 export const getBillingStatus = asyncHandler(async (req: Request, res: Response) => {
-  const data = await stripeService.getStatus(req.user.sub)
+  const data = await stripeService.getStatus(req.user!.sub)
   res.json({ success: true, data })
 })
 

@@ -25,45 +25,43 @@
       fullName: 'Maya Okafor',
       jobTitle: 'Senior Product Designer',
       location: 'Brooklyn, NY',
-      email:    'maya@example.com',
-      phone:    '+1 718 555 0142',
+      email: 'maya@example.com',
+      phone: '+1 718 555 0142',
     },
     experience: [
       {
-        company:   'Northwind Studio',
-        position:  'Senior Product Designer',
-        location:  'New York, NY',
+        company: 'Northwind Studio',
+        position: 'Senior Product Designer',
+        location: 'New York, NY',
         startDate: 'Mar 2022',
-        endDate:   'Present',
+        endDate: 'Present',
         bullets: [
           'Led the design system migration that cut new-feature design time by 38%.',
           'Shipped seven flows for the relaunch — every one measured against WCAG AA.',
         ],
       },
       {
-        company:   'Arc Digital',
-        position:  'UX Designer',
-        location:  'New York, NY',
+        company: 'Arc Digital',
+        position: 'UX Designer',
+        location: 'New York, NY',
         startDate: 'Jun 2019',
-        endDate:   'Feb 2022',
-        bullets: [
-          'Redesigned onboarding flow, reducing drop-off by 24% in the first quarter.',
-        ],
+        endDate: 'Feb 2022',
+        bullets: ['Redesigned onboarding flow, reducing drop-off by 24% in the first quarter.'],
       },
     ],
     education: [
       {
         institution: 'RISD',
-        degree:      'BFA',
-        field:       'Graphic Design',
-        startDate:   '2014',
-        endDate:     '2018',
+        degree: 'BFA',
+        field: 'Graphic Design',
+        startDate: '2014',
+        endDate: '2018',
       },
     ],
     skills: [
-      { category: 'Design',    items: ['Figma', 'Sketch', 'Prototyping'] },
+      { category: 'Design', items: ['Figma', 'Sketch', 'Prototyping'] },
       { category: 'Front-end', items: ['HTML', 'CSS', 'JavaScript'] },
-      { category: 'Tools',     items: ['Jira', 'Notion', 'Linear'] },
+      { category: 'Tools', items: ['Jira', 'Notion', 'Linear'] },
     ],
   }
 
@@ -136,20 +134,23 @@
       const d = cvStore.cvData
       return {
         personal: {
-          fullName: d.personal.fullName?.trim()  || sample.personal.fullName,
-          jobTitle: d.personal.jobTitle?.trim()  || d.experience[0]?.position?.trim() || sample.personal.jobTitle,
-          email:    d.personal.email?.trim()     || sample.personal.email,
-          phone:    d.personal.phone?.trim()     || sample.personal.phone,
-          location: d.personal.location?.trim()  || sample.personal.location,
+          fullName: d.personal.fullName?.trim() || sample.personal.fullName,
+          jobTitle:
+            d.personal.jobTitle?.trim() ||
+            d.experience[0]?.position?.trim() ||
+            sample.personal.jobTitle,
+          email: d.personal.email?.trim() || sample.personal.email,
+          phone: d.personal.phone?.trim() || sample.personal.phone,
+          location: d.personal.location?.trim() || sample.personal.location,
         },
         experience: d.experience.length > 0 ? d.experience : sample.experience,
-        education:  d.education.length > 0  ? d.education  : sample.education,
-        skills:     d.skills.length > 0     ? d.skills     : sample.skills,
+        education: d.education.length > 0 ? d.education : sample.education,
+        skills: d.skills.length > 0 ? d.skills : sample.skills,
       }
     }
 
     // Mode 2: per-field overlay. Only here do we mix mini-demo fields with sample.
-    const exp0         = cvStore.cvData.experience[0]
+    const exp0 = cvStore.cvData.experience[0]
     const userFullName = cvStore.cvData.personal.fullName?.trim()
     return {
       personal: {
@@ -162,10 +163,10 @@
       experience: [
         {
           ...sample.experience[0],
-          position:  exp0?.position?.trim()  || sample.experience[0].position,
-          company:   exp0?.company?.trim()   || sample.experience[0].company,
+          position: exp0?.position?.trim() || sample.experience[0].position,
+          company: exp0?.company?.trim() || sample.experience[0].company,
           startDate: exp0?.startDate?.trim() || sample.experience[0].startDate,
-          endDate:   exp0?.endDate           || sample.experience[0].endDate,
+          endDate: exp0?.endDate || sample.experience[0].endDate,
           bullets: [
             // Highlight overlays the first canned bullet; the second canned
             // bullet stays so the preview never thins to a single line mid-edit.
@@ -176,7 +177,7 @@
         sample.experience[1],
       ],
       education: sample.education,
-      skills:    sample.skills,
+      skills: sample.skills,
     }
   })
 
@@ -194,17 +195,40 @@
 <template>
   <div
     class="rounded-xl shadow-2xl shadow-black/20 p-9 w-full max-w-[500px] border border-overlay/8"
-    style="background:#FFFFFF;color:#1a1a1a;font-family:'Inter',sans-serif;font-size:12px;line-height:1.65"
+    style="
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      line-height: 1.65;
+    "
   >
     <!-- Header -->
-    <div style="border-bottom:1px solid rgba(0,0,0,0.10);padding-bottom:14px;margin-bottom:16px">
-      <div style="font-size:28px;font-weight:700;color:#111;letter-spacing:-0.012em;line-height:1.1">
+    <div
+      style="border-bottom: 1px solid rgba(0, 0, 0, 0.1); padding-bottom: 14px; margin-bottom: 16px"
+    >
+      <div
+        style="
+          font-size: 28px;
+          font-weight: 700;
+          color: #111;
+          letter-spacing: -0.012em;
+          line-height: 1.1;
+        "
+      >
         {{ trunc(data.personal.fullName, 34) }}
       </div>
-      <div :style="{ fontSize:'15.5px', fontWeight:500, color:'var(--accent)', margin:'6px 0 8px' }">
+      <div
+        :style="{
+          fontSize: '15.5px',
+          fontWeight: 500,
+          color: 'var(--accent)',
+          margin: '6px 0 8px',
+        }"
+      >
         {{ trunc(data.personal.jobTitle, 42) }}
       </div>
-      <div style="font-size:11px;color:#6b7280;display:flex;gap:6px;flex-wrap:wrap">
+      <div style="font-size: 11px; color: #6b7280; display: flex; gap: 6px; flex-wrap: wrap">
         <span>{{ trunc(data.personal.email, 28) }}</span>
         <span>·</span>
         <span>{{ trunc(data.personal.phone, 20) }}</span>
@@ -214,51 +238,79 @@
     </div>
 
     <!-- Experience -->
-    <div v-if="data.experience?.length" style="margin-bottom:14px">
-      <div :style="{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.16em', borderBottom:'1px solid rgba(0,0,0,0.10)', paddingBottom:'3px', marginBottom:'8px', color:'var(--accent)' }">
+    <div v-if="data.experience?.length" style="margin-bottom: 14px">
+      <div
+        :style="{
+          fontSize: '10px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.16em',
+          borderBottom: '1px solid rgba(0,0,0,0.10)',
+          paddingBottom: '3px',
+          marginBottom: '8px',
+          color: 'var(--accent)',
+        }"
+      >
         Experience
       </div>
-      <div v-for="(job, i) in data.experience.slice(0, 2)" :key="i" :style="{ marginBottom: i < data.experience.slice(0,2).length - 1 ? '10px' : '0' }">
-        <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div
+        v-for="(job, i) in data.experience.slice(0, 2)"
+        :key="i"
+        :style="{ marginBottom: i < data.experience.slice(0, 2).length - 1 ? '10px' : '0' }"
+      >
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
           <div>
-            <div style="font-weight:600;font-size:13.5px;color:#111;letter-spacing:-0.005em">
+            <div style="font-weight: 600; font-size: 13.5px; color: #111; letter-spacing: -0.005em">
               {{ trunc(job.position, 36) }}
             </div>
-            <div style="color:#6b7280;font-size:11px;margin-top:1px">
+            <div style="color: #6b7280; font-size: 11px; margin-top: 1px">
               {{ trunc(job.company + (job.location ? ' · ' + job.location : ''), 46) }}
             </div>
           </div>
-          <div style="color:#9ca3af;font-size:10.5px;white-space:nowrap;margin-left:8px">
+          <div style="color: #9ca3af; font-size: 10.5px; white-space: nowrap; margin-left: 8px">
             {{ job.startDate }} – {{ job.endDate || 'Present' }}
           </div>
         </div>
-        <ul v-if="job.bullets?.length" style="padding-left:14px;margin-top:5px;color:#374151">
+        <ul v-if="job.bullets?.length" style="padding-left: 14px; margin-top: 5px; color: #374151">
           <li
             v-for="(b, bi) in job.bullets.slice(0, 2)"
             :key="bi"
-            :style="{ listStyle:'disc', marginBottom: bi === 0 ? '3px' : '0' }"
-          >{{ trunc(b, 76) }}</li>
+            :style="{ listStyle: 'disc', marginBottom: bi === 0 ? '3px' : '0' }"
+          >
+            {{ trunc(b, 76) }}
+          </li>
         </ul>
       </div>
     </div>
 
     <!-- Education -->
-    <div v-if="data.education?.length" style="margin-bottom:14px">
-      <div :style="{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.16em', borderBottom:'1px solid rgba(0,0,0,0.10)', paddingBottom:'3px', marginBottom:'8px', color:'var(--accent)' }">
+    <div v-if="data.education?.length" style="margin-bottom: 14px">
+      <div
+        :style="{
+          fontSize: '10px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.16em',
+          borderBottom: '1px solid rgba(0,0,0,0.10)',
+          paddingBottom: '3px',
+          marginBottom: '8px',
+          color: 'var(--accent)',
+        }"
+      >
         Education
       </div>
       <div
         v-for="(ed, i) in data.education.slice(0, 1)"
         :key="i"
-        style="display:flex;justify-content:space-between;align-items:baseline"
+        style="display: flex; justify-content: space-between; align-items: baseline"
       >
         <div>
-          <div style="font-weight:600;font-size:13px;color:#111">
+          <div style="font-weight: 600; font-size: 13px; color: #111">
             {{ trunc((ed.degree ?? '') + (ed.field ? ' ' + ed.field : ''), 36) }}
           </div>
-          <div style="color:#6b7280;font-size:11px">{{ trunc(ed.institution, 30) }}</div>
+          <div style="color: #6b7280; font-size: 11px">{{ trunc(ed.institution, 30) }}</div>
         </div>
-        <div style="color:#9ca3af;font-size:10.5px;white-space:nowrap;margin-left:8px">
+        <div style="color: #9ca3af; font-size: 10.5px; white-space: nowrap; margin-left: 8px">
           {{ ed.startDate }} – {{ ed.endDate }}
         </div>
       </div>
@@ -266,15 +318,30 @@
 
     <!-- Skills -->
     <div v-if="data.skills?.length">
-      <div :style="{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.16em', borderBottom:'1px solid rgba(0,0,0,0.10)', paddingBottom:'3px', marginBottom:'8px', color:'var(--accent)' }">
+      <div
+        :style="{
+          fontSize: '10px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.16em',
+          borderBottom: '1px solid rgba(0,0,0,0.10)',
+          paddingBottom: '3px',
+          marginBottom: '8px',
+          color: 'var(--accent)',
+        }"
+      >
         Skills
       </div>
       <div
         v-for="(skill, i) in data.skills.slice(0, 3)"
         :key="skill.category"
-        :style="{ color:'#374151', marginBottom: i < Math.min(data.skills.length, 3) - 1 ? '4px' : '0', fontSize:'12px' }"
+        :style="{
+          color: '#374151',
+          marginBottom: i < Math.min(data.skills.length, 3) - 1 ? '4px' : '0',
+          fontSize: '12px',
+        }"
       >
-        <span style="font-weight:600">{{ trunc(skill.category, 16) }}:</span>
+        <span style="font-weight: 600">{{ trunc(skill.category, 16) }}:</span>
         {{ trunc(skill.items.join(', '), 56) }}
       </div>
     </div>

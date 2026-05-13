@@ -55,12 +55,20 @@
       width: 794px;
       min-height: 1122px;
       background: #ffffff;
-      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      font-family:
+        'Inter',
+        system-ui,
+        -apple-system,
+        'Segoe UI',
+        Roboto,
+        sans-serif;
       font-size: 11px;
       line-height: 1.5;
       color: #1a1a1a;
       box-sizing: border-box;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35);
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.55),
+        0 2px 8px rgba(0, 0, 0, 0.35);
     "
   >
     <component

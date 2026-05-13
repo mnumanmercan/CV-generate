@@ -10,13 +10,27 @@ function getStripe(): Stripe {
   return new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2025-02-24.acacia' })
 }
 
+// Reject anything that doesn't match our database's UUID format before it
+// reaches Prisma. A malformed Stripe event (or a crafted test event) with a
+// bogus `metadata.userId` would otherwise either fault loudly mid-transaction
+// or — worse, depending on the Postgres version — silently touch nothing.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+function asValidUserId(raw: unknown): string | null {
+  return typeof raw === 'string' && UUID_RE.test(raw) ? raw : null
+}
+
 export const stripeService = {
   // ── Create Checkout Session ─────────────────────────────────────────────────
-  async createCheckoutSession(userId: string, priceId: string, successUrl: string, cancelUrl: string) {
+  async createCheckoutSession(
+    userId: string,
+    priceId: string,
+    successUrl: string,
+    cancelUrl: string,
+  ) {
     const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
 
     // Get or create Stripe customer
-    let subscription = await prisma.subscription.findUnique({ where: { userId } })
+    const subscription = await prisma.subscription.findUnique({ where: { userId } })
     let customerId: string
 
     if (subscription?.stripeCustomerId) {
@@ -24,22 +38,22 @@ export const stripeService = {
     } else {
       const customer = await getStripe().customers.create({
         email: user.email,
-        name:  user.name,
+        name: user.name,
         metadata: { userId },
       })
       customerId = customer.id
-      subscription = await prisma.subscription.create({
+      await prisma.subscription.create({
         data: { userId, stripeCustomerId: customerId, status: 'INCOMPLETE' },
       })
     }
 
     const session = await getStripe().checkout.sessions.create({
       customer: customerId,
-      mode:     'subscription',
+      mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: successUrl,
-      cancel_url:  cancelUrl,
-      metadata:    { userId },
+      cancel_url: cancelUrl,
+      metadata: { userId },
       subscription_data: {
         metadata: { userId },
       },
@@ -52,11 +66,14 @@ export const stripeService = {
   async createPortalSession(userId: string, returnUrl: string) {
     const subscription = await prisma.subscription.findUnique({ where: { userId } })
     if (!subscription?.stripeCustomerId) {
-      throw Object.assign(new Error('No billing account found.'), { statusCode: 404, code: 'NO_SUBSCRIPTION' })
+      throw Object.assign(new Error('No billing account found.'), {
+        statusCode: 404,
+        code: 'NO_SUBSCRIPTION',
+      })
     }
 
     const session = await getStripe().billingPortal.sessions.create({
-      customer:   subscription.stripeCustomerId,
+      customer: subscription.stripeCustomerId,
       return_url: returnUrl,
     })
 
@@ -66,14 +83,14 @@ export const stripeService = {
   // ── Get subscription status ─────────────────────────────────────────────────
   async getStatus(userId: string) {
     const user = await prisma.user.findUnique({
-      where:   { id: userId },
+      where: { id: userId },
       include: { subscription: true },
     })
 
     return {
-      plan:   user?.plan ?? 'FREE',
+      plan: user?.plan ?? 'FREE',
       status: user?.subscription?.status ?? null,
-      currentPeriodEnd:  user?.subscription?.currentPeriodEnd ?? null,
+      currentPeriodEnd: user?.subscription?.currentPeriodEnd ?? null,
       cancelAtPeriodEnd: user?.subscription?.cancelAtPeriodEnd ?? false,
     }
   },
@@ -92,7 +109,10 @@ export const stripeService = {
     try {
       event = getStripe().webhooks.constructEvent(rawBody, signature, secret)
     } catch {
-      throw Object.assign(new Error('Webhook signature verification failed.'), { statusCode: 400, code: 'INVALID_SIGNATURE' })
+      throw Object.assign(new Error('Webhook signature verification failed.'), {
+        statusCode: 400,
+        code: 'INVALID_SIGNATURE',
+      })
     }
 
     // ── Idempotency: skip events we've already processed ─────────────────────
@@ -111,28 +131,28 @@ export const stripeService = {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        const userId = session.metadata?.userId
+        const userId = asValidUserId(session.metadata?.userId)
         if (!userId) break
 
         await prisma.$transaction(async (tx) => {
           await tx.subscription.upsert({
-            where:  { stripeCustomerId: session.customer as string },
+            where: { stripeCustomerId: session.customer as string },
             create: {
               userId,
-              stripeCustomerId:     session.customer as string,
+              stripeCustomerId: session.customer as string,
               stripeSubscriptionId: session.subscription as string,
-              status:               'ACTIVE',
-              gracePeriodEndsAt:    null,
+              status: 'ACTIVE',
+              gracePeriodEndsAt: null,
             },
             update: {
               stripeSubscriptionId: session.subscription as string,
-              status:               'ACTIVE',
-              gracePeriodEndsAt:    null,
+              status: 'ACTIVE',
+              gracePeriodEndsAt: null,
             },
           })
           await tx.user.update({
             where: { id: userId },
-            data:  { plan: 'PRO' },
+            data: { plan: 'PRO' },
           })
         })
         break
@@ -148,9 +168,9 @@ export const stripeService = {
         await prisma.subscription.update({
           where: { id: sub.id },
           data: {
-            status:           'ACTIVE',
+            status: 'ACTIVE',
             gracePeriodEndsAt: null,
-            currentPeriodEnd:  invoice.lines.data[0]?.period?.end
+            currentPeriodEnd: invoice.lines.data[0]?.period?.end
               ? new Date(invoice.lines.data[0].period.end * 1000)
               : undefined,
           },
@@ -160,25 +180,27 @@ export const stripeService = {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
-        const gracePeriodEndsAt = new Date(Date.now() + STRIPE_GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000)
+        const gracePeriodEndsAt = new Date(
+          Date.now() + STRIPE_GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000,
+        )
 
         await prisma.subscription.updateMany({
           where: { stripeCustomerId: invoice.customer as string },
-          data:  { status: 'PAST_DUE', gracePeriodEndsAt },
+          data: { status: 'PAST_DUE', gracePeriodEndsAt },
         })
         break
       }
 
       case 'customer.subscription.updated': {
         const stripeSub = event.data.object as Stripe.Subscription
-        const userId = stripeSub.metadata?.userId
+        const userId = asValidUserId(stripeSub.metadata?.userId)
         if (!userId) break
 
         await prisma.subscription.updateMany({
           where: { stripeSubscriptionId: stripeSub.id },
           data: {
-            stripePriceId:     stripeSub.items.data[0]?.price?.id,
-            currentPeriodEnd:  new Date(stripeSub.current_period_end * 1000),
+            stripePriceId: stripeSub.items.data[0]?.price?.id,
+            currentPeriodEnd: new Date(stripeSub.current_period_end * 1000),
             cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
           },
         })
@@ -190,7 +212,7 @@ export const stripeService = {
         await prisma.$transaction(async (tx) => {
           await tx.subscription.updateMany({
             where: { stripeSubscriptionId: stripeSub.id },
-            data:  { status: 'CANCELED', gracePeriodEndsAt: null },
+            data: { status: 'CANCELED', gracePeriodEndsAt: null },
           })
           // Find the subscription to get userId, then downgrade
           const sub = await tx.subscription.findFirst({
@@ -199,7 +221,7 @@ export const stripeService = {
           if (sub) {
             await tx.user.update({
               where: { id: sub.userId },
-              data:  { plan: 'FREE' },
+              data: { plan: 'FREE' },
             })
           }
         })

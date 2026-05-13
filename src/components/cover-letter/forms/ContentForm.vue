@@ -52,7 +52,10 @@
 
     <!-- Signature selector -->
     <div>
-      <label class="block text-xs font-medium text-secondary font-mono uppercase tracking-wider mb-1.5" for="cl-signature">
+      <label
+        class="block text-xs font-medium text-secondary font-mono uppercase tracking-wider mb-1.5"
+        for="cl-signature"
+      >
         {{ t('coverLetter.contentSignOff') }}
       </label>
       <div class="flex flex-wrap gap-2">
@@ -61,9 +64,11 @@
           :key="sig"
           type="button"
           class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200"
-          :class="clData.signature === sig
-            ? 'border-accent text-accent bg-accent/10'
-            : 'border-overlay/10 text-secondary hover:text-primary hover:border-overlay/20'"
+          :class="
+            clData.signature === sig
+              ? 'border-accent text-accent bg-accent/10'
+              : 'border-overlay/10 text-secondary hover:text-primary hover:border-overlay/20'
+          "
           @click="clData.signature = sig"
         >
           {{ sig }}

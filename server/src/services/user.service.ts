@@ -12,12 +12,12 @@ export const userService = {
 
     return {
       ...buildUserResponse(user),
-      avatarUrl:     user.avatarUrl ?? null,
+      avatarUrl: user.avatarUrl ?? null,
       emailVerified: user.emailVerified,
       subscription: user.subscription
         ? {
-            status:            user.subscription.status,
-            currentPeriodEnd:  user.subscription.currentPeriodEnd,
+            status: user.subscription.status,
+            currentPeriodEnd: user.subscription.currentPeriodEnd,
             cancelAtPeriodEnd: user.subscription.cancelAtPeriodEnd,
           }
         : null,
@@ -27,7 +27,7 @@ export const userService = {
   async updateMe(userId: string, data: { name?: string }) {
     const user = await prisma.user.update({
       where: { id: userId },
-      data:  { ...(data.name ? { name: data.name } : {}) },
+      data: { ...(data.name ? { name: data.name } : {}) },
     })
     return buildUserResponse(user)
   },

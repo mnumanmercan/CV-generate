@@ -14,19 +14,19 @@
  */
 process.env.NODE_ENV = 'test'
 
-process.env.DATABASE_URL = process.env.DATABASE_URL
-  ?? 'postgresql://test:test@localhost:5432/resumark_test'
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL ?? 'postgresql://test:test@localhost:5432/resumark_test'
 
 // Dummy base64-encoded placeholder keys. The real JWT signer is mocked in
 // tests that touch auth; this just has to parse past env.ts validation.
-const dummyKey = Buffer.from(
-  '-----BEGIN DUMMY-----\nnot-a-real-key\n-----END DUMMY-----',
-).toString('base64')
+const dummyKey = Buffer.from('-----BEGIN DUMMY-----\nnot-a-real-key\n-----END DUMMY-----').toString(
+  'base64',
+)
 
 process.env.JWT_PRIVATE_KEY_B64 = process.env.JWT_PRIVATE_KEY_B64 ?? dummyKey
-process.env.JWT_PUBLIC_KEY_B64  = process.env.JWT_PUBLIC_KEY_B64  ?? dummyKey
+process.env.JWT_PUBLIC_KEY_B64 = process.env.JWT_PUBLIC_KEY_B64 ?? dummyKey
 
 // Stripe + email are optional — absence is legal in env.ts. Tests that
 // need them mock directly via vi.mock('../config/env.js').
 process.env.STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? 'whsec_test'
-process.env.STRIPE_SECRET_KEY     = process.env.STRIPE_SECRET_KEY     ?? 'sk_test_dummy'
+process.env.STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ?? 'sk_test_dummy'

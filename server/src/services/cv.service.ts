@@ -1,5 +1,6 @@
 import { prisma } from '../db/prisma.js'
 import { AppError } from '../utils/apiError.js'
+import { toPrismaJson } from '../utils/jsonb.js'
 import { CV_LIMIT, ALLOWED_TEMPLATES_BY_PLAN } from '@resumark/shared'
 import type { CVData } from '@resumark/shared'
 import type { Plan } from '@prisma/client'
@@ -17,19 +18,14 @@ function assertTemplateAllowed(templateId: string, plan: Plan): void {
 
 export const cvService = {
   async list(userId: string) {
-    const cvs = await prisma.cV.findMany({
-      where:   { userId },
+    // Slim list — don't read the JSONB `content` blob just to count rows or
+    // render dashboard cards. Callers that need the full document (e.g. the
+    // editor's load flow) follow up with `cvService.get(userId, id)`.
+    return prisma.cV.findMany({
+      where: { userId },
       orderBy: { updatedAt: 'desc' },
-      select:  { id: true, title: true, updatedAt: true, content: true },
+      select: { id: true, title: true, updatedAt: true },
     })
-
-    return cvs.map(cv => ({
-      id:         cv.id,
-      title:      cv.title,
-      updatedAt:  cv.updatedAt,
-      templateId: (cv.content as { meta?: { templateId?: string } })?.meta?.templateId ?? 'classic',
-      content:    cv.content,
-    }))
   },
 
   async create(userId: string, plan: Plan, content: CVData, title?: string) {
@@ -50,8 +46,8 @@ export const cvService = {
     return prisma.cV.create({
       data: {
         userId,
-        content: content as unknown as object,
-        title:   title ?? content.personal.fullName ?? 'My CV',
+        content: toPrismaJson(content),
+        title: title ?? content.personal.fullName ?? 'My CV',
       },
     })
   },
@@ -75,7 +71,7 @@ export const cvService = {
     return prisma.cV.update({
       where: { id },
       data: {
-        content: content as unknown as object,
+        content: toPrismaJson(content),
         ...(title !== undefined ? { title } : {}),
       },
     })

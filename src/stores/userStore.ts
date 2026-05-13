@@ -2,31 +2,34 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { apiClient, setAccessToken, BASE_URL } from '@/services/apiClient'
 import { localStorageService, LocalStorageService } from '@/services/storageService'
-import { coverLetterStorageService, LocalCoverLetterStorageService } from '@/services/coverLetterStorageService'
+import {
+  coverLetterStorageService,
+  LocalCoverLetterStorageService,
+} from '@/services/coverLetterStorageService'
 import { ApiCVStorageService, ApiCoverLetterStorageService } from '@/services/apiStorageService'
 
 export interface AuthUser {
-  id:    string
-  name:  string
+  id: string
+  name: string
   email: string
 }
 
 interface MeResponse {
-  id:        string
-  name:      string
-  email:     string
-  plan:      'FREE' | 'PRO' | 'ENTERPRISE'
+  id: string
+  name: string
+  email: string
+  plan: 'FREE' | 'PRO' | 'ENTERPRISE'
   isPremium: boolean
   avatarUrl: string | null
 }
 
 export const useUserStore = defineStore('user', () => {
-  const isLoggedIn  = ref(false)
-  const user        = ref<AuthUser | null>(null)
-  const isPremium   = ref(false)
+  const isLoggedIn = ref(false)
+  const user = ref<AuthUser | null>(null)
+  const isPremium = ref(false)
 
   const isAuthenticating = ref(false)
-  const authError        = ref<string | null>(null)
+  const authError = ref<string | null>(null)
 
   /**
    * True once `restoreSession()` has resolved (regardless of outcome).
@@ -41,10 +44,10 @@ export const useUserStore = defineStore('user', () => {
    */
   const isSessionRestored = ref(false)
 
-  const showUpgradeModal    = ref(false)
+  const showUpgradeModal = ref(false)
   const upgradeModalTrigger = ref<string>('')
 
-  const canUploadPhoto      = computed(() => isPremium.value)
+  const canUploadPhoto = computed(() => isPremium.value)
   const canUseExtraTemplates = computed(() => isPremium.value)
 
   // ── Storage delegate wiring ──────────────────────────────────────────────
@@ -62,9 +65,9 @@ export const useUserStore = defineStore('user', () => {
   // ── Internal: apply user state after successful auth ──────────────────────
 
   function _applyUser(me: MeResponse): void {
-    user.value      = { id: me.id, name: me.name, email: me.email }
+    user.value = { id: me.id, name: me.name, email: me.email }
     isLoggedIn.value = true
-    isPremium.value  = me.isPremium
+    isPremium.value = me.isPremium
     _switchToCloudStorage()
   }
 
@@ -72,7 +75,7 @@ export const useUserStore = defineStore('user', () => {
 
   async function register(name: string, email: string, password: string): Promise<void> {
     isAuthenticating.value = true
-    authError.value        = null
+    authError.value = null
     try {
       const data = await apiClient.post<{ accessToken: string; user: MeResponse }>(
         '/auth/register',
@@ -81,7 +84,8 @@ export const useUserStore = defineStore('user', () => {
       setAccessToken(data.accessToken)
       _applyUser(data.user)
     } catch (err) {
-      authError.value = err instanceof Error ? err.message : 'Registration failed. Please try again.'
+      authError.value =
+        err instanceof Error ? err.message : 'Registration failed. Please try again.'
       throw err
     } finally {
       isAuthenticating.value = false
@@ -96,7 +100,7 @@ export const useUserStore = defineStore('user', () => {
     rememberMe = false,
   ): Promise<void> {
     isAuthenticating.value = true
-    authError.value        = null
+    authError.value = null
     try {
       // rememberMe is forwarded to the server which extends the refresh
       // cookie + DB token from 7 days to 30. We only send the flag when
@@ -126,11 +130,11 @@ export const useUserStore = defineStore('user', () => {
       // (normal for guests and first-time visitors) does NOT trigger the
       // resumark:session-expired event, which would redirect everyone to /login.
       const res = await fetch(`${BASE_URL}/auth/refresh`, {
-        method:      'POST',
+        method: 'POST',
         credentials: 'include',
       })
       if (!res.ok) return // no valid session — silently remain as guest
-      const { accessToken } = await res.json() as { accessToken: string }
+      const { accessToken } = (await res.json()) as { accessToken: string }
       setAccessToken(accessToken)
       const me = await apiClient.get<{ data: MeResponse }>('/user/me')
       _applyUser(me.data)
@@ -156,9 +160,9 @@ export const useUserStore = defineStore('user', () => {
    */
   function clearLocalSession(): void {
     setAccessToken(null)
-    user.value       = null
+    user.value = null
     isLoggedIn.value = false
-    isPremium.value  = false
+    isPremium.value = false
     _switchToLocalStorage()
   }
 
@@ -177,11 +181,11 @@ export const useUserStore = defineStore('user', () => {
 
   function openUpgradeModal(featureName: string): void {
     upgradeModalTrigger.value = featureName
-    showUpgradeModal.value    = true
+    showUpgradeModal.value = true
   }
 
   function closeUpgradeModal(): void {
-    showUpgradeModal.value    = false
+    showUpgradeModal.value = false
     upgradeModalTrigger.value = ''
   }
 

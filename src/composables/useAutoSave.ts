@@ -1,4 +1,4 @@
-import { watch } from 'vue'
+import { watch, onBeforeUnmount } from 'vue'
 import { useCVStore } from '@/stores/cvStore'
 import { AUTOSAVE_DEBOUNCE_MS } from '@/constants/timing'
 
@@ -24,4 +24,15 @@ export function useAutoSave() {
     },
     { deep: true },
   )
+
+  // Clear the pending debounce timer when the host component unmounts so a
+  // mid-debounce navigation doesn't fire `saveToStorage` against a torn-down
+  // store (which would either no-op or, worse, race with the next mount's
+  // load and clobber freshly-loaded data with the pre-unmount snapshot).
+  onBeforeUnmount(() => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
+      debounceTimer = null
+    }
+  })
 }

@@ -17,9 +17,13 @@
   const { vReveal } = useScrollReveal()
   const { t, t_obj } = useI18n()
 
-  const steps       = computed(() => t_obj<Step[]>('home.steps'))
-  const heroHeading = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('home.hero.heading'))
-  const ctaHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('home.cta.heading'))
+  const steps = computed(() => t_obj<Step[]>('home.steps'))
+  const heroHeading = computed(() =>
+    t_obj<{ prefix: string; accent: string; suffix: string }>('home.hero.heading'),
+  )
+  const ctaHeading = computed(() =>
+    t_obj<{ prefix: string; accent: string; suffix: string }>('home.cta.heading'),
+  )
 
   // Mirror the auto-save loop /builder uses, so edits in HeroMiniDemo
   // persist with the same debounced, fire-and-forget guarantee.
@@ -64,7 +68,9 @@
 
   const demoFullName = computed<string>({
     get: () => cvStore.cvData.personal.fullName,
-    set: (v) => { cvStore.cvData.personal.fullName = v },
+    set: (v) => {
+      cvStore.cvData.personal.fullName = v
+    },
   })
   const demoRole = computed<string>({
     get: () => cvStore.cvData.experience[0]?.position ?? '',
@@ -109,8 +115,6 @@
       await cvStore.loadFromStorage()
     }
   })
-
-
 </script>
 
 <template>
@@ -118,19 +122,21 @@
     <AppHeader />
 
     <main class="flex-1 flex flex-col">
-
       <!-- ── Hero ─────────────────────────────────────────────────────── -->
       <section
         class="px-4 sm:px-6 pt-8 md:pt-14 pb-16 md:pb-28 max-w-7xl mx-auto w-full"
         aria-labelledby="hero-heading"
       >
         <div class="flex flex-col lg:flex-row items-center gap-10 sm:gap-12 lg:gap-10">
-
           <!-- Left column: copy + mini demo -->
           <div class="w-full shrink-0 lg:w-[44%] lg:max-w-[580px]">
             <!-- Eyebrow -->
             <div class="flex items-center gap-2.5 mb-8 stagger-item">
-              <span class="w-1.5 h-1.5 rounded-full" :style="{ background:'var(--accent)' }" aria-hidden="true" />
+              <span
+                class="w-1.5 h-1.5 rounded-full"
+                :style="{ background: 'var(--accent)' }"
+                aria-hidden="true"
+              />
               <span class="mono-eyebrow">{{ t('home.eyebrow') }}</span>
             </div>
 
@@ -138,10 +144,12 @@
             <h1
               id="hero-heading"
               class="font-display leading-[1.02] tracking-editorial stagger-item"
-              :style="{ fontSize:'clamp(38px, 7.4vw, 96px)', animationDelay:'60ms' }"
+              :style="{ fontSize: 'clamp(38px, 7.4vw, 96px)', animationDelay: '60ms' }"
             >
               <div class="whitespace-normal sm:whitespace-nowrap">
-                <span v-if="heroHeading.prefix" class="text-ink">{{ heroHeading.prefix }}</span><span class="accent-italic">{{ heroHeading.accent }}</span><span class="text-ink">{{ heroHeading.suffix }}</span>
+                <span v-if="heroHeading.prefix" class="text-ink">{{ heroHeading.prefix }}</span
+                ><span class="accent-italic">{{ heroHeading.accent }}</span
+                ><span class="text-ink">{{ heroHeading.suffix }}</span>
               </div>
             </h1>
 
@@ -180,7 +188,6 @@
               <LiveCV />
             </div>
           </div>
-
         </div>
       </section>
 
@@ -198,9 +205,19 @@
             <h2
               id="steps-heading"
               class="font-display leading-[1.02] tracking-editorial text-ink"
-              :style="{ fontSize:'clamp(40px, 6vw, 80px)' }"
+              :style="{ fontSize: 'clamp(40px, 6vw, 80px)' }"
             >
-              {{ t_obj<{prefix:string;accent:string;suffix:string}>('home.method.heading').prefix }}<span class="accent-italic">{{ t_obj<{prefix:string;accent:string;suffix:string}>('home.method.heading').accent }}</span>{{ t_obj<{prefix:string;accent:string;suffix:string}>('home.method.heading').suffix }}
+              {{
+                t_obj<{ prefix: string; accent: string; suffix: string }>('home.method.heading')
+                  .prefix
+              }}<span class="accent-italic">{{
+                t_obj<{ prefix: string; accent: string; suffix: string }>('home.method.heading')
+                  .accent
+              }}</span
+              >{{
+                t_obj<{ prefix: string; accent: string; suffix: string }>('home.method.heading')
+                  .suffix
+              }}
             </h2>
           </div>
         </div>
@@ -227,9 +244,10 @@
 
         <h2
           class="font-display leading-[1.02] tracking-editorial text-ink mb-12 reveal-item"
-          :style="{ fontSize:'clamp(56px, 9vw, 120px)', animationDelay:'80ms' }"
+          :style="{ fontSize: 'clamp(56px, 9vw, 120px)', animationDelay: '80ms' }"
         >
-          {{ ctaHeading.prefix }}<span class="accent-italic">{{ ctaHeading.accent }}</span>{{ ctaHeading.suffix }}
+          {{ ctaHeading.prefix }}<span class="accent-italic">{{ ctaHeading.accent }}</span
+          >{{ ctaHeading.suffix }}
         </h2>
 
         <RouterLink
@@ -238,12 +256,22 @@
           style="animation-delay: 160ms"
         >
           {{ t('home.cta.button') }}
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M13 7l5 5m0 0l-5 5m5-5H6"
+            />
           </svg>
         </RouterLink>
       </section>
-
     </main>
 
     <AppFooter />

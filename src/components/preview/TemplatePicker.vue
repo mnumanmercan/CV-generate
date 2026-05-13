@@ -24,7 +24,7 @@
 
   function onKeydown(event: KeyboardEvent): void {
     const idx = TEMPLATES.findIndex((t) => t.id === activeId.value)
-    let next = idx
+    let next: number
     if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
       event.preventDefault()
       next = (idx + 1) % TEMPLATES.length
@@ -37,7 +37,7 @@
     const t = TEMPLATES[next]
     select(t.id, t.isPro)
     // Move focus to the newly active button.
-    const group = (event.currentTarget as HTMLElement)
+    const group = event.currentTarget as HTMLElement
     const buttons = group.querySelectorAll<HTMLElement>('[role="radio"]')
     buttons[next]?.focus()
   }
@@ -56,9 +56,7 @@
     @keydown="onKeydown"
   >
     <!-- Format + active template label -->
-    <span class="mono-eyebrow shrink-0">
-      A4 · {{ activeTemplate.name }}
-    </span>
+    <span class="mono-eyebrow shrink-0"> A4 · {{ activeTemplate.name }} </span>
 
     <!-- Template radios -->
     <div
@@ -73,8 +71,16 @@
         role="radio"
         :aria-checked="activeId === template.id"
         :tabindex="activeId === template.id ? 0 : -1"
-        :aria-label="template.isPro && !userStore.isPremium ? `${template.name} (Pro plan required)` : template.name"
-        :title="template.isPro && !userStore.isPremium ? `${template.description} (Pro plan required)` : template.description"
+        :aria-label="
+          template.isPro && !userStore.isPremium
+            ? `${template.name} (Pro plan required)`
+            : template.name
+        "
+        :title="
+          template.isPro && !userStore.isPremium
+            ? `${template.description} (Pro plan required)`
+            : template.description
+        "
         :class="[
           'relative flex items-center gap-1.5 px-3 py-1 rounded-full text-[12.5px] font-medium transition-colors whitespace-nowrap',
           activeId === template.id
@@ -97,7 +103,8 @@
             color: '#ffffff',
             background: activeId === template.id ? 'rgba(255,255,255,0.28)' : 'var(--accent)',
           }"
-        >Pro</span>
+          >Pro</span
+        >
       </button>
     </div>
   </div>

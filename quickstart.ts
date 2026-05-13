@@ -9,7 +9,10 @@ async function main() {
     messages: [
       { role: 'user', content: 'Merhaba, Claude' },
       { role: 'assistant', content: 'Merhaba!' },
-      { role: 'user', content: 'LLM\'leri bana açıklayabilir misin? 250 karakteri geçmesin açıklaman.' },
+      {
+        role: 'user',
+        content: "LLM'leri bana açıklayabilir misin? 250 karakteri geçmesin açıklaman.",
+      },
     ],
   })
   console.log(msg)

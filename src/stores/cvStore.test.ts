@@ -42,7 +42,9 @@ function makeDeferredStorage(): {
         resolveNext = resolve
       })
     },
-    async load() { return null },
+    async load() {
+      return null
+    },
     async clear() {},
   }
 
@@ -70,13 +72,13 @@ describe('cvStore', () => {
 
     const store = useCVStore()
     store.cvData.experience.push({
-      id:        'exp-1',
-      company:   'Acme',
-      position:  'Engineer',
-      location:  'Remote',
+      id: 'exp-1',
+      company: 'Acme',
+      position: 'Engineer',
+      location: 'Remote',
       startDate: '01/2023',
-      endDate:   'Present',
-      bullets:   ['Original bullet'],
+      endDate: 'Present',
+      bullets: ['Original bullet'],
     })
 
     const savePromise = store.saveToStorage()
@@ -103,7 +105,7 @@ describe('cvStore', () => {
 
     const store = useCVStore()
 
-    const first  = store.saveToStorage()
+    const first = store.saveToStorage()
     // Second call enters while isSaving is still true — must no-op.
     const second = store.saveToStorage()
 

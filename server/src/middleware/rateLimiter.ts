@@ -13,7 +13,10 @@ function makeStore(prefix: string): Options['store'] | undefined {
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10,
-  message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many attempts. Please try again in 15 minutes.' } },
+  message: {
+    success: false,
+    error: { code: 'RATE_LIMITED', message: 'Too many attempts. Please try again in 15 minutes.' },
+  },
   standardHeaders: true,
   legacyHeaders: false,
   store: makeStore('auth'),
@@ -23,7 +26,13 @@ export const authLimiter = rateLimit({
 export const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5,
-  message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many password reset requests. Please try again in 1 hour.' } },
+  message: {
+    success: false,
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Too many password reset requests. Please try again in 1 hour.',
+    },
+  },
   standardHeaders: true,
   legacyHeaders: false,
   store: makeStore('pwreset'),
@@ -33,7 +42,10 @@ export const passwordResetLimiter = rateLimit({
 export const refreshLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 30,
-  message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many refresh requests.' } },
+  message: {
+    success: false,
+    error: { code: 'RATE_LIMITED', message: 'Too many refresh requests.' },
+  },
   standardHeaders: true,
   legacyHeaders: false,
   store: makeStore('refresh'),
@@ -43,7 +55,10 @@ export const refreshLimiter = rateLimit({
 export const apiWriteLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 60,
-  message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many save requests. Please slow down.' } },
+  message: {
+    success: false,
+    error: { code: 'RATE_LIMITED', message: 'Too many save requests. Please slow down.' },
+  },
   standardHeaders: true,
   legacyHeaders: false,
   store: makeStore('write'),
@@ -63,7 +78,10 @@ export const apiReadLimiter = rateLimit({
 export const waitlistLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 3,
-  message: { success: false, error: { code: 'RATE_LIMITED', message: 'Already registered. Please check your email.' } },
+  message: {
+    success: false,
+    error: { code: 'RATE_LIMITED', message: 'Already registered. Please check your email.' },
+  },
   standardHeaders: true,
   legacyHeaders: false,
   store: makeStore('waitlist'),

@@ -15,16 +15,20 @@ export function usePreviewZoom() {
 
   // Reactive zoom floor — lower on mobile so the preview fits narrow viewports.
   // Export as `ZOOM_MIN` for backward-compatible template bindings.
-  const ZOOM_MIN = computed(() =>
-    isMobile.value ? MOBILE_ZOOM_FLOOR : DESKTOP_ZOOM_FLOOR,
-  )
+  const ZOOM_MIN = computed(() => (isMobile.value ? MOBILE_ZOOM_FLOOR : DESKTOP_ZOOM_FLOOR))
 
   function zoomIn(): void {
-    previewScale.value = Math.min(ZOOM_MAX, Math.round((previewScale.value + ZOOM_STEP) * 100) / 100)
+    previewScale.value = Math.min(
+      ZOOM_MAX,
+      Math.round((previewScale.value + ZOOM_STEP) * 100) / 100,
+    )
   }
 
   function zoomOut(): void {
-    previewScale.value = Math.max(ZOOM_MIN.value, Math.round((previewScale.value - ZOOM_STEP) * 100) / 100)
+    previewScale.value = Math.max(
+      ZOOM_MIN.value,
+      Math.round((previewScale.value - ZOOM_STEP) * 100) / 100,
+    )
   }
 
   function fitToPanel(): void {

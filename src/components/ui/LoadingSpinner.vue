@@ -14,7 +14,10 @@
 
 <template>
   <span
-    :class="['inline-block rounded-full border-2 border-transparent animate-spin', sizeMap[props.size]]"
+    :class="[
+      'inline-block rounded-full border-2 border-transparent animate-spin',
+      sizeMap[props.size],
+    ]"
     :style="`border-top-color: ${color}; border-right-color: ${color}40`"
     role="status"
     aria-label="Loading"

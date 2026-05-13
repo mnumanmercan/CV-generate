@@ -16,10 +16,10 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    globals:     true,
-    include:     ['src/**/*.test.ts', 'src/**/__tests__/**/*.ts'],
+    globals: true,
+    include: ['src/**/*.test.ts', 'src/**/__tests__/**/*.ts'],
     // Excluding node_modules explicitly prevents accidentally picking up
     // dependency tests if any slip through the default ignore list.
-    exclude:     ['node_modules', 'dist', 'server/**', 'packages/**'],
+    exclude: ['node_modules', 'dist', 'server/**', 'packages/**'],
   },
 })

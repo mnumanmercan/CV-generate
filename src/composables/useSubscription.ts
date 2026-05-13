@@ -3,7 +3,7 @@ import { useUserStore } from '@/stores/userStore'
 import { apiClient, ApiError } from '@/services/apiClient'
 
 export type SubscriptionTier = 'free' | 'pro' | 'enterprise'
-export type BillingInterval  = 'monthly' | 'annual'
+export type BillingInterval = 'monthly' | 'annual'
 
 /**
  * Narrow plan identifiers sent to the backend. The server resolves each to
@@ -84,7 +84,10 @@ export function useSubscription() {
    * Returns `false` if we bailed early (not logged in, unsupported tier) so
    * the caller can decide whether to open the upgrade modal instead.
    */
-  async function subscribe(tier: SubscriptionTier, interval: BillingInterval = 'monthly'): Promise<boolean> {
+  async function subscribe(
+    tier: SubscriptionTier,
+    interval: BillingInterval = 'monthly',
+  ): Promise<boolean> {
     checkoutError.value = null
 
     if (!userStore.isLoggedIn) {

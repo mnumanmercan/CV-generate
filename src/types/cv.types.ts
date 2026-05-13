@@ -86,7 +86,13 @@ export interface CVData {
   meta: CVMeta
 }
 
-export type SectionKey = keyof Omit<CVData, 'meta'>
+// Re-export the union from the shared package so the section list lives in
+// exactly one place. CLAUDE.md's "three-place rule" still applies for the
+// CVData shape itself, but SectionKey gets out of that loop — if a new
+// section is added here, `SECTION_LABELS: Record<SectionKey, string>` below
+// will fail to type-check until shared is also updated.
+export type { SectionKey } from '@resumark/shared'
+import type { SectionKey } from '@resumark/shared'
 
 /** The 6 sections that participate in drag-to-reorder. Personal and Summary are always static. */
 export const DRAGGABLE_SECTION_KEYS: readonly SectionKey[] = [

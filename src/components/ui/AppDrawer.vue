@@ -18,7 +18,10 @@
   const localeStore = useLocaleStore()
   const { t } = useI18n()
 
-  watch(() => route.fullPath, () => emit('close'))
+  watch(
+    () => route.fullPath,
+    () => emit('close'),
+  )
 
   // Lock background scroll while drawer is open and bind ESC.
   function onKey(e: KeyboardEvent): void {
@@ -60,7 +63,11 @@
       <div
         v-if="visible"
         class="fixed inset-0 z-[70]"
-        style="background: color-mix(in oklab, var(--ink) 38%, transparent); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px)"
+        style="
+          background: color-mix(in oklab, var(--ink) 38%, transparent);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+        "
         aria-hidden="true"
         @click="emit('close')"
       />
@@ -86,8 +93,14 @@
         <!-- Drawer header: logo + close -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-overlay/8">
           <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
-            <span class="font-display text-[22px] leading-none tracking-editorial text-ink">Resumark</span>
+            <span
+              class="w-2 h-2 rounded-full"
+              :style="{ background: 'var(--accent)' }"
+              aria-hidden="true"
+            />
+            <span class="font-display text-[22px] leading-none tracking-editorial text-ink"
+              >Resumark</span
+            >
           </div>
           <button
             type="button"
@@ -95,14 +108,28 @@
             :aria-label="t('aria.closeMenu')"
             @click="emit('close')"
           >
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         <!-- Nav links -->
-        <nav class="flex-1 overflow-y-auto px-4 py-5 flex flex-col gap-1" :aria-label="t('aria.mainNav')">
+        <nav
+          class="flex-1 overflow-y-auto px-4 py-5 flex flex-col gap-1"
+          :aria-label="t('aria.mainNav')"
+        >
           <RouterLink
             to="/builder"
             :class="[
@@ -111,11 +138,17 @@
                 ? 'border-accent text-accent'
                 : 'border-accent/25 text-ink hover:border-accent',
             ]"
-            :style="route.name === 'builder'
-              ? { background: 'color-mix(in oklab, var(--accent) 10%, transparent)' }
-              : { background: 'color-mix(in oklab, var(--accent) 4%, transparent)' }"
+            :style="
+              route.name === 'builder'
+                ? { background: 'color-mix(in oklab, var(--accent) 10%, transparent)' }
+                : { background: 'color-mix(in oklab, var(--accent) 4%, transparent)' }
+            "
           >
-            <span class="w-1.5 h-1.5 rounded-full shrink-0" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
+            <span
+              class="w-1.5 h-1.5 rounded-full shrink-0"
+              :style="{ background: 'var(--accent)' }"
+              aria-hidden="true"
+            />
             {{ t('nav.builder') }}
           </RouterLink>
 
@@ -165,7 +198,9 @@
               :style="{ color: localeStore.locale === 'en' ? 'var(--accent)' : 'var(--muted)' }"
               :aria-pressed="localeStore.locale === 'en'"
               @click="localeStore.setLocale('en')"
-            >EN</button>
+            >
+              EN
+            </button>
             <span class="opacity-30 text-ink" aria-hidden="true">·</span>
             <button
               type="button"
@@ -173,7 +208,9 @@
               :style="{ color: localeStore.locale === 'tr' ? 'var(--accent)' : 'var(--muted)' }"
               :aria-pressed="localeStore.locale === 'tr'"
               @click="localeStore.setLocale('tr')"
-            >TR</button>
+            >
+              TR
+            </button>
           </div>
 
           <div class="flex flex-col gap-2">
@@ -184,10 +221,7 @@
               >
                 {{ t('nav.login') }}
               </RouterLink>
-              <RouterLink
-                to="/register"
-                class="btn-primary text-sm w-full justify-center"
-              >
+              <RouterLink to="/register" class="btn-primary text-sm w-full justify-center">
                 {{ t('nav.register') }}
               </RouterLink>
             </template>

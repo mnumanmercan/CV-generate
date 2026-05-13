@@ -19,13 +19,21 @@
   const currentTier = computed<SubscriptionTier>(() => (userStore.isPremium ? 'pro' : 'free'))
   const billingPeriod = ref<'monthly' | 'annual'>('monthly')
 
-  const pricingHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.heading'))
-  const compareHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.compareHeading'))
-  const faqHeading      = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.faqHeading'))
-  const closingHeading  = computed(() => t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.closingHeading'))
-  const planFeatures    = computed<Record<string, string[]>>(() => ({
+  const pricingHeading = computed(() =>
+    t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.heading'),
+  )
+  const compareHeading = computed(() =>
+    t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.compareHeading'),
+  )
+  const faqHeading = computed(() =>
+    t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.faqHeading'),
+  )
+  const closingHeading = computed(() =>
+    t_obj<{ prefix: string; accent: string; suffix: string }>('pricing.closingHeading'),
+  )
+  const planFeatures = computed<Record<string, string[]>>(() => ({
     free: t_obj<string[]>('pricing.freePlanFeatures'),
-    pro:  t_obj<string[]>('pricing.proPlanFeatures'),
+    pro: t_obj<string[]>('pricing.proPlanFeatures'),
   }))
 
   function displayedPrice(price: number): string {
@@ -42,12 +50,12 @@
   type ComparisonRow = [string, boolean, boolean]
 
   const comparisonAvailability: [boolean, boolean][] = [
-    [true,  true],
-    [true,  true],
-    [true,  true],
-    [true,  true],
-    [true,  true],
-    [true,  true],
+    [true, true],
+    [true, true],
+    [true, true],
+    [true, true],
+    [true, true],
+    [true, true],
     [false, true],
     [false, true],
     [false, true],
@@ -75,11 +83,14 @@
     <AppHeader />
 
     <main class="flex-1">
-
       <!-- ── Hero ──────────────────────────────────────────────────────── -->
       <section class="px-6 pt-14 md:pt-20 pb-16 md:pb-20 text-center max-w-5xl mx-auto w-full">
         <div class="flex items-center justify-center gap-2 mb-7 stagger-item">
-          <span class="w-1.5 h-1.5 rounded-full" :style="{ background: 'var(--accent)' }" aria-hidden="true" />
+          <span
+            class="w-1.5 h-1.5 rounded-full"
+            :style="{ background: 'var(--accent)' }"
+            aria-hidden="true"
+          />
           <span class="mono-eyebrow">{{ t('pricing.eyebrow') }}</span>
         </div>
 
@@ -87,7 +98,8 @@
           class="font-display leading-[1.02] tracking-editorial text-ink stagger-item"
           :style="{ fontSize: 'clamp(48px, 7.4vw, 96px)', animationDelay: '60ms' }"
         >
-          {{ pricingHeading.prefix }}<span class="accent-italic">{{ pricingHeading.accent }}</span>{{ pricingHeading.suffix }}
+          {{ pricingHeading.prefix }}<span class="accent-italic">{{ pricingHeading.accent }}</span
+          >{{ pricingHeading.suffix }}
         </h1>
 
         <p
@@ -108,34 +120,37 @@
             type="button"
             class="px-5 py-2 rounded-full text-sm font-medium transition-all"
             :class="billingPeriod === 'monthly' ? '' : 'text-muted hover:text-ink'"
-            :style="billingPeriod === 'monthly' ? { background: 'var(--ink)', color: 'var(--paper)' } : {}"
+            :style="
+              billingPeriod === 'monthly' ? { background: 'var(--ink)', color: 'var(--paper)' } : {}
+            "
             @click="billingPeriod = 'monthly'"
-          >{{ t('pricing.billingMonthly') }}</button>
+          >
+            {{ t('pricing.billingMonthly') }}
+          </button>
           <button
             type="button"
             class="px-5 py-2 rounded-full text-sm font-medium transition-all inline-flex items-center gap-2"
             :class="billingPeriod === 'annual' ? '' : 'text-muted hover:text-ink'"
-            :style="billingPeriod === 'annual' ? { background: 'var(--ink)', color: 'var(--paper)' } : {}"
+            :style="
+              billingPeriod === 'annual' ? { background: 'var(--ink)', color: 'var(--paper)' } : {}
+            "
             @click="billingPeriod = 'annual'"
           >
             {{ t('pricing.billingAnnual') }}
             <span
               class="font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none"
               :style="{ background: 'var(--accent-soft)', color: 'var(--accent)' }"
-            >−20%</span>
+              >−20%</span
+            >
           </button>
         </div>
       </section>
 
       <!-- ── Plan cards ───────────────────────────────────────────────── -->
-      <section
-        v-reveal
-        class="px-6 pb-20 max-w-3xl mx-auto w-full"
-        aria-label="Pricing plans"
-      >
+      <section v-reveal class="px-6 pb-20 max-w-3xl mx-auto w-full" aria-label="Pricing plans">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           <div
-            v-for="(plan, i) in PLANS.filter(p => p.id !== 'enterprise')"
+            v-for="(plan, i) in PLANS.filter((p) => p.id !== 'enterprise')"
             :key="plan.id"
             class="relative reveal-item flex"
             :style="{ animationDelay: `${i * 70}ms` }"
@@ -144,17 +159,22 @@
                  border + tinted shadow so it pops out of the row visually. -->
             <div
               class="paper-card relative w-full p-6 sm:p-8 flex flex-col"
-              :style="currentTier === plan.id
-                ? { border: '1.5px solid var(--accent)', boxShadow: '0 8px 32px rgba(0,0,0,0.14)' }
-                : plan.id === 'pro'
-                  ? { boxShadow: '0 8px 24px rgba(0,0,0,0.10)' }
-                  : {}"
+              :style="
+                currentTier === plan.id
+                  ? {
+                      border: '1.5px solid var(--accent)',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+                    }
+                  : plan.id === 'pro'
+                    ? { boxShadow: '0 8px 24px rgba(0,0,0,0.10)' }
+                    : {}
+              "
             >
               <!-- Soon badge -->
               <div
                 v-if="plan.id === 'pro'"
                 class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-[13px] font-mono font-semibold tracking-[0.16em] uppercase shadow-md"
-                style="background: var(--accent); color: #FFFFFF; white-space: nowrap"
+                style="background: var(--accent); color: #ffffff; white-space: nowrap"
                 aria-label="Coming soon"
               >
                 {{ t('dashboard.proCardBadge') }}
@@ -175,14 +195,18 @@
                   <span
                     class="font-display leading-none text-ink"
                     :style="{ fontSize: 'clamp(38px, 4.4vw, 56px)', letterSpacing: '-0.02em' }"
-                  >Custom</span>
+                    >Custom</span
+                  >
                 </template>
                 <template v-else>
                   <span
                     class="font-display leading-none text-ink"
                     :style="{ fontSize: 'clamp(40px, 5vw, 64px)', letterSpacing: '-0.02em' }"
-                  >{{ displayedPrice(plan.price) }}</span>
-                  <span v-if="plan.price > 0" class="text-muted text-sm mb-2">{{ t('pricing.perMonth') }}</span>
+                    >{{ displayedPrice(plan.price) }}</span
+                  >
+                  <span v-if="plan.price > 0" class="text-muted text-sm mb-2">{{
+                    t('pricing.perMonth')
+                  }}</span>
                 </template>
               </div>
 
@@ -196,15 +220,16 @@
               </p>
 
               <!-- Plan tagline -->
-              <p
-                v-if="plan.id === 'free'"
-                class="text-[12.5px] mt-2 text-muted"
-              >{{ t('pricing.noCreditCard') }}</p>
+              <p v-if="plan.id === 'free'" class="text-[12.5px] mt-2 text-muted">
+                {{ t('pricing.noCreditCard') }}
+              </p>
               <p
                 v-else-if="plan.id === 'pro'"
                 class="text-[12.5px] mt-2"
                 :style="{ color: 'var(--accent)' }"
-              >{{ t('pricing.everythingInFree') }}</p>
+              >
+                {{ t('pricing.everythingInFree') }}
+              </p>
 
               <!-- CTA -->
               <div class="mt-7">
@@ -237,9 +262,12 @@
               <div class="my-7 h-px bg-overlay/10" aria-hidden="true" />
 
               <!-- Features -->
-              <ul class="flex flex-col gap-3.5 flex-1" :aria-label="`${t('pricing.' + plan.id)} features`">
+              <ul
+                class="flex flex-col gap-3.5 flex-1"
+                :aria-label="`${t('pricing.' + plan.id)} features`"
+              >
                 <li
-                  v-for="feature in (planFeatures[plan.id] ?? plan.features)"
+                  v-for="feature in planFeatures[plan.id] ?? plan.features"
                   :key="feature"
                   class="flex items-start gap-3 text-[14px] text-muted leading-snug"
                 >
@@ -248,7 +276,13 @@
                     :style="{ background: 'var(--accent-soft)', color: 'var(--accent)' }"
                     aria-hidden="true"
                   >
-                    <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+                    <svg
+                      class="w-2.5 h-2.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="3.5"
+                    >
                       <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </span>
@@ -276,7 +310,9 @@
               class="font-display leading-[1.02] tracking-editorial text-ink"
               :style="{ fontSize: 'clamp(34px, 4.5vw, 56px)' }"
             >
-              {{ compareHeading.prefix }}<span class="accent-italic">{{ compareHeading.accent }}</span>{{ compareHeading.suffix }}
+              {{ compareHeading.prefix
+              }}<span class="accent-italic">{{ compareHeading.accent }}</span
+              >{{ compareHeading.suffix }}
             </h2>
           </div>
         </div>
@@ -297,10 +333,14 @@
                 <th
                   class="text-center px-4 py-4 mono-eyebrow font-medium"
                   scope="col"
-                  style="background: rgba(184,83,42,0.05);
-                         background: color-mix(in oklab, var(--accent) 5%, transparent);
-                         color: var(--accent)"
-                >Pro</th>
+                  style="
+                    background: rgba(184, 83, 42, 0.05);
+                    background: color-mix(in oklab, var(--accent) 5%, transparent);
+                    color: var(--accent);
+                  "
+                >
+                  Pro
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -312,7 +352,16 @@
                 <td class="px-5 py-3.5 text-ink">{{ row[0] }}</td>
 
                 <td class="px-4 py-3.5 text-center">
-                  <svg v-if="row[1]" class="w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" :style="{ color: 'var(--accent)' }" aria-label="Included">
+                  <svg
+                    v-if="row[1]"
+                    class="w-4 h-4 mx-auto"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2.6"
+                    :style="{ color: 'var(--accent)' }"
+                    aria-label="Included"
+                  >
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                   <span v-else class="text-muted/50" aria-label="Not included">—</span>
@@ -320,10 +369,21 @@
 
                 <td
                   class="px-4 py-3.5 text-center"
-                  style="background: rgba(184,83,42,0.05);
-                         background: color-mix(in oklab, var(--accent) 5%, transparent)"
+                  style="
+                    background: rgba(184, 83, 42, 0.05);
+                    background: color-mix(in oklab, var(--accent) 5%, transparent);
+                  "
                 >
-                  <svg v-if="row[2]" class="w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" :style="{ color: 'var(--accent)' }" aria-label="Included">
+                  <svg
+                    v-if="row[2]"
+                    class="w-4 h-4 mx-auto"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2.6"
+                    :style="{ color: 'var(--accent)' }"
+                    aria-label="Included"
+                  >
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                   <span v-else class="text-muted/50" aria-label="Not included">—</span>
@@ -334,18 +394,18 @@
         </div>
         <!-- Teams footer link -->
         <p class="mt-8 text-center mono-eyebrow reveal-item">
-          <RouterLink to="/teams" class="underline underline-offset-4 hover:opacity-70 transition-opacity" style="color: var(--accent)">
+          <RouterLink
+            to="/teams"
+            class="underline underline-offset-4 hover:opacity-70 transition-opacity"
+            style="color: var(--accent)"
+          >
             {{ t('pricing.teamsLink') }}
           </RouterLink>
         </p>
       </section>
 
       <!-- ── FAQ ──────────────────────────────────────────────────────── -->
-      <section
-        v-reveal
-        class="px-6 pb-24 max-w-6xl mx-auto w-full"
-        aria-labelledby="faq-heading"
-      >
+      <section v-reveal class="px-6 pb-24 max-w-6xl mx-auto w-full" aria-labelledby="faq-heading">
         <div class="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-10 md:gap-16">
           <div class="reveal-item">
             <p class="mono-eyebrow mb-4">{{ t('pricing.faqEyebrow') }}</p>
@@ -354,7 +414,8 @@
               class="font-display leading-[1.02] tracking-editorial text-ink"
               :style="{ fontSize: 'clamp(34px, 4.8vw, 56px)' }"
             >
-              {{ faqHeading.prefix }}<span class="accent-italic">{{ faqHeading.accent }}</span>{{ faqHeading.suffix }}
+              {{ faqHeading.prefix }}<span class="accent-italic">{{ faqHeading.accent }}</span
+              >{{ faqHeading.suffix }}
             </h2>
           </div>
 
@@ -373,10 +434,16 @@
               >
                 <span
                   class="font-display text-2xl leading-none transition-transform duration-300 shrink-0 mt-0.5"
-                  :style="{ color: 'var(--accent)', transform: openFaq === i ? 'rotate(45deg)' : 'rotate(0deg)' }"
+                  :style="{
+                    color: 'var(--accent)',
+                    transform: openFaq === i ? 'rotate(45deg)' : 'rotate(0deg)',
+                  }"
                   aria-hidden="true"
-                >+</span>
-                <span class="flex-1 text-[16px] font-medium text-ink leading-snug">{{ item.q }}</span>
+                  >+</span
+                >
+                <span class="flex-1 text-[16px] font-medium text-ink leading-snug">{{
+                  item.q
+                }}</span>
               </button>
               <!-- Animated reveal via the grid-rows trick — height transitions
                    smoothly from 0 to content without measuring. -->
@@ -407,7 +474,8 @@
           class="font-display leading-[1.02] tracking-editorial text-ink mb-12 reveal-item"
           :style="{ fontSize: 'clamp(48px, 8vw, 96px)', animationDelay: '80ms' }"
         >
-          {{ closingHeading.prefix }}<span class="accent-italic">{{ closingHeading.accent }}</span>{{ closingHeading.suffix }}
+          {{ closingHeading.prefix }}<span class="accent-italic">{{ closingHeading.accent }}</span
+          >{{ closingHeading.suffix }}
         </h2>
         <RouterLink
           to="/builder"
@@ -415,12 +483,22 @@
           style="animation-delay: 160ms"
         >
           {{ t('pricing.closingButton') }}
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M13 7l5 5m0 0l-5 5m5-5H6"
+            />
           </svg>
         </RouterLink>
       </section>
-
     </main>
 
     <AppFooter />

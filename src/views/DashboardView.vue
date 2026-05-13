@@ -15,7 +15,7 @@
   })
 
   const userStore = useUserStore()
-  const cvStore   = useCVStore()
+  const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
 
   /* ── Last saved relative time ─────────────────────────────── */
@@ -48,8 +48,8 @@
 
   const templateLabel = computed(() => {
     const id = cvData.value.meta.templateId
-    if (id === 'classic')   return 'Classic'
-    if (id === 'modern')    return 'Modern'
+    if (id === 'classic') return 'Classic'
+    if (id === 'modern') return 'Modern'
     if (id === 'technical') return 'Technical'
     return 'Classic'
   })
@@ -57,21 +57,21 @@
   /* ── Locked Pro features (Free) ───────────────────────────── */
   const lockedFeatures = computed(() => [
     {
-      glyph:   '◊',
-      title:   t('dashboard.cloudSyncTitle'),
-      desc:    t('dashboard.cloudSyncDesc'),
+      glyph: '◊',
+      title: t('dashboard.cloudSyncTitle'),
+      desc: t('dashboard.cloudSyncDesc'),
       trigger: 'Cloud Sync',
     },
     {
-      glyph:   '▦',
-      title:   t('dashboard.multipleCvsTitle'),
-      desc:    t('dashboard.multipleCvsDesc'),
+      glyph: '▦',
+      title: t('dashboard.multipleCvsTitle'),
+      desc: t('dashboard.multipleCvsDesc'),
       trigger: 'Multiple CVs',
     },
   ])
 
   const coverLetterHeading = computed(() =>
-    t_obj<{ prefix: string; accent: string; suffix: string }>('dashboard.coverLetterHeading')
+    t_obj<{ prefix: string; accent: string; suffix: string }>('dashboard.coverLetterHeading'),
   )
 </script>
 
@@ -80,7 +80,6 @@
     <AppHeader />
 
     <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-12">
-
       <!-- ── Welcome row ──────────────────────────────────────── -->
       <div class="mb-10 stagger-item">
         <p class="mono-eyebrow mb-3">
@@ -91,7 +90,9 @@
           :style="{ fontSize: 'clamp(36px, 5vw, 52px)' }"
         >
           <span>{{ t('dashboard.welcomePrefix') }}</span>
-          <span class="accent-italic">{{ userStore.user?.name?.split(' ')[0] ?? t('dashboard.welcomeFallback') }}</span>
+          <span class="accent-italic">{{
+            userStore.user?.name?.split(' ')[0] ?? t('dashboard.welcomeFallback')
+          }}</span>
           <span class="text-ink">.</span>
         </h1>
         <p class="text-muted text-[14.5px] leading-[1.55] max-w-xl">
@@ -101,7 +102,6 @@
 
       <!-- ══════════════ FREE PLAN ══════════════ -->
       <template v-if="!userStore.isPremium">
-
         <!-- CV card — single full-width row -->
         <div class="paper-card p-5 sm:p-6 mb-10 stagger-item">
           <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
@@ -109,33 +109,48 @@
               class="font-display text-[28px] leading-none shrink-0"
               :style="{ color: 'var(--accent)' }"
               aria-hidden="true"
-            >◉</span>
+              >◉</span
+            >
 
             <div class="flex-1 min-w-0">
               <div class="flex items-baseline justify-between gap-3 mb-0.5">
-                <h2 class="font-display text-[20px] leading-[1.15] tracking-editorial text-ink truncate">
+                <h2
+                  class="font-display text-[20px] leading-[1.15] tracking-editorial text-ink truncate"
+                >
                   {{ cvData.personal.fullName || t('dashboard.yourCv') }}
                 </h2>
                 <span class="mono-eyebrow text-[10.5px] shrink-0">{{ lastSavedLabel }}</span>
               </div>
               <p class="mono-eyebrow text-[10.5px] mb-3">
-                {{ templateLabel }} · {{ t('dashboard.sectionsLabel', { n: String(completedSections) }) }}
+                {{ templateLabel }} ·
+                {{ t('dashboard.sectionsLabel', { n: String(completedSections) }) }}
               </p>
-              <div class="h-[3px] rounded-full" style="background: rgba(0,0,0,0.08)">
+              <div class="h-[3px] rounded-full" style="background: rgba(0, 0, 0, 0.08)">
                 <div
                   class="h-full rounded-full transition-all duration-500"
-                  :style="{ width: `${Math.round((completedSections / 8) * 100)}%`, background: 'var(--accent)' }"
+                  :style="{
+                    width: `${Math.round((completedSections / 8) * 100)}%`,
+                    background: 'var(--accent)',
+                  }"
                 />
               </div>
             </div>
 
-            <RouterLink
-              to="/builder"
-              class="btn-primary shrink-0 text-[13px]"
-            >
+            <RouterLink to="/builder" class="btn-primary shrink-0 text-[13px]">
               {{ t('dashboard.editCv') }}
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </RouterLink>
           </div>
@@ -147,11 +162,10 @@
 
           <!-- Pro Plan container card (full width) -->
           <div class="paper-card p-5 relative">
-
             <!-- Soon badge -->
             <div
               class="absolute -top-3 right-5 px-3 py-1 rounded-full text-[10px] font-mono font-semibold tracking-[0.16em] uppercase shadow-md"
-              style="background: var(--accent); color: #FFFFFF; white-space: nowrap"
+              style="background: var(--accent); color: #ffffff; white-space: nowrap"
               aria-label="Coming soon"
             >
               {{ t('dashboard.proCardBadge') }}
@@ -163,14 +177,18 @@
                 class="font-display text-[24px] leading-none shrink-0"
                 :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
-              >✦</span>
+                >✦</span
+              >
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5 mb-0.5">
-                  <h3 class="font-display text-[17px] leading-tight text-ink">{{ t('dashboard.proCardName') }}</h3>
+                  <h3 class="font-display text-[17px] leading-tight text-ink">
+                    {{ t('dashboard.proCardName') }}
+                  </h3>
                   <span
                     class="mono-eyebrow text-[9px] px-1.5 py-px rounded-full text-white leading-none"
                     :style="{ background: 'var(--accent)' }"
-                  >Pro</span>
+                    >Pro</span
+                  >
                 </div>
                 <p class="text-[13px] text-muted leading-none">
                   {{ t('dashboard.proCardDesc') }}
@@ -198,12 +216,14 @@
                     class="font-display text-[20px] leading-none"
                     :style="{ color: 'var(--accent)' }"
                     aria-hidden="true"
-                  >{{ feat.glyph }}</span>
+                    >{{ feat.glyph }}</span
+                  >
                   <h4 class="font-display text-[15px] leading-tight text-ink">{{ feat.title }}</h4>
                   <span
                     class="mono-eyebrow text-[9px] px-1.5 py-px rounded-full text-white leading-none"
                     :style="{ background: 'var(--accent)' }"
-                  >Pro</span>
+                    >Pro</span
+                  >
                 </div>
                 <p class="text-[12.5px] text-muted leading-[1.55]">{{ feat.desc }}</p>
                 <button
@@ -211,21 +231,19 @@
                   class="mono-eyebrow text-[10.5px] text-left transition-colors hover:opacity-80"
                   :style="{ color: 'var(--accent)' }"
                   @click="userStore.openUpgradeModal(feat.trigger)"
-                >{{ t('dashboard.getNotified') }} →</button>
+                >
+                  {{ t('dashboard.getNotified') }} →
+                </button>
               </div>
             </div>
-
           </div>
         </div>
-
       </template>
 
       <!-- ══════════════ PRO PLAN ══════════════ -->
       <template v-else>
-
         <!-- Two main cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10 stagger-item">
-
           <!-- CV card -->
           <div class="paper-card p-6">
             <div class="flex items-start justify-between mb-4">
@@ -233,28 +251,41 @@
                 class="font-display text-[26px] leading-none"
                 :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
-              >◉</span>
+                >◉</span
+              >
               <span class="mono-eyebrow text-[10.5px]">{{ lastSavedLabel }}</span>
             </div>
             <h2 class="font-display text-[22px] leading-[1.15] tracking-editorial text-ink mb-1">
               {{ cvData.personal.fullName || t('dashboard.yourCv') }}
             </h2>
             <p class="mono-eyebrow text-[10.5px] mb-5">
-              {{ templateLabel }} · {{ t('dashboard.sectionsLabel', { n: String(completedSections) }) }}
+              {{ templateLabel }} ·
+              {{ t('dashboard.sectionsLabel', { n: String(completedSections) }) }}
             </p>
-            <div class="h-[3px] rounded-full mb-6" style="background: rgba(0,0,0,0.08)">
+            <div class="h-[3px] rounded-full mb-6" style="background: rgba(0, 0, 0, 0.08)">
               <div
                 class="h-full rounded-full transition-all duration-500"
-                :style="{ width: `${Math.round((completedSections / 8) * 100)}%`, background: 'var(--accent)' }"
+                :style="{
+                  width: `${Math.round((completedSections / 8) * 100)}%`,
+                  background: 'var(--accent)',
+                }"
               />
             </div>
-            <RouterLink
-              to="/builder"
-              class="btn-primary w-full justify-center text-[13px]"
-            >
+            <RouterLink to="/builder" class="btn-primary w-full justify-center text-[13px]">
               {{ t('dashboard.editCv') }}
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </RouterLink>
           </div>
@@ -266,10 +297,13 @@
                 class="font-display text-[26px] leading-none block mb-4"
                 :style="{ color: 'var(--accent)' }"
                 aria-hidden="true"
-              >✎</span>
+                >✎</span
+              >
               <p class="mono-eyebrow mb-2">{{ t('dashboard.coverLetterEyebrow') }}</p>
               <h2 class="font-display text-[22px] leading-[1.15] tracking-editorial text-ink mb-2">
-                {{ coverLetterHeading.prefix }}<span class="accent-italic">{{ coverLetterHeading.accent }}</span>{{ coverLetterHeading.suffix }}
+                {{ coverLetterHeading.prefix
+                }}<span class="accent-italic">{{ coverLetterHeading.accent }}</span
+                >{{ coverLetterHeading.suffix }}
               </h2>
               <p class="text-[13.5px] text-muted mb-5 leading-[1.55]">
                 {{ t('dashboard.coverLetterDesc') }}
@@ -277,8 +311,19 @@
             </div>
             <RouterLink to="/cover-letter" class="btn-primary justify-center text-[13px]">
               {{ t('dashboard.coverLetterButton') }}
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </RouterLink>
           </div>
@@ -290,19 +335,20 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div
               v-for="stat in [
-                { label: t('dashboard.statsCvsCreated'),   value: '1' },
+                { label: t('dashboard.statsCvsCreated'), value: '1' },
                 { label: t('dashboard.statsCoverLetters'), value: '—' },
                 { label: t('dashboard.statsPdfDownloads'), value: '—' },
               ]"
               :key="stat.label"
               class="paper-card px-5 py-5 text-center"
             >
-              <p class="font-display text-[36px] leading-none tracking-editorial text-ink mb-1.5">{{ stat.value }}</p>
+              <p class="font-display text-[36px] leading-none tracking-editorial text-ink mb-1.5">
+                {{ stat.value }}
+              </p>
               <p class="mono-eyebrow text-[10.5px]">{{ stat.label }}</p>
             </div>
           </div>
         </div>
-
       </template>
     </main>
 

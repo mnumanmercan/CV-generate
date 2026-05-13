@@ -14,17 +14,17 @@
   <section
     v-if="hasLanguages"
     :class="isPulsed('languages') ? 'section-pulse' : ''"
-    style="margin-bottom: 12px;"
+    style="margin-bottom: 12px"
   >
     <h2 class="cv-section-heading">Languages</h2>
     <div
       v-for="(lang, index) in cvData.languages"
       :key="lang.id"
       :style="index > 0 ? 'margin-top: 3px;' : ''"
-      style="font-size: 10.5px;"
+      style="font-size: 10.5px"
     >
-      <span style="font-weight: 700; color: #111827;">{{ lang.name }}</span>
-      <span v-if="lang.proficiency" style="color: #374151;"> — {{ lang.proficiency }}</span>
+      <span style="font-weight: 700; color: #111827">{{ lang.name }}</span>
+      <span v-if="lang.proficiency" style="color: #374151"> — {{ lang.proficiency }}</span>
     </div>
   </section>
 </template>

@@ -9,12 +9,12 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     environment: 'node',
-    globals:     true,
-    include:     ['src/**/*.test.ts', 'tests/**/*.test.ts'],
+    globals: true,
+    include: ['src/**/*.test.ts', 'tests/**/*.test.ts'],
     // The setup file populates required process.env values so env.ts parses
     // cleanly when test modules import it transitively. See tests/setup.ts
     // for the rationale.
-    setupFiles:  ['./tests/setup.ts'],
+    setupFiles: ['./tests/setup.ts'],
     testTimeout: 10_000,
   },
 })

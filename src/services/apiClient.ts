@@ -9,7 +9,8 @@ export function getAccessToken(): string | null {
   return _accessToken
 }
 
-export const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000/api/v1'
+export const BASE_URL =
+  (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000/api/v1'
 
 // Guard against accidental HTTP in production — tokens must never travel in plaintext.
 if (import.meta.env.PROD && !BASE_URL.startsWith('https://')) {
@@ -34,13 +35,13 @@ export class ApiError extends Error {
   // tsconfig.app.json has `erasableSyntaxOnly: true` — parameter-property
   // shorthand emits runtime assignments TS can't erase.
   readonly status: number
-  readonly code:   string | undefined
+  readonly code: string | undefined
 
   constructor(status: number, code: string | undefined, message: string) {
     super(message)
     this.status = status
-    this.code   = code
-    this.name   = 'ApiError'
+    this.code = code
+    this.name = 'ApiError'
   }
 }
 
@@ -61,11 +62,15 @@ interface RequestOptions extends RequestInit {
 }
 
 async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(init.headers as Record<string, string> ?? {}),
+  // Normalise via the Headers constructor so we correctly merge whichever
+  // shape the caller passes (Headers instance, [[k,v]] tuples, or plain
+  // object) — the previous `as Record<string, string>` cast silently dropped
+  // entries for the first two shapes.
+  const headers = new Headers({ 'Content-Type': 'application/json' })
+  if (init.headers) {
+    new Headers(init.headers).forEach((value, key) => headers.set(key, value))
   }
-  if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`
+  if (_accessToken) headers.set('Authorization', `Bearer ${_accessToken}`)
 
   // Abort the request after REQUEST_TIMEOUT_MS so a hung server doesn't
   // leave the app in a permanent loading state.
@@ -98,10 +103,12 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
   // if the server 401s the logout (stale/revoked token) we should treat it as
   // "already logged out", NOT chase a refresh and dispatch session-expired —
   // the listener re-enters logout and creates an infinite dispatch loop.
-  if (res.status === 401
-      && !init._retried
-      && !path.endsWith('/auth/refresh')
-      && !path.endsWith('/auth/logout')) {
+  if (
+    res.status === 401 &&
+    !init._retried &&
+    !path.endsWith('/auth/refresh') &&
+    !path.endsWith('/auth/logout')
+  ) {
     const refreshed = await tryRefresh()
     if (!refreshed) {
       window.dispatchEvent(new CustomEvent('resumark:session-expired'))
@@ -111,12 +118,10 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
   }
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: { message?: string; code?: string } }
-    throw new ApiError(
-      res.status,
-      body.error?.code,
-      body.error?.message ?? `HTTP ${res.status}`,
-    )
+    const body = (await res.json().catch(() => ({}))) as {
+      error?: { message?: string; code?: string }
+    }
+    throw new ApiError(res.status, body.error?.code, body.error?.message ?? `HTTP ${res.status}`)
   }
 
   if (res.status === 204) return undefined as T
@@ -128,12 +133,12 @@ async function tryRefresh(): Promise<boolean> {
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
   try {
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
-      method:      'POST',
+      method: 'POST',
       credentials: 'include',
-      signal:      controller.signal,
+      signal: controller.signal,
     })
     if (!res.ok) return false
-    const data = await res.json() as { accessToken: string }
+    const data = (await res.json()) as { accessToken: string }
     setAccessToken(data.accessToken)
     return true
   } catch {
@@ -144,9 +149,12 @@ async function tryRefresh(): Promise<boolean> {
 }
 
 export const apiClient = {
-  get:    <T>(path: string)                   => request<T>(path),
-  post:   <T>(path: string, body?: unknown)   => request<T>(path, { method: 'POST',   body: JSON.stringify(body) }),
-  put:    <T>(path: string, body?: unknown)   => request<T>(path, { method: 'PUT',    body: JSON.stringify(body) }),
-  patch:  <T>(path: string, body?: unknown)   => request<T>(path, { method: 'PATCH',  body: JSON.stringify(body) }),
-  delete: <T>(path: string)                   => request<T>(path, { method: 'DELETE' }),
+  get: <T>(path: string) => request<T>(path),
+  post: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  put: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 }

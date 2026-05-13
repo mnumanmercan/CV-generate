@@ -44,8 +44,14 @@
     isCertificationsComplete,
     isLanguagesComplete,
   } = storeToRefs(cvStore)
-  const { status: pdfStatus, errorMessage: pdfError, overflowWarning: pdfOverflow, exportPDF } = usePDFExport()
-  const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } = usePreviewZoom()
+  const {
+    status: pdfStatus,
+    errorMessage: pdfError,
+    overflowWarning: pdfOverflow,
+    exportPDF,
+  } = usePDFExport()
+  const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } =
+    usePreviewZoom()
   // previewScrollEl is bound in the template via `ref="previewScrollEl"` but
   // vue-tsc's noUnusedLocals doesn't trace template-ref usage through a
   // composable destructure, so acknowledge the read explicitly.
@@ -64,20 +70,30 @@
   // section in the preview on page load.
   // A single watcher with a snapshot comparison replaces 7 separate deep watchers,
   // reducing the number of traversals Vue performs on each keystroke.
-  const SECTION_KEYS: SectionKey[] = ['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'languages']
+  const SECTION_KEYS: SectionKey[] = [
+    'personal',
+    'summary',
+    'experience',
+    'education',
+    'skills',
+    'projects',
+    'certifications',
+    'languages',
+  ]
   const sectionSnapshots = new Map<SectionKey, string>()
 
   watch(
-    () => JSON.stringify([
-      cvData.value.personal,
-      cvData.value.summary,
-      cvData.value.experience,
-      cvData.value.education,
-      cvData.value.skills,
-      cvData.value.projects,
-      cvData.value.certifications,
-      cvData.value.languages,
-    ]),
+    () =>
+      JSON.stringify([
+        cvData.value.personal,
+        cvData.value.summary,
+        cvData.value.experience,
+        cvData.value.education,
+        cvData.value.skills,
+        cvData.value.projects,
+        cvData.value.certifications,
+        cvData.value.languages,
+      ]),
     (newJson) => {
       if (cvStore.loadingData) {
         // Seed snapshots on initial load so the first real edit triggers correctly.
@@ -119,18 +135,28 @@
 
   // Static sections — always first, never draggable (title resolved via sectionTitle())
   const staticSections = computed(() => [
-    { key: 'personal' as SectionKey, icon: '◉', defaultOpen: true,  completed: isPersonalComplete.value },
-    { key: 'summary'  as SectionKey, icon: '§', defaultOpen: false, completed: isSummaryComplete.value },
+    {
+      key: 'personal' as SectionKey,
+      icon: '◉',
+      defaultOpen: true,
+      completed: isPersonalComplete.value,
+    },
+    {
+      key: 'summary' as SectionKey,
+      icon: '§',
+      defaultOpen: false,
+      completed: isSummaryComplete.value,
+    },
   ])
 
   // Metadata map for draggable sections (icon only; title resolved via sectionTitle())
   const DRAGGABLE_META: Record<string, { icon: string }> = {
-    experience:     { icon: '▦' },
-    education:      { icon: '◊' },
-    skills:         { icon: '✦' },
-    projects:       { icon: '⎔' },
+    experience: { icon: '▦' },
+    education: { icon: '◊' },
+    skills: { icon: '✦' },
+    projects: { icon: '⎔' },
     certifications: { icon: '√' },
-    languages:      { icon: '❡' },
+    languages: { icon: '❡' },
   }
 
   // Mutable ref — v-model target for VueDraggable. Holds key + metadata only;
@@ -141,12 +167,12 @@
 
   // Reactive completion map — read in template as completionFor[section.key]
   const completionFor = computed<Record<string, boolean>>(() => ({
-    experience:     isExperienceComplete.value,
-    education:      isEducationComplete.value,
-    skills:         isSkillsComplete.value,
-    projects:       isProjectsComplete.value,
+    experience: isExperienceComplete.value,
+    education: isEducationComplete.value,
+    skills: isSkillsComplete.value,
+    projects: isProjectsComplete.value,
     certifications: isCertificationsComplete.value,
-    languages:      isLanguagesComplete.value,
+    languages: isLanguagesComplete.value,
   }))
 
   // Sync draggableSections order from store after loadFromStorage completes.
@@ -158,7 +184,10 @@
       if (!order || !cvStore.loadingData) return
       const known = order.filter((k) => k in DRAGGABLE_META) as SectionKey[]
       const missing = DRAGGABLE_SECTION_KEYS.filter((k) => !known.includes(k))
-      draggableSections.value = [...known, ...missing].map((key) => ({ key, ...DRAGGABLE_META[key] }))
+      draggableSections.value = [...known, ...missing].map((key) => ({
+        key,
+        ...DRAGGABLE_META[key],
+      }))
     },
   )
 
@@ -192,7 +221,12 @@
               :style="{ fontSize: 'clamp(28px, 3.4vw, 38px)' }"
             >
               {{ t('builder.headingLine1') }}<br />
-              <span class="accent-italic">{{ t_obj<{accent:string}>('builder.headingLine2').accent }}</span><span class="text-ink">{{ t_obj<{suffix:string}>('builder.headingLine2').suffix }}</span>
+              <span class="accent-italic">{{
+                t_obj<{ accent: string }>('builder.headingLine2').accent
+              }}</span
+              ><span class="text-ink">{{
+                t_obj<{ suffix: string }>('builder.headingLine2').suffix
+              }}</span>
             </h2>
 
             <!-- Static sections — Personal Info and Professional Summary -->
@@ -233,12 +267,12 @@
                 :completed="completionFor[section.key] ?? false"
                 :draggable="true"
               >
-                <ExperienceForm     v-if="section.key === 'experience'" />
-                <EducationForm      v-else-if="section.key === 'education'" />
-                <SkillsForm         v-else-if="section.key === 'skills'" />
-                <ProjectsForm       v-else-if="section.key === 'projects'" />
+                <ExperienceForm v-if="section.key === 'experience'" />
+                <EducationForm v-else-if="section.key === 'education'" />
+                <SkillsForm v-else-if="section.key === 'skills'" />
+                <ProjectsForm v-else-if="section.key === 'projects'" />
                 <CertificationsForm v-else-if="section.key === 'certifications'" />
-                <LanguagesForm      v-else-if="section.key === 'languages'" />
+                <LanguagesForm v-else-if="section.key === 'languages'" />
               </FormSection>
             </VueDraggable>
 
@@ -262,7 +296,6 @@
             so the CV element is never clipped in the preview or PDF.
           -->
           <div class="relative h-full">
-
             <!-- A4 preview scroll area — fills the full panel height -->
             <div
               ref="previewScrollEl"
@@ -294,11 +327,20 @@
               <div
                 v-if="showSaved"
                 class="absolute top-4 left-1/2 -translate-x-1/2 md:top-5 md:left-5 md:translate-x-0 z-10 flex items-center gap-2 rounded-full px-3 py-1.5"
-                style="background: var(--paper); box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06)"
+                style="
+                  background: var(--paper);
+                  box-shadow:
+                    0 2px 12px rgba(0, 0, 0, 0.08),
+                    0 0 0 1px rgba(0, 0, 0, 0.06);
+                "
                 aria-live="polite"
                 role="status"
               >
-                <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background: #22C55E" aria-hidden="true" />
+                <span
+                  class="w-1.5 h-1.5 rounded-full shrink-0"
+                  style="background: #22c55e"
+                  aria-hidden="true"
+                />
                 <span class="mono-eyebrow text-[10.5px]">{{ t('builder.saved') }}</span>
               </div>
             </Transition>
@@ -306,7 +348,12 @@
             <!-- Floating zoom island — bottom-left (desktop only) -->
             <div
               class="hidden md:flex absolute bottom-5 left-5 z-10 items-center gap-0.5 rounded-2xl px-2 py-1.5"
-              style="background: var(--paper); box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)"
+              style="
+                background: var(--paper);
+                box-shadow:
+                  0 4px 16px rgba(0, 0, 0, 0.1),
+                  0 0 0 1px rgba(0, 0, 0, 0.06);
+              "
             >
               <button
                 type="button"
@@ -315,8 +362,19 @@
                 :aria-label="t('aria.zoomOut')"
                 @click="zoomOut"
               >
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M20 12H4"
+                  />
                 </svg>
               </button>
 
@@ -331,8 +389,19 @@
                 :aria-label="t('aria.zoomIn')"
                 @click="zoomIn"
               >
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
               </button>
 
@@ -345,8 +414,19 @@
                 :title="t('builder.fitPanel')"
                 @click="fitToPanel"
               >
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5"
+                  />
                 </svg>
               </button>
             </div>
@@ -357,20 +437,27 @@
                 type="button"
                 :disabled="pdfStatus === 'generating'"
                 class="btn-primary text-[13px]"
-                style="box-shadow: 0 4px 16px rgba(184,83,42,0.22)"
+                style="box-shadow: 0 4px 16px rgba(184, 83, 42, 0.22)"
                 :aria-label="t('aria.downloadCv')"
                 @click="handleDownload"
               >
                 <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
                 <span v-else aria-hidden="true">↓</span>
-                {{ pdfStatus === 'generating' ? t('builder.generating') : t('builder.downloadPdf') }}
+                {{
+                  pdfStatus === 'generating' ? t('builder.generating') : t('builder.downloadPdf')
+                }}
               </button>
             </div>
 
             <!-- Mobile consolidated pill — zoom + download icon -->
             <div
               class="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 rounded-2xl px-2 py-1.5"
-              style="background: var(--paper); box-shadow: 0 4px 16px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)"
+              style="
+                background: var(--paper);
+                box-shadow:
+                  0 4px 16px rgba(0, 0, 0, 0.12),
+                  0 0 0 1px rgba(0, 0, 0, 0.06);
+              "
             >
               <button
                 type="button"
@@ -379,8 +466,19 @@
                 :aria-label="t('aria.zoomOut')"
                 @click="zoomOut"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M20 12H4"
+                  />
                 </svg>
               </button>
 
@@ -395,8 +493,19 @@
                 :aria-label="t('aria.zoomIn')"
                 @click="zoomIn"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
               </button>
 
@@ -407,8 +516,19 @@
                 :title="t('builder.fitPanel')"
                 @click="fitToPanel"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5" />
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5h-4m4 0v-4m0 4l-5-5"
+                  />
                 </svg>
               </button>
 
@@ -423,12 +543,23 @@
                 @click="handleDownload"
               >
                 <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
-                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5m0 0l5-5m-5 5V4" />
+                <svg
+                  v-else
+                  class="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5m0 0l5-5m-5 5V4"
+                  />
                 </svg>
               </button>
             </div>
-
           </div>
         </template>
       </SplitLayout>

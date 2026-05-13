@@ -6,11 +6,11 @@
   import { useI18n } from '@/composables/useI18n'
   import { useAISummaryAnalysis } from '@/composables/useAISummaryAnalysis'
 
-
   const { t } = useI18n()
   const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
-  const { isLoading, feedback, suggestion, hasResult, error, analyze, applySuggestion, reset } = useAISummaryAnalysis()
+  const { isLoading, feedback, suggestion, hasResult, error, analyze, applySuggestion, reset } =
+    useAISummaryAnalysis()
 
   const isAnalyzeDisabled = computed(() => charCount.value < 50 || isLoading.value)
 
@@ -57,14 +57,14 @@
         <!-- Analyze button -->
         <button
           :disabled="isAnalyzeDisabled"
-          @click="analyze(cvData.summary)"
           class="mt-3 w-full px-4 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2"
           :class="[
             isAnalyzeDisabled
               ? 'bg-secondary/20 text-secondary cursor-not-allowed'
-              : 'btn-accent hover:opacity-90'
+              : 'btn-accent hover:opacity-90',
           ]"
           :aria-busy="isLoading"
+          @click="analyze(cvData.summary)"
         >
           <svg
             v-if="isLoading"
@@ -73,8 +73,19 @@
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
           </svg>
           {{ isLoading ? t('ai.analyzeButton.analyzing') : t('ai.analyzeButton.text') }}
         </button>
@@ -85,13 +96,21 @@
           class="mt-3 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs"
           role="alert"
         >
-          <svg class="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          <svg
+            class="w-4 h-4 shrink-0 mt-0.5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            aria-hidden="true"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clip-rule="evenodd"
+            />
           </svg>
           {{ error }}
         </div>
         <!-- Analyze button Finsihed-->
-         
       </div>
     </div>
 
@@ -102,9 +121,19 @@
       class="flex items-start gap-2 text-xs px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400"
       role="alert"
     >
-      <svg class="w-3.5 h-3.5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+      <svg
+        class="w-3.5 h-3.5 shrink-0 mt-0.5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2.5"
+          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+        />
       </svg>
       {{ warn.message }}
     </div>
@@ -116,7 +145,9 @@
       class="flex flex-col gap-1.5"
       :aria-label="t('forms.atsTipsLabel')"
     >
-      <p class="text-xs font-mono text-accent uppercase tracking-wider">{{ t('forms.atsTipsLabel') }}</p>
+      <p class="text-xs font-mono text-accent uppercase tracking-wider">
+        {{ t('forms.atsTipsLabel') }}
+      </p>
       <div
         v-for="hint in hints"
         :key="hint"
@@ -127,7 +158,7 @@
       </div>
     </div>
 
-     <!-- AI Analysis Result Panel -->
+    <!-- AI Analysis Result Panel -->
     <div
       v-if="hasResult"
       class="mt-4 p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-4"
@@ -155,20 +186,20 @@
 
       <!-- Action Buttons -->
       <div class="flex gap-2 justify-end">
-          <button
-            @click="reset"
-            class="btn-ghost px-3 py-2 text-xs font-medium rounded-lg transition-colors"
-          >
-            {{ t('ai.suggestion.discard') }}
-          </button>
-          <button
-            @click="applySuggestion"
-            class="btn-accent px-3 py-2 text-xs font-medium rounded-lg transition-colors hover:opacity-90"
-          >
-            {{ t('ai.suggestion.apply') }}
-          </button>
-        </div>
+        <button
+          class="btn-ghost px-3 py-2 text-xs font-medium rounded-lg transition-colors"
+          @click="reset"
+        >
+          {{ t('ai.suggestion.discard') }}
+        </button>
+        <button
+          class="btn-accent px-3 py-2 text-xs font-medium rounded-lg transition-colors hover:opacity-90"
+          @click="applySuggestion"
+        >
+          {{ t('ai.suggestion.apply') }}
+        </button>
       </div>
+    </div>
     <!-- AI Analysis Result Panel Finished -->
   </div>
 </template>

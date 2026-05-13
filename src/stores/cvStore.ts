@@ -8,10 +8,7 @@ import {
   migrateCVData,
 } from '@/types/cv.types'
 import { localStorageService } from '@/services/storageService'
-import {
-  SAVE_INDICATOR_MS,
-  SECTION_HIGHLIGHT_MS,
-} from '@/constants/timing'
+import { SAVE_INDICATOR_MS, SECTION_HIGHLIGHT_MS } from '@/constants/timing'
 
 export const useCVStore = defineStore('cv', () => {
   const cvData = ref<CVData>(createEmptyCVData())
@@ -47,8 +44,7 @@ export const useCVStore = defineStore('cv', () => {
   )
 
   const isProjectsComplete = computed(
-    () =>
-      cvData.value.projects.length > 0 && cvData.value.projects.every((p) => p.name.trim()),
+    () => cvData.value.projects.length > 0 && cvData.value.projects.every((p) => p.name.trim()),
   )
 
   const isCertificationsComplete = computed(
@@ -58,9 +54,7 @@ export const useCVStore = defineStore('cv', () => {
   )
 
   const isLanguagesComplete = computed(
-    () =>
-      cvData.value.languages.length > 0 &&
-      cvData.value.languages.every((l) => l.name.trim()),
+    () => cvData.value.languages.length > 0 && cvData.value.languages.every((l) => l.name.trim()),
   )
 
   async function loadFromStorage(): Promise<void> {

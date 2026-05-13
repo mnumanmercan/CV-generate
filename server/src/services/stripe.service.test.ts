@@ -15,14 +15,16 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 // Required env vars must be set BEFORE the service is imported, because
 // env.ts calls process.exit(1) if it can't parse — that would abort vitest.
 beforeAll(() => {
-  process.env.DATABASE_URL        = 'postgresql://test:test@localhost:5432/test'
+  process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
   process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test'
-  process.env.STRIPE_SECRET_KEY   = 'sk_test_dummy'
+  process.env.STRIPE_SECRET_KEY = 'sk_test_dummy'
   // Fake-but-valid-format RS256 PEM encoded as base64. Not a real key — the
   // signing path isn't exercised by webhook tests.
-  const dummyKey = Buffer.from('-----BEGIN DUMMY-----\nnope\n-----END DUMMY-----').toString('base64')
+  const dummyKey = Buffer.from('-----BEGIN DUMMY-----\nnope\n-----END DUMMY-----').toString(
+    'base64',
+  )
   process.env.JWT_PRIVATE_KEY_B64 = dummyKey
-  process.env.JWT_PUBLIC_KEY_B64  = dummyKey
+  process.env.JWT_PUBLIC_KEY_B64 = dummyKey
 })
 
 // ─── Mocks ─────────────────────────────────────────────────────────────────────
@@ -37,8 +39,14 @@ vi.mock('../db/prisma.js', () => ({
     },
     // Never called by the signature-verify tests but has to exist so the
     // service module's top-level imports resolve.
-    subscription: { findUnique: vi.fn(), updateMany: vi.fn(), upsert: vi.fn(), update: vi.fn(), findFirst: vi.fn() },
-    user:         { findUniqueOrThrow: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
+    subscription: {
+      findUnique: vi.fn(),
+      updateMany: vi.fn(),
+      upsert: vi.fn(),
+      update: vi.fn(),
+      findFirst: vi.fn(),
+    },
+    user: { findUniqueOrThrow: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
     $transaction: (fn: (tx: unknown) => Promise<unknown>) => fn({}),
   },
 }))
@@ -83,13 +91,15 @@ describe('stripeService.handleWebhook', () => {
 
   it('is idempotent — a duplicate event ID short-circuits before dispatch', async () => {
     constructEvent.mockReturnValue({
-      id:   'evt_duplicate',
+      id: 'evt_duplicate',
       type: 'checkout.session.completed',
       data: { object: { metadata: { userId: 'u1' } } },
     })
     // Simulate the unique-constraint violation Prisma throws when a row
     // with this event ID already exists.
-    stripeEventCreate.mockRejectedValue(Object.assign(new Error('Unique constraint failed'), { code: 'P2002' }))
+    stripeEventCreate.mockRejectedValue(
+      Object.assign(new Error('Unique constraint failed'), { code: 'P2002' }),
+    )
 
     // Should resolve silently, not throw.
     await expect(stripeService.handleWebhook(Buffer.from('{}'), 'sig')).resolves.toBeUndefined()
@@ -102,12 +112,16 @@ describe('stripeService.handleWebhook', () => {
 
   it('surfaces unexpected Prisma errors instead of swallowing them', async () => {
     constructEvent.mockReturnValue({
-      id:   'evt_new',
+      id: 'evt_new',
       type: 'invoice.paid',
       data: { object: { customer: 'cus_x', lines: { data: [] } } },
     })
-    stripeEventCreate.mockRejectedValue(Object.assign(new Error('db connection refused'), { code: 'P1001' }))
+    stripeEventCreate.mockRejectedValue(
+      Object.assign(new Error('db connection refused'), { code: 'P1001' }),
+    )
 
-    await expect(stripeService.handleWebhook(Buffer.from('{}'), 'sig')).rejects.toThrow('db connection refused')
+    await expect(stripeService.handleWebhook(Buffer.from('{}'), 'sig')).rejects.toThrow(
+      'db connection refused',
+    )
   })
 })

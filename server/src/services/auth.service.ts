@@ -10,8 +10,15 @@ import { sha256 } from '../utils/hash.js'
 // login time, we extend to 30 days (both the DB token expiry and the cookie
 // maxAge). Keep these as named constants so the doubled-up 30d semantics
 // stay aligned between the DB row and the browser cookie.
-const REFRESH_TOKEN_TTL_MS          = 7  * 24 * 60 * 60 * 1000 // 7 days
+const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 const REFRESH_TOKEN_REMEMBER_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
+
+// Cookie name + path are the single source of truth — `res.clearCookie` must
+// match the originating `res.cookie` path exactly or the browser silently
+// leaves the cookie in place. Path is kept narrow (auth routes only) so the
+// HttpOnly refresh secret isn't transmitted with every API call.
+export const REFRESH_COOKIE_NAME = 'refreshToken'
+export const REFRESH_COOKIE_PATH = '/api/v1/auth'
 
 type PrismaTransaction = Omit<
   Prisma.TransactionClient,
@@ -27,12 +34,17 @@ type PrismaTransaction = Omit<
 export function buildCookieOptions(remember = false) {
   return {
     httpOnly: true,
-    secure:   env.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     sameSite: 'strict' as const,
-    maxAge:   remember ? REFRESH_TOKEN_REMEMBER_TTL_MS : REFRESH_TOKEN_TTL_MS,
-    path:     '/api/v1/auth',
+    maxAge: remember ? REFRESH_TOKEN_REMEMBER_TTL_MS : REFRESH_TOKEN_TTL_MS,
+    path: REFRESH_COOKIE_PATH,
   }
 }
+
+// Pair this with every `res.clearCookie(REFRESH_COOKIE_NAME, ...)` — the path
+// must match the originating `res.cookie` call or the browser keeps the
+// HttpOnly cookie alive.
+export const REFRESH_COOKIE_CLEAR_OPTIONS = { path: REFRESH_COOKIE_PATH }
 
 // Preserved for backwards compatibility with any caller that doesn't pass
 // the `remember` flag (e.g. the register handler, which never offers the
@@ -46,9 +58,9 @@ async function issueRefreshToken(
   tx: PrismaTransaction,
   remember = false,
 ): Promise<string> {
-  const raw       = crypto.randomBytes(32).toString('hex')
+  const raw = crypto.randomBytes(32).toString('hex')
   const tokenHash = sha256(raw)
-  const ttlMs     = remember ? REFRESH_TOKEN_REMEMBER_TTL_MS : REFRESH_TOKEN_TTL_MS
+  const ttlMs = remember ? REFRESH_TOKEN_REMEMBER_TTL_MS : REFRESH_TOKEN_TTL_MS
   const expiresAt = new Date(Date.now() + ttlMs)
 
   await tx.token.create({
@@ -63,10 +75,10 @@ async function issueRefreshToken(
 export function buildUserResponse(user: { id: string; name: string; email: string; plan: string }) {
   const isPremium = user.plan === 'PRO' || user.plan === 'ENTERPRISE'
   return {
-    id:        user.id,
-    name:      user.name,
-    email:     user.email,
-    plan:      user.plan,
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    plan: user.plan,
     isPremium,
     avatarUrl: null as string | null,
   }
@@ -77,31 +89,41 @@ export function buildUserResponse(user: { id: string; name: string; email: strin
 export async function register(name: string, email: string, password: string) {
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
-    throw Object.assign(new Error('An account with this email already exists.'), { statusCode: 409, code: 'EMAIL_TAKEN' })
+    throw Object.assign(new Error('An account with this email already exists.'), {
+      statusCode: 409,
+      code: 'EMAIL_TAKEN',
+    })
   }
 
   const passwordHash = await bcrypt.hash(password, env.BCRYPT_ROUNDS)
 
-  const { user, accessToken, refreshTokenRaw, verifyTokenRaw } = await prisma.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: { name, email, passwordHash },
-    })
+  const { user, accessToken, refreshTokenRaw, verifyTokenRaw } = await prisma.$transaction(
+    async (tx) => {
+      const user = await tx.user.create({
+        data: { name, email, passwordHash },
+      })
 
-    const refreshTokenRaw = await issueRefreshToken(user.id, tx)
-    const accessToken = signAccessToken({ sub: user.id, email: user.email, plan: user.plan })
+      const refreshTokenRaw = await issueRefreshToken(user.id, tx)
+      const accessToken = signAccessToken({ sub: user.id, email: user.email, plan: user.plan })
 
-    // Create email-verification token — actual sending is the controller's
-    // responsibility (fire-and-forget) so registration doesn't block on SMTP
-    // latency or fail if Resend is temporarily down.
-    const verifyRaw   = crypto.randomBytes(32).toString('hex')
-    const verifyHash  = sha256(verifyRaw)
-    const verifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
-    await tx.token.create({
-      data: { userId: user.id, tokenHash: verifyHash, type: 'EMAIL_VERIFY', expiresAt: verifyExpiry },
-    })
+      // Create email-verification token — actual sending is the controller's
+      // responsibility (fire-and-forget) so registration doesn't block on SMTP
+      // latency or fail if Resend is temporarily down.
+      const verifyRaw = crypto.randomBytes(32).toString('hex')
+      const verifyHash = sha256(verifyRaw)
+      const verifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
+      await tx.token.create({
+        data: {
+          userId: user.id,
+          tokenHash: verifyHash,
+          type: 'EMAIL_VERIFY',
+          expiresAt: verifyExpiry,
+        },
+      })
 
-    return { user, accessToken, refreshTokenRaw, verifyTokenRaw: verifyRaw }
-  })
+      return { user, accessToken, refreshTokenRaw, verifyTokenRaw: verifyRaw }
+    },
+  )
 
   return { user, accessToken, refreshTokenRaw, verifyTokenRaw }
 }
@@ -111,12 +133,18 @@ export async function register(name: string, email: string, password: string) {
 export async function login(email: string, password: string, rememberMe = false) {
   const user = await prisma.user.findUnique({ where: { email } })
   if (!user) {
-    throw Object.assign(new Error('Invalid email or password.'), { statusCode: 401, code: 'INVALID_CREDENTIALS' })
+    throw Object.assign(new Error('Invalid email or password.'), {
+      statusCode: 401,
+      code: 'INVALID_CREDENTIALS',
+    })
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash)
   if (!valid) {
-    throw Object.assign(new Error('Invalid email or password.'), { statusCode: 401, code: 'INVALID_CREDENTIALS' })
+    throw Object.assign(new Error('Invalid email or password.'), {
+      statusCode: 401,
+      code: 'INVALID_CREDENTIALS',
+    })
   }
 
   const { accessToken, refreshTokenRaw } = await prisma.$transaction(async (tx) => {
@@ -134,7 +162,7 @@ export async function refreshTokens(rawToken: string) {
   const tokenHash = sha256(rawToken)
 
   const tokenRecord = await prisma.token.findUnique({
-    where:   { tokenHash },
+    where: { tokenHash },
     include: { user: true },
   })
 
@@ -144,7 +172,10 @@ export async function refreshTokens(rawToken: string) {
     tokenRecord.revokedAt !== null ||
     tokenRecord.expiresAt < new Date()
   ) {
-    throw Object.assign(new Error('Invalid or expired refresh token.'), { statusCode: 401, code: 'INVALID_REFRESH_TOKEN' })
+    throw Object.assign(new Error('Invalid or expired refresh token.'), {
+      statusCode: 401,
+      code: 'INVALID_REFRESH_TOKEN',
+    })
   }
 
   const { user } = tokenRecord
@@ -153,7 +184,7 @@ export async function refreshTokens(rawToken: string) {
     // Rotate: revoke old token
     await tx.token.update({
       where: { id: tokenRecord.id },
-      data:  { revokedAt: new Date() },
+      data: { revokedAt: new Date() },
     })
 
     const newRefreshTokenRaw = await issueRefreshToken(user.id, tx)
@@ -170,23 +201,25 @@ export async function revokeRefreshToken(rawToken: string): Promise<void> {
   const tokenHash = sha256(rawToken)
   await prisma.token.updateMany({
     where: { tokenHash, type: 'REFRESH', revokedAt: null },
-    data:  { revokedAt: new Date() },
+    data: { revokedAt: new Date() },
   })
 }
 
 // ─── Forgot password ──────────────────────────────────────────────────────────
 
-export async function createPasswordResetToken(email: string): Promise<{ token: string; user: { name: string; email: string } } | null> {
+export async function createPasswordResetToken(
+  email: string,
+): Promise<{ token: string; user: { name: string; email: string } } | null> {
   const user = await prisma.user.findUnique({ where: { email } })
   if (!user) return null // silently return null — don't leak account existence
 
   // Revoke any existing password reset tokens
   await prisma.token.updateMany({
     where: { userId: user.id, type: 'PASSWORD_RESET', revokedAt: null },
-    data:  { revokedAt: new Date() },
+    data: { revokedAt: new Date() },
   })
 
-  const raw       = crypto.randomBytes(32).toString('hex')
+  const raw = crypto.randomBytes(32).toString('hex')
   const tokenHash = sha256(raw)
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
 
@@ -213,7 +246,10 @@ export async function resetPassword(rawToken: string, newPassword: string): Prom
     tokenRecord.revokedAt !== null ||
     tokenRecord.expiresAt < new Date()
   ) {
-    throw Object.assign(new Error('Invalid or expired password reset link.'), { statusCode: 400, code: 'INVALID_RESET_TOKEN' })
+    throw Object.assign(new Error('Invalid or expired password reset link.'), {
+      statusCode: 400,
+      code: 'INVALID_RESET_TOKEN',
+    })
   }
 
   const passwordHash = await bcrypt.hash(newPassword, env.BCRYPT_ROUNDS)
@@ -221,17 +257,17 @@ export async function resetPassword(rawToken: string, newPassword: string): Prom
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: tokenRecord.userId },
-      data:  { passwordHash },
+      data: { passwordHash },
     })
     // Mark reset token used
     await tx.token.update({
       where: { id: tokenRecord.id },
-      data:  { revokedAt: new Date() },
+      data: { revokedAt: new Date() },
     })
     // Revoke all refresh tokens — force re-login everywhere
     await tx.token.updateMany({
       where: { userId: tokenRecord.userId, type: 'REFRESH', revokedAt: null },
-      data:  { revokedAt: new Date() },
+      data: { revokedAt: new Date() },
     })
   })
 }
@@ -249,17 +285,20 @@ export async function verifyEmail(rawToken: string): Promise<void> {
     tokenRecord.revokedAt !== null ||
     tokenRecord.expiresAt < new Date()
   ) {
-    throw Object.assign(new Error('Invalid or expired verification link.'), { statusCode: 400, code: 'INVALID_VERIFY_TOKEN' })
+    throw Object.assign(new Error('Invalid or expired verification link.'), {
+      statusCode: 400,
+      code: 'INVALID_VERIFY_TOKEN',
+    })
   }
 
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: tokenRecord.userId },
-      data:  { emailVerified: true },
+      data: { emailVerified: true },
     })
     await tx.token.update({
       where: { id: tokenRecord.id },
-      data:  { revokedAt: new Date() },
+      data: { revokedAt: new Date() },
     })
   })
 }

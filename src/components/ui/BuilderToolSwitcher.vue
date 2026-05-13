@@ -7,9 +7,9 @@
   import { useI18n } from '@/composables/useI18n'
   import { TEMPLATES } from '@/components/templates/registry'
 
-  const route            = useRoute()
-  const userStore        = useUserStore()
-  const cvStore          = useCVStore()
+  const route = useRoute()
+  const userStore = useUserStore()
+  const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
   const { t } = useI18n()
 
@@ -31,7 +31,7 @@
 
   function onTemplateKeydown(event: KeyboardEvent): void {
     const idx = TEMPLATES.findIndex((t) => t.id === activeId.value)
-    let next = idx
+    let next: number
     if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
       event.preventDefault()
       next = (idx + 1) % TEMPLATES.length
@@ -50,7 +50,7 @@
 
   // Mobile dropdown: tap-trigger that opens a popover listing all templates.
   const mobileMenuOpen = ref(false)
-  const mobileMenuRef  = ref<HTMLElement | null>(null)
+  const mobileMenuRef = ref<HTMLElement | null>(null)
 
   function toggleMobileMenu(): void {
     mobileMenuOpen.value = !mobileMenuOpen.value
@@ -80,7 +80,6 @@
     document.removeEventListener('click', onDocClick)
     document.removeEventListener('keydown', onKeydown)
   })
-
 </script>
 
 <!--
@@ -112,16 +111,15 @@
         role="tab"
         :aria-selected="route.name === 'builder'"
         class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors"
-        :class="route.name === 'builder'
-          ? 'text-ink'
-          : 'text-muted hover:text-ink'"
+        :class="route.name === 'builder' ? 'text-ink' : 'text-muted hover:text-ink'"
         :style="route.name === 'builder' ? { background: 'var(--card)' } : {}"
       >
         <span
           class="text-[14px] leading-none"
           :style="route.name === 'builder' ? { color: 'var(--accent)' } : {}"
           aria-hidden="true"
-        >◉</span>
+          >◉</span
+        >
         {{ t('nav.builder') }}
       </RouterLink>
 
@@ -130,16 +128,15 @@
         role="tab"
         :aria-selected="route.name === 'cover-letter'"
         class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors"
-        :class="route.name === 'cover-letter'
-          ? 'text-ink'
-          : 'text-muted hover:text-ink'"
+        :class="route.name === 'cover-letter' ? 'text-ink' : 'text-muted hover:text-ink'"
         :style="route.name === 'cover-letter' ? { background: 'var(--card)' } : {}"
       >
         <span
           class="font-display italic text-[15px] leading-none"
           :style="route.name === 'cover-letter' ? { color: 'var(--accent)' } : {}"
           aria-hidden="true"
-        >✎</span>
+          >✎</span
+        >
         {{ t('nav.coverLetter') }}
       </RouterLink>
     </div>
@@ -147,7 +144,9 @@
     <!-- Cover-letter: divider + static A4 · LETTER label (desktop only) -->
     <template v-if="route.name === 'cover-letter'">
       <div class="hidden md:block w-px h-4 mx-4 shrink-0 bg-overlay/15" aria-hidden="true" />
-      <span class="hidden md:inline mono-eyebrow text-[10.5px] text-muted shrink-0">A4 · LETTER</span>
+      <span class="hidden md:inline mono-eyebrow text-[10.5px] text-muted shrink-0"
+        >A4 · LETTER</span
+      >
     </template>
 
     <!-- Builder-only: vertical divider → A4 label → template radios (right-aligned) -->
@@ -172,12 +171,16 @@
           role="radio"
           :aria-checked="activeId === template.id"
           :tabindex="activeId === template.id ? 0 : -1"
-          :aria-label="template.isPro && !userStore.isPremium
-            ? t('builder.proRequired', { name: template.name })
-            : template.name"
-          :title="template.isPro && !userStore.isPremium
-            ? t('builder.proRequired', { name: template.description })
-            : template.description"
+          :aria-label="
+            template.isPro && !userStore.isPremium
+              ? t('builder.proRequired', { name: template.name })
+              : template.name
+          "
+          :title="
+            template.isPro && !userStore.isPremium
+              ? t('builder.proRequired', { name: template.description })
+              : template.description
+          "
           :class="[
             'relative flex items-center gap-1.5 px-3 py-1 rounded-full text-[12.5px] font-medium transition-colors whitespace-nowrap',
             activeId === template.id
@@ -196,7 +199,8 @@
             :style="{
               background: activeId === template.id ? 'rgba(255,255,255,0.28)' : 'var(--accent)',
             }"
-          >Pro</span>
+            >Pro</span
+          >
         </button>
       </div>
 
@@ -220,7 +224,12 @@
             stroke="currentColor"
             aria-hidden="true"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
 
@@ -264,12 +273,12 @@
                 v-if="template.isPro && !userStore.isPremium"
                 class="mono-eyebrow text-[9.5px] px-2 py-0.5 rounded text-white shrink-0"
                 :style="{ background: 'var(--accent)' }"
-              >Pro</span>
+                >Pro</span
+              >
             </button>
           </div>
         </Transition>
       </div>
     </template>
-
   </div>
 </template>

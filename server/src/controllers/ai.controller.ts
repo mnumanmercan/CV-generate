@@ -1,4 +1,3 @@
-import { Router } from 'express'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { aiService } from '../services/ai.service.js'
 import type { AnalyzeSummaryInput } from '../schemas/ai.schema.js'
