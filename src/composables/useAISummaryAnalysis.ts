@@ -17,7 +17,6 @@ export function useAISummaryAnalysis() {
   // hasResult computed: sonuç panelinin açılıp açılmayacağını kontrol eder
   const hasResult = computed(() => !!feedback.value || !!suggestion.value)
 
-  // analyze fonksiyonu
   async function analyze(summary: string): Promise<void> {
     isLoading.value = true
     error.value = null
