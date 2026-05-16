@@ -181,7 +181,6 @@ const tr: Translations = {
       'Tarayıcıda otomatik kayıt',
       'ATS yazım ipuçları',
       'Ön yazı oluşturucu',
-      'Profil fotoğrafı',
       'Premium şablonlar',
       'Bulut depolama ve senkronizasyon',
       'Birden fazla CV sürümü',

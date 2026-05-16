@@ -165,19 +165,7 @@ export interface Translations {
     compareHeading: SplitHeading
     compareFeatureCol: string
     teamsLink: string
-    comparisonRows: [
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-    ]
+    comparisonRows: [string, string, string, string, string, string, string, string, string, string]
     faqEyebrow: string
     faqHeading: SplitHeading
     faqItems: Array<{ q: string; a: string }>

@@ -60,7 +60,6 @@
     [false, true],
     [false, true],
     [false, true],
-    [false, true],
   ]
 
   const comparisonRows = computed<ComparisonRow[]>(() => {
@@ -300,21 +299,16 @@
         class="px-6 pb-20 max-w-5xl mx-auto w-full"
         aria-labelledby="compare-heading"
       >
-        <div class="flex flex-col md:flex-row gap-8 md:gap-16 mb-10">
-          <div class="md:w-1/3 reveal-item">
-            <p class="mono-eyebrow">{{ t('pricing.compareEyebrow') }}</p>
-          </div>
-          <div class="md:w-2/3 reveal-item" style="animation-delay: 80ms">
-            <h2
-              id="compare-heading"
-              class="font-display leading-[1.02] tracking-editorial text-ink"
-              :style="{ fontSize: 'clamp(34px, 4.5vw, 56px)' }"
-            >
-              {{ compareHeading.prefix
-              }}<span class="accent-italic">{{ compareHeading.accent }}</span
-              >{{ compareHeading.suffix }}
-            </h2>
-          </div>
+        <div class="text-center mb-10">
+          <p class="flex mono-eyebrow mb-5 reveal-item">{{ t('pricing.compareEyebrow') }}</p>
+          <h2
+            id="compare-heading"
+            class="font-display leading-[1.02] tracking-editorial text-ink reveal-item"
+            :style="{ fontSize: 'clamp(34px, 4.5vw, 56px)', animationDelay: '80ms' }"
+          >
+            {{ compareHeading.prefix }}<span class="accent-italic">{{ compareHeading.accent }}</span
+            >{{ compareHeading.suffix }}
+          </h2>
         </div>
 
         <div
@@ -433,14 +427,27 @@
                 @click="toggleFaq(i)"
               >
                 <span
-                  class="font-display text-2xl leading-none transition-transform duration-300 shrink-0 mt-0.5"
-                  :style="{
-                    color: 'var(--accent)',
-                    transform: openFaq === i ? 'rotate(45deg)' : 'rotate(0deg)',
-                  }"
+                  class="w-5 h-5 shrink-0 mt-0.5 flex items-center justify-center"
+                  :style="{ color: 'var(--accent)' }"
                   aria-hidden="true"
-                  >+</span
                 >
+                  <svg class="w-5 h-5" viewBox="0 0 20 20" fill="none">
+                    <rect x="4" y="9.25" width="12" height="1.5" rx="0.75" fill="currentColor" />
+                    <rect
+                      x="9.25"
+                      y="4"
+                      width="1.5"
+                      height="12"
+                      rx="0.75"
+                      fill="currentColor"
+                      :style="{
+                        transform: openFaq === i ? 'scaleY(0)' : 'scaleY(1)',
+                        transformOrigin: '10px 10px',
+                        transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
+                      }"
+                    />
+                  </svg>
+                </span>
                 <span class="flex-1 text-[16px] font-medium text-ink leading-snug">{{
                   item.q
                 }}</span>

@@ -184,7 +184,6 @@ const en: Translations = {
       'Browser auto-save',
       'ATS writing hints',
       'Cover letter builder',
-      'Profile photo upload',
       'Premium templates',
       'Cloud storage & sync',
       'Multiple CV versions',
