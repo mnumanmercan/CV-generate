@@ -1,8 +1,14 @@
 <script setup lang="ts">
   import { computed } from 'vue'
   import { useCVStore } from '@/stores/cvStore'
+  import { useTypewriter } from '@/composables/useTypewriter'
 
   const cvStore = useCVStore()
+
+  const { displayed: animatedName } = useTypewriter('Maya Okafor')
+  const { displayed: animatedRole } = useTypewriter('Senior Product Designer', {
+    initialDelay: 1400,
+  })
 
   /**
    * Static "Maya" sample shown when the visitor hasn't entered anything
@@ -214,9 +220,21 @@
           color: #111;
           letter-spacing: -0.012em;
           line-height: 1.1;
+          display: flex;
+          align-items: baseline;
         "
       >
-        {{ trunc(data.personal.fullName, 34) }}
+        <span>{{
+          !hasMiniDemoData && !hasBuilderData
+            ? animatedName
+            : trunc(data.personal.fullName, 34)
+        }}</span>
+        <span
+          v-if="!hasMiniDemoData && !hasBuilderData"
+          class="typewriter-cursor"
+          aria-hidden="true"
+          >|</span
+        >
       </div>
       <div
         :style="{
@@ -224,9 +242,21 @@
           fontWeight: 500,
           color: 'var(--accent)',
           margin: '6px 0 8px',
+          display: 'flex',
+          alignItems: 'baseline',
         }"
       >
-        {{ trunc(data.personal.jobTitle, 42) }}
+        <span>{{
+          !hasMiniDemoData && !hasBuilderData
+            ? animatedRole
+            : trunc(data.personal.jobTitle, 42)
+        }}</span>
+        <span
+          v-if="!hasMiniDemoData && !hasBuilderData"
+          class="typewriter-cursor"
+          aria-hidden="true"
+          >|</span
+        >
       </div>
       <div style="font-size: 11px; color: #6b7280; display: flex; gap: 6px; flex-wrap: wrap">
         <span>{{ trunc(data.personal.email, 28) }}</span>
@@ -347,3 +377,23 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+.typewriter-cursor {
+  font-weight: 300;
+  font-size: 0.95em;
+  color: #b8532a;
+  margin-left: 1px;
+  animation: tw-blink 0.75s step-end infinite;
+}
+
+@keyframes tw-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+</style>

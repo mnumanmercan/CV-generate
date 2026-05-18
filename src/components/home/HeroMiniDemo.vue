@@ -1,8 +1,21 @@
 <script setup lang="ts">
   import { RouterLink } from 'vue-router'
   import { useI18n } from '@/composables/useI18n'
+  import { useTypewriter } from '@/composables/useTypewriter'
 
   const { t } = useI18n()
+
+  const {
+    displayed: animatedName,
+    isActive: isNameAnimating,
+    stop: stopNameAnimation,
+  } = useTypewriter('Maya Okafor')
+
+  const {
+    displayed: animatedRole,
+    isActive: isRoleAnimating,
+    stop: stopRoleAnimation,
+  } = useTypewriter('Senior Product Designer', { initialDelay: 1400 })
 
   /**
    * Two-way bindings for the five mini-demo fields. The parent (HomeView)
@@ -65,9 +78,10 @@
         <input
           v-model="fullName"
           type="text"
-          placeholder="Maya Okafor"
+          :placeholder="isNameAnimating ? animatedName : 'Maya Okafor'"
           autocomplete="name"
           class="w-full text-sm"
+          @focus="stopNameAnimation"
         />
       </label>
       <label class="block">
@@ -75,8 +89,9 @@
         <input
           v-model="role"
           type="text"
-          placeholder="Senior Product Designer"
+          :placeholder="isRoleAnimating ? animatedRole : 'Senior Product Designer'"
           class="w-full text-sm"
+          @focus="stopRoleAnimation"
         />
       </label>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
