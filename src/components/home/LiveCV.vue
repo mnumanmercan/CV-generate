@@ -2,12 +2,16 @@
   import { computed } from 'vue'
   import { useCVStore } from '@/stores/cvStore'
   import { useTypewriter } from '@/composables/useTypewriter'
+  import { DEMO_NAMES, DEMO_ROLES } from './heroDemoSamples'
 
   const cvStore = useCVStore()
 
-  const { displayed: animatedName } = useTypewriter('Maya Okafor')
-  const { displayed: animatedRole } = useTypewriter('Senior Product Designer', {
+  const { displayed: animatedName, isActive: isNameAnimating } = useTypewriter(DEMO_NAMES)
+  const { displayed: animatedRole, isActive: isRoleAnimating } = useTypewriter(DEMO_ROLES, {
+    typeSpeed: 130,
+    deleteSpeed: 90,
     initialDelay: 1400,
+    pauseAfterType: 1800,
   })
 
   /**
@@ -191,6 +195,42 @@
     if (!s) return ''
     return s.length > len ? s.slice(0, len) + '…' : s
   }
+
+  /**
+   * Per-field "user has typed this" signals. Deliberately NOT derived
+   * from the global hasMiniDemoData — typing a name must freeze ONLY
+   * the name animation, and typing a role must freeze ONLY the role
+   * animation. The two header slots are independent.
+   */
+  const userTypedName = computed(() => !!cvStore.cvData.personal.fullName?.trim())
+  const userTypedRole = computed(() => !!cvStore.cvData.experience[0]?.position?.trim())
+
+  /**
+   * Header name shown in the preview. Three cases:
+   *   • Builder-territory data exists, or the user has typed a name
+   *     here → show their data (truncated).
+   *   • Animation is mid-cycle (incl. pause between words) → show
+   *     animatedName verbatim, even if it's "" during the inter-word
+   *     pause. Falling back to a sample here would flash the canonical
+   *     name and read as a glitch.
+   *   • Animation is finished (natural completion) → show the last
+   *     typed word, falling back to the canonical sample if absent.
+   */
+  const headerName = computed(() => {
+    if (hasBuilderData.value || userTypedName.value) {
+      return trunc(data.value.personal.fullName, 34)
+    }
+    if (isNameAnimating.value) return animatedName.value
+    return animatedName.value || trunc(data.value.personal.fullName, 34)
+  })
+
+  const headerRole = computed(() => {
+    if (hasBuilderData.value || userTypedRole.value) {
+      return trunc(data.value.personal.jobTitle, 42)
+    }
+    if (isRoleAnimating.value) return animatedRole.value
+    return animatedRole.value || trunc(data.value.personal.jobTitle, 42)
+  })
 </script>
 
 <!--
@@ -224,13 +264,9 @@
           align-items: baseline;
         "
       >
-        <span>{{
-          !hasMiniDemoData && !hasBuilderData
-            ? animatedName
-            : trunc(data.personal.fullName, 34)
-        }}</span>
+        <span>{{ headerName }}</span>
         <span
-          v-if="!hasMiniDemoData && !hasBuilderData"
+          v-if="!userTypedName && !hasBuilderData && isNameAnimating"
           class="typewriter-cursor"
           aria-hidden="true"
           >|</span
@@ -246,13 +282,9 @@
           alignItems: 'baseline',
         }"
       >
-        <span>{{
-          !hasMiniDemoData && !hasBuilderData
-            ? animatedRole
-            : trunc(data.personal.jobTitle, 42)
-        }}</span>
+        <span>{{ headerRole }}</span>
         <span
-          v-if="!hasMiniDemoData && !hasBuilderData"
+          v-if="!userTypedRole && !hasBuilderData && isRoleAnimating"
           class="typewriter-cursor"
           aria-hidden="true"
           >|</span
@@ -379,21 +411,21 @@
 </template>
 
 <style scoped>
-.typewriter-cursor {
-  font-weight: 300;
-  font-size: 0.95em;
-  color: #b8532a;
-  margin-left: 1px;
-  animation: tw-blink 0.75s step-end infinite;
-}
+  .typewriter-cursor {
+    font-weight: 300;
+    font-size: 0.95em;
+    color: #b8532a;
+    margin-left: 1px;
+    animation: tw-blink 0.75s step-end infinite;
+  }
 
-@keyframes tw-blink {
-  0%,
-  100% {
-    opacity: 1;
+  @keyframes tw-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
   }
-  50% {
-    opacity: 0;
-  }
-}
 </style>

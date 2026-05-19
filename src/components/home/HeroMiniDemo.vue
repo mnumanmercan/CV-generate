@@ -2,6 +2,7 @@
   import { RouterLink } from 'vue-router'
   import { useI18n } from '@/composables/useI18n'
   import { useTypewriter } from '@/composables/useTypewriter'
+  import { DEMO_NAMES, DEMO_ROLES } from './heroDemoSamples'
 
   const { t } = useI18n()
 
@@ -9,13 +10,13 @@
     displayed: animatedName,
     isActive: isNameAnimating,
     stop: stopNameAnimation,
-  } = useTypewriter('Maya Okafor')
+  } = useTypewriter(DEMO_NAMES, { maxCycles: 3 })
 
   const {
     displayed: animatedRole,
     isActive: isRoleAnimating,
     stop: stopRoleAnimation,
-  } = useTypewriter('Senior Product Designer', { initialDelay: 1400 })
+  } = useTypewriter(DEMO_ROLES, { initialDelay: 1400, maxCycles: 3 })
 
   /**
    * Two-way bindings for the five mini-demo fields. The parent (HomeView)
@@ -78,7 +79,7 @@
         <input
           v-model="fullName"
           type="text"
-          :placeholder="isNameAnimating ? animatedName : 'Maya Okafor'"
+          :placeholder="isNameAnimating ? animatedName : animatedName || 'Maya Okafor'"
           autocomplete="name"
           class="w-full text-sm"
           @focus="stopNameAnimation"
@@ -89,7 +90,7 @@
         <input
           v-model="role"
           type="text"
-          :placeholder="isRoleAnimating ? animatedRole : 'Senior Product Designer'"
+          :placeholder="isRoleAnimating ? animatedRole : animatedRole || 'Senior Product Designer'"
           class="w-full text-sm"
           @focus="stopRoleAnimation"
         />
