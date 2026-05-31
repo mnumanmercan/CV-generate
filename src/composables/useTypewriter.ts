@@ -69,17 +69,20 @@ export function useTypewriter(texts: string | readonly string[], options: Typewr
     }
   }
 
-  function stop() {
+  function stop(options: { freeze?: boolean } = {}) {
     isActive.value = false
     if (timer) {
       clearTimeout(timer)
       timer = null
     }
-    // Manual stop (e.g. user focused the input) clears the displayed
-    // text so the consumer can fall back to a clean static placeholder.
+    // Manual stop (e.g. user focused the input) normally clears the
+    // displayed text so the consumer can fall back to a clean static
+    // placeholder. Pass { freeze: true } to instead settle on the FULL
+    // current entry — useful when a focused input should show the complete
+    // sample value it was mid-way through typing, not the partial slice.
     // Natural completion via maxCycles intentionally does NOT clear,
     // leaving the final entry visible as the resting state.
-    displayed.value = ''
+    displayed.value = options.freeze ? (list[listIdx] ?? '') : ''
   }
 
   onMounted(() => {

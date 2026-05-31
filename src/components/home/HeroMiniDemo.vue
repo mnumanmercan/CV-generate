@@ -82,7 +82,7 @@
           :placeholder="isNameAnimating ? animatedName : animatedName || 'Maya Okafor'"
           autocomplete="name"
           class="w-full text-sm"
-          @focus="stopNameAnimation"
+          @focus="stopNameAnimation({ freeze: true })"
         />
       </label>
       <label class="block">
@@ -92,7 +92,7 @@
           type="text"
           :placeholder="isRoleAnimating ? animatedRole : animatedRole || 'Senior Product Designer'"
           class="w-full text-sm"
-          @focus="stopRoleAnimation"
+          @focus="stopRoleAnimation({ freeze: true })"
         />
       </label>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
