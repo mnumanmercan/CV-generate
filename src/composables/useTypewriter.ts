@@ -21,7 +21,9 @@ export function useTypewriter(texts: string | readonly string[], options: Typewr
   const pauseAfterType = options.pauseAfterType ?? 2400
   const pauseAfterDelete = options.pauseAfterDelete ?? 700
   const initialDelay = options.initialDelay ?? 1000
-  const maxCycles = options.maxCycles ?? 3
+  // Omitting maxCycles loops forever (see TypewriterOptions). Consumers that
+  // want to settle on a final word (e.g. HeroMiniDemo) opt in with maxCycles: 3.
+  const maxCycles = options.maxCycles
 
   const list: readonly string[] = typeof texts === 'string' ? [texts] : texts
 
