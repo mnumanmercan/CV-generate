@@ -443,9 +443,8 @@
               >
                 <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
                 <span v-else aria-hidden="true">↓</span>
-                {{
-                  pdfStatus === 'generating' ? t('builder.generating') : t('builder.downloadPdf')
-                }}
+                <!-- Intentionally not localized: button label stays English in all locales -->
+                {{ pdfStatus === 'generating' ? 'Generating…' : 'Download PDF' }}
               </button>
             </div>
 

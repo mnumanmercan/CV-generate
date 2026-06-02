@@ -120,7 +120,8 @@
           aria-hidden="true"
           >◉</span
         >
-        {{ t('nav.builder') }}
+        <!-- Intentionally not localized: tab labels stay English in all locales -->
+        Builder
       </RouterLink>
 
       <RouterLink
@@ -137,7 +138,8 @@
           aria-hidden="true"
           >✎</span
         >
-        {{ t('nav.coverLetter') }}
+        <!-- Intentionally not localized: tab labels stay English in all locales -->
+        Cover letter
       </RouterLink>
     </div>
 
