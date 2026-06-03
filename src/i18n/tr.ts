@@ -79,8 +79,10 @@ const tr: Translations = {
     ],
     cta: {
       tagline: 'Ücretsiz · Hesapsız · ATS uyumlu PDF',
-      heading: { prefix: 'Sayfa boş. ', accent: 'Söz', suffix: ' sende.' },
+      heading: { prefix: 'Fark edilen bir CV ', accent: 'yaz', suffix: '.' },
+      lede: 'Boş sayfa stresine son. İşe alım yazılımının da insanın da rahat okuduğu, tek sütunlu temiz bir yapıyla başla.',
       button: 'Hadi başla',
+      secondary: 'Planları karşılaştır',
     },
   },
 

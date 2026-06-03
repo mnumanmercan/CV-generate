@@ -243,34 +243,46 @@
         </p>
 
         <h2
-          class="font-display leading-[1.02] tracking-editorial text-ink mb-12 reveal-item"
-          :style="{ fontSize: 'clamp(56px, 9vw, 120px)', animationDelay: '80ms' }"
+          class="font-display leading-[1.02] tracking-editorial text-ink mb-7 reveal-item"
+          :style="{ fontSize: 'clamp(48px, 8vw, 104px)', animationDelay: '80ms' }"
         >
           {{ ctaHeading.prefix }}<span class="accent-italic">{{ ctaHeading.accent }}</span
           >{{ ctaHeading.suffix }}
         </h2>
 
-        <RouterLink
-          to="/builder"
-          class="btn-primary text-base reveal-item"
+        <p
+          class="max-w-xl mx-auto text-[18px] leading-[1.55] text-muted mb-12 reveal-item"
+          style="animation-delay: 120ms"
+        >
+          {{ t('home.cta.lede') }}
+        </p>
+
+        <div
+          class="flex flex-col sm:flex-row items-center justify-center gap-3 reveal-item"
           style="animation-delay: 160ms"
         >
-          {{ t('home.cta.button') }}
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M13 7l5 5m0 0l-5 5m5-5H6"
-            />
-          </svg>
-        </RouterLink>
+          <RouterLink to="/builder" class="btn-primary text-base">
+            {{ t('home.cta.button') }}
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
+            </svg>
+          </RouterLink>
+
+          <RouterLink to="/pricing" class="btn-ghost text-base">
+            {{ t('home.cta.secondary') }}
+          </RouterLink>
+        </div>
       </section>
     </main>
 

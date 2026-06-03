@@ -80,8 +80,10 @@ const en: Translations = {
     ],
     cta: {
       tagline: 'Free to start · No account required · ATS-ready PDF',
-      heading: { prefix: 'The page is open. The ', accent: 'rest', suffix: ' is yours.' },
+      heading: { prefix: 'Write the CV that gets ', accent: 'read', suffix: '.' },
+      lede: 'No blank-page paralysis — start from a clean, single-column structure that recruiters and their software both read.',
       button: 'Start writing',
+      secondary: 'Compare plans',
     },
   },
 

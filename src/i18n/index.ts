@@ -73,7 +73,9 @@ export interface Translations {
     cta: {
       tagline: string
       heading: SplitHeading
+      lede: string
       button: string
+      secondary: string
     }
   }
 
