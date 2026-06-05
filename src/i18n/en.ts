@@ -54,28 +54,22 @@ const en: Translations = {
     },
     method: {
       eyebrow: 'The Method',
-      heading: { prefix: 'Just ', accent: 'three', suffix: ' steps' },
+      heading: { prefix: 'Just ', accent: 'two', suffix: ' steps' },
     },
     steps: [
       {
-        eyebrow: 'Open the editor',
+        eyebrow: 'Write it',
         numeral: '01',
-        title: 'Write your story',
+        title: 'Write your résumé',
         description:
-          'Pick a section, start typing. Resumark keeps the structure tight so you can focus on the words — no blank page, no formatting headaches.',
+          'Pick a section and start typing. The structure stays tight while your résumé updates live on the right — pinned to A4, exactly as the recruiter will see it.',
       },
       {
-        eyebrow: 'See the result',
+        eyebrow: 'Send it',
         numeral: '02',
-        title: 'Preview as you type',
+        title: 'Export, ready for HR',
         description:
-          'Your résumé updates live on the right — pinned to A4, exactly as the recruiter will see it.',
-      },
-      {
-        eyebrow: 'Ship it',
-        numeral: '03',
-        title: 'Export and go',
-        description: 'One click. Pixel-perfect PDF, ATS-readable, consistent every time.',
+          'One click. A pixel-perfect, ATS-readable PDF — ready to send to HR, consistent every time.',
       },
     ],
     cta: {

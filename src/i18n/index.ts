@@ -69,7 +69,7 @@ export interface Translations {
       eyebrow: string
       heading: SplitHeading
     }
-    steps: [Step, Step, Step]
+    steps: [Step, Step]
     cta: {
       tagline: string
       heading: SplitHeading

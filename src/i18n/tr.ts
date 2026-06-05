@@ -54,27 +54,22 @@ const tr: Translations = {
     },
     method: {
       eyebrow: 'Nasıl Çalışır',
-      heading: { prefix: 'Sadece ', accent: 'üç', suffix: ' adım' },
+      heading: { prefix: 'Sadece ', accent: 'iki', suffix: ' adım' },
     },
     steps: [
       {
-        eyebrow: 'Editörü aç',
+        eyebrow: 'Yaz',
         numeral: '01',
-        title: 'Hikayeni yaz',
+        title: "CV'ni yaz",
         description:
-          'Bir bölüm seç, yazmaya başla. Yapı bizden, kelimeler senden. Boş sayfa korkusu yok, biçim derdi yok.',
-      },
-      {
-        eyebrow: 'Sonucu gör',
-        numeral: '02',
-        title: 'Yazarken önizle',
-        description: "CV'n sağda canlı güncellenir. A4 ölçüsünde, işe alımcının göreceği gibi.",
+          "Bir bölüm seç, yazmaya başla. Yapı bizden, kelimeler senden — CV'n sağda A4 ölçüsünde canlı güncellenir, işe alımcının göreceği gibi.",
       },
       {
         eyebrow: 'Gönder',
-        numeral: '03',
-        title: 'İndir, gönder',
-        description: 'Tek tık. Kusursuz PDF, ATS uyumlu, her seferinde aynı kalitede.',
+        numeral: '02',
+        title: "İndir, İK'ya gönder",
+        description:
+          "Tek tık. ATS uyumlu, kusursuz bir PDF — İK'ya göndermeye hazır, her seferinde aynı kalitede.",
       },
     ],
     cta: {

@@ -12,12 +12,16 @@
   import { useI18n } from '@/composables/useI18n'
   import { createWorkExperience } from '@/types/cv.types'
   import type { Step } from '@/i18n/index'
+  import resumePreview from '@/assets/resume.png'
+  import exportPreview from '@/assets/export.png'
 
   const cvStore = useCVStore()
   const { vReveal } = useScrollReveal()
   const { t, t_obj } = useI18n()
 
   const steps = computed(() => t_obj<Step[]>('home.steps'))
+  // Hover-preview media per step (placeholders for short GIFs), index-aligned.
+  const stepMedia = [resumePreview, exportPreview]
   const heroHeading = computed(() =>
     t_obj<{ prefix: string; accent: string; suffix: string }>('home.hero.heading'),
   )
@@ -191,7 +195,7 @@
         </div>
       </section>
 
-      <!-- ── Three steps ──────────────────────────────────────────────── -->
+      <!-- ── Two steps ────────────────────────────────────────────────── -->
       <section
         v-reveal
         class="px-6 py-20 md:py-28 max-w-7xl mx-auto w-full border-t border-overlay/8"
@@ -222,13 +226,16 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
           <StepCard
             v-for="(step, i) in steps"
             :key="step.numeral"
             class="reveal-item"
             :style="{ animationDelay: `${i * 90}ms` }"
             v-bind="step"
+            :media="stepMedia[i]"
+            :show-connector="i < steps.length - 1"
+            :show-download="i === steps.length - 1"
           />
         </div>
       </section>
