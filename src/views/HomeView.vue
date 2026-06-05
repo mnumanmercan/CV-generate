@@ -196,9 +196,12 @@
       </section>
 
       <!-- ── Two steps ────────────────────────────────────────────────── -->
+      <!-- Extra bottom padding (md+) reserves room for the hover preview
+           islands, which float below the cards and would otherwise overlap
+           the closing CTA. Hover-gated, so mobile keeps the normal spacing. -->
       <section
         v-reveal
-        class="px-6 py-20 md:py-28 max-w-7xl mx-auto w-full border-t border-overlay/8"
+        class="px-6 py-20 md:pt-28 md:pb-44 max-w-7xl mx-auto w-full border-t border-overlay/8"
         aria-labelledby="steps-heading"
       >
         <div class="flex flex-col md:flex-row gap-8 md:gap-16 mb-14 md:mb-20">
