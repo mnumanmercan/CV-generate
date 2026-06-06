@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import type { StepPhase } from '@/composables/useStepSequence'
+
   defineProps<{
     eyebrow: string
     numeral: string
@@ -10,6 +12,8 @@
     showConnector?: boolean
     /** Play the export/download animation (the final step's outcome). */
     showDownload?: boolean
+    /** Current beat of the shared sequence; drives which animation plays. */
+    phase?: StepPhase
   }>()
 </script>
 
@@ -20,7 +24,15 @@
   "island" pinned to the card's own width.
 -->
 <template>
-  <div class="group relative flex flex-col" style="z-index: 9999 !important">
+  <div
+    class="group relative flex flex-col"
+    :class="{
+      'is-write': phase === 'write',
+      'is-download': phase === 'download',
+      'is-send': phase === 'send',
+    }"
+    style="z-index: 9999 !important"
+  >
     <p class="mono-eyebrow mb-4">{{ eyebrow }}</p>
 
     <!-- Numeral + flow connector toward the next step -->
@@ -54,7 +66,7 @@
         </svg>
       </div>
 
-      <!-- Export outcome: download icon pops, then a fast progress bar fills -->
+      <!-- Export outcome: download icon pops, a fast bar fills, then it sends -->
       <div v-if="showDownload" class="step-download hidden md:flex" aria-hidden="true">
         <svg class="step-dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path
@@ -65,6 +77,16 @@
           />
         </svg>
         <span class="step-dl-bar"><span class="step-dl-bar-fill"></span></span>
+        <!-- Once the bar fills, a paper plane flies off — "sent". -->
+        <svg class="step-send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 2 11 13" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M22 2 15 22l-4-9-9-4 20-7z"
+          />
+        </svg>
       </div>
     </div>
 
@@ -124,9 +146,13 @@
     display: flex;
     align-items: center;
     gap: 3px;
+    opacity: 0;
     transform: translateY(-50%);
-    /* 3s cycle, shared with step 2's download so the two stay phase-locked. */
-    animation: step-flow-zip 3s cubic-bezier(0.45, 0, 0.15, 1) infinite;
+  }
+
+  /* Plays once when the conductor is on the "write" beat. */
+  .is-write .step-flow-comet {
+    animation: step-flow-zip 0.9s cubic-bezier(0.45, 0, 0.15, 1) 1 both;
   }
 
   .step-flow-lead,
@@ -156,20 +182,19 @@
     opacity: 0.16;
   }
 
-  /* Fast dash across (~0.7s), gone by 30% — handing off to the download. */
+  /* One self-contained dash across the line: appear → travel → fade. */
   @keyframes step-flow-zip {
     0% {
       left: 0;
       opacity: 0;
     }
-    4% {
+    10% {
       opacity: 1;
     }
-    24% {
+    70% {
       left: calc(100% - 26px);
       opacity: 1;
     }
-    30%,
     100% {
       left: calc(100% - 26px);
       opacity: 0;
@@ -177,9 +202,10 @@
   }
 
   /*
-    Step 2's outcome. Shares the same 3s cycle as the streak (both start at
-    mount, so they stay phase-locked): the icon pops as the streak lands (~28%),
-    then a fast progress bar fills, holds, and fades before the next loop.
+    Step 2's outcome. Shares the same 4s cycle as the streak (both start at
+    mount, so they stay phase-locked): the download icon pops as the streak
+    lands (~22%), a fast bar fills, then a paper plane flies off — "sent" —
+    before the next loop. Three beats: download → done → send.
   */
   .step-download {
     position: relative;
@@ -195,7 +221,6 @@
     width: 18px;
     height: 18px;
     opacity: 0;
-    animation: step-dl-icon 3s ease-out infinite;
   }
 
   .step-dl-bar {
@@ -214,41 +239,65 @@
     background: var(--accent);
     transform-origin: left center;
     transform: scaleX(0);
-    animation: step-dl-fill 3s cubic-bezier(0.3, 0, 0.2, 1) infinite;
   }
 
+  /* Download beat: icon pops and the bar fills, then both clear before send. */
+  .is-download .step-dl-icon {
+    animation: step-dl-icon 1.2s ease-out 1 both;
+  }
+  .is-download .step-dl-bar-fill {
+    animation: step-dl-fill 1.2s cubic-bezier(0.3, 0, 0.2, 1) 1 both;
+  }
+
+  /* Paper plane: rests until the bar fills, then lifts off from just below
+     the centre of the bar and fades — "sent". */
+  .step-send-icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -9px;
+    margin-top: 7px;
+    width: 18px;
+    height: 18px;
+    opacity: 0;
+  }
+
+  /* Send beat: plays only after the download has fully cleared. */
+  .is-send .step-send-icon {
+    animation: step-send 1s ease-out 1 both;
+  }
+
+  /* Pops in with a small nudge, holds, then fades out by the end of the beat. */
   @keyframes step-dl-icon {
-    0%,
-    24% {
+    0% {
       opacity: 0;
-      transform: translateY(-2px);
+      transform: translateY(-3px);
     }
-    28% {
+    12% {
       opacity: 1;
       transform: translateY(0);
     }
-    31% {
-      transform: translateY(1.5px);
+    18% {
+      transform: translateY(2px);
     }
-    34% {
+    24% {
       transform: translateY(0);
     }
     80% {
       opacity: 1;
     }
-    88%,
     100% {
       opacity: 0;
     }
   }
 
+  /* Fills to full, holds, then fades — so the bar is gone before "send". */
   @keyframes step-dl-fill {
-    0%,
-    28% {
+    0% {
       transform: scaleX(0);
       opacity: 1;
     }
-    52% {
+    60% {
       transform: scaleX(1);
       opacity: 1;
     }
@@ -256,14 +305,29 @@
       transform: scaleX(1);
       opacity: 1;
     }
-    86% {
+    100% {
       transform: scaleX(1);
       opacity: 0;
     }
-    87%,
-    100% {
-      transform: scaleX(0);
+  }
+
+  /* Appears below the centre of where the bar was, lifts up, and fades. */
+  @keyframes step-send {
+    0% {
       opacity: 0;
+      transform: translate(0, 4px) scale(0.85);
+    }
+    18% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+    45% {
+      opacity: 1;
+      transform: translate(1px, -3px) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(6px, -16px) scale(0.9);
     }
   }
 
@@ -329,6 +393,10 @@
       animation: none;
       transform: scaleX(1);
       opacity: 0.5;
+    }
+    .step-send-icon {
+      animation: none;
+      opacity: 0;
     }
     .step-preview {
       transition: opacity 0.2s ease;

@@ -7,6 +7,7 @@
   import LiveCV from '@/components/home/LiveCV.vue'
   import StepCard from '@/components/home/StepCard.vue'
   import { useScrollReveal } from '@/composables/useScrollReveal'
+  import { useStepSequence } from '@/composables/useStepSequence'
   import { useAutoSave } from '@/composables/useAutoSave'
   import { useCVStore } from '@/stores/cvStore'
   import { useI18n } from '@/composables/useI18n'
@@ -17,6 +18,8 @@
 
   const cvStore = useCVStore()
   const { vReveal } = useScrollReveal()
+  // Conductor for the "two steps" sequence: write → download → send → rest.
+  const { phase: stepPhase, vStepSequence } = useStepSequence()
   const { t, t_obj } = useI18n()
 
   const steps = computed(() => t_obj<Step[]>('home.steps'))
@@ -201,6 +204,7 @@
            the closing CTA. Hover-gated, so mobile keeps the normal spacing. -->
       <section
         v-reveal
+        v-step-sequence
         class="px-6 py-20 md:pt-28 md:pb-44 max-w-7xl mx-auto w-full border-t border-overlay/8"
         aria-labelledby="steps-heading"
       >
@@ -239,6 +243,7 @@
             :media="stepMedia[i]"
             :show-connector="i < steps.length - 1"
             :show-download="i === steps.length - 1"
+            :phase="stepPhase"
           />
         </div>
       </section>
