@@ -65,7 +65,7 @@ const en: Translations = {
           'Pick a section and start typing. The structure stays tight while your résumé updates live on the right — pinned to A4, exactly as the recruiter will see it.',
       },
       {
-        eyebrow: 'Send it',
+        eyebrow: 'Export and Send it',
         numeral: '02',
         title: 'Export, ready for HR',
         description:

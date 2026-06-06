@@ -20,7 +20,7 @@
   "island" pinned to the card's own width.
 -->
 <template>
-  <div class="group relative flex flex-col">
+  <div class="group relative flex flex-col" style="z-index: 9999 !important">
     <p class="mono-eyebrow mb-4">{{ eyebrow }}</p>
 
     <!-- Numeral + flow connector toward the next step -->
@@ -78,8 +78,8 @@
     <!-- Hover preview island — pinned to this card's width, GIF slot inside -->
     <div v-if="media" class="step-preview" aria-hidden="true">
       <div class="step-preview-inner">
-        <div class="step-preview-frame">
-          <img :src="media" alt="" class="step-preview-img" loading="lazy" />
+        <div class="step-preview-frame max-h-max">
+          <img :src="media" alt="" class="step-preview-img w-full" loading="lazy" />
         </div>
       </div>
     </div>
@@ -296,7 +296,7 @@
   .step-preview-frame {
     overflow: hidden;
     border-radius: 10px;
-    max-height: 232px;
+    max-height: max-content !important;
   }
 
   .step-preview-img {
