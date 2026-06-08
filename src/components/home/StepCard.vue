@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { ref, onUnmounted } from 'vue'
   import type { StepPhase } from '@/composables/useStepSequence'
 
   defineProps<{
@@ -15,6 +16,34 @@
     /** Current beat of the shared sequence; drives which animation plays. */
     phase?: StepPhase
   }>()
+
+  /*
+    Only mount the (animated) preview while the card is hovered/focused, so the
+    WebP never decodes off-screen. A short close delay keeps the fade-out smooth,
+    and remounting on each hover restarts the clip from its first frame.
+  */
+  const isPreviewActive = ref(false)
+  let closeTimer: ReturnType<typeof setTimeout> | null = null
+
+  function showPreview() {
+    if (closeTimer) {
+      clearTimeout(closeTimer)
+      closeTimer = null
+    }
+    isPreviewActive.value = true
+  }
+
+  function hidePreview() {
+    if (closeTimer) clearTimeout(closeTimer)
+    closeTimer = setTimeout(() => {
+      isPreviewActive.value = false
+      closeTimer = null
+    }, 300)
+  }
+
+  onUnmounted(() => {
+    if (closeTimer) clearTimeout(closeTimer)
+  })
 </script>
 
 <!--
@@ -32,6 +61,10 @@
       'is-send': phase === 'send',
     }"
     style="z-index: 9999 !important"
+    @mouseenter="showPreview"
+    @mouseleave="hidePreview"
+    @focusin="showPreview"
+    @focusout="hidePreview"
   >
     <p class="mono-eyebrow mb-4">{{ eyebrow }}</p>
 
@@ -101,7 +134,13 @@
     <div v-if="media" class="step-preview" aria-hidden="true">
       <div class="step-preview-inner">
         <div class="step-preview-frame max-h-max">
-          <img :src="media" alt="" class="step-preview-img w-full" loading="lazy" />
+          <img
+            v-if="isPreviewActive"
+            :src="media"
+            alt=""
+            class="step-preview-img w-full"
+            decoding="async"
+          />
         </div>
       </div>
     </div>

@@ -13,7 +13,8 @@
   import { useI18n } from '@/composables/useI18n'
   import { createWorkExperience } from '@/types/cv.types'
   import type { Step } from '@/i18n/index'
-  import resumePreview from '@/assets/resume.png'
+  // Animated CV preview (WebP — full colour, smaller + cleaner than the GIF).
+  import cvPreview from '@/assets/cv-gif.webp'
   import exportPreview from '@/assets/export.png'
 
   const cvStore = useCVStore()
@@ -23,8 +24,9 @@
   const { t, t_obj } = useI18n()
 
   const steps = computed(() => t_obj<Step[]>('home.steps'))
-  // Hover-preview media per step (placeholders for short GIFs), index-aligned.
-  const stepMedia = [resumePreview, exportPreview]
+  // Hover-preview media per step, index-aligned: step 1 shows the animated CV
+  // preview, step 2 shows the export screenshot.
+  const stepMedia = [cvPreview, exportPreview]
   const heroHeading = computed(() =>
     t_obj<{ prefix: string; accent: string; suffix: string }>('home.hero.heading'),
   )
