@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import { ref, onUnmounted } from 'vue'
+  import { computed, ref, onUnmounted } from 'vue'
   import type { StepPhase } from '@/composables/useStepSequence'
 
-  defineProps<{
+  const props = defineProps<{
     eyebrow: string
     numeral: string
     title: string
@@ -16,6 +16,16 @@
     /** Current beat of the shared sequence; drives which animation plays. */
     phase?: StepPhase
   }>()
+
+  /*
+    Each card's numeral "triggers" when its own beat begins: step 1 (the
+    connector card) on the 'write' beat, step 2 (the download card) on the
+    'download' beat. Toggling this class re-fires the one-shot pop each cycle.
+  */
+  const ownBeat = computed<StepPhase | undefined>(() =>
+    props.showConnector ? 'write' : props.showDownload ? 'download' : undefined,
+  )
+  const numeralActive = computed(() => ownBeat.value !== undefined && props.phase === ownBeat.value)
 
   /*
     Only mount the (animated) preview while the card is hovered/focused, so the
@@ -71,7 +81,8 @@
     <!-- Numeral + flow connector toward the next step -->
     <div class="relative flex items-center mb-7">
       <div
-        class="font-display leading-[0.85] shrink-0"
+        class="step-numeral font-display leading-[0.85] shrink-0"
+        :class="{ 'numeral-trigger': numeralActive }"
         :style="{
           color: 'var(--accent)',
           fontSize: 'clamp(72px, 9vw, 132px)',
@@ -148,6 +159,33 @@
 </template>
 
 <style scoped>
+  /* ── Numeral trigger ────────────────────────────────────────────── */
+  /* Pop fired when this step's beat begins (transform-only → no layout shift). */
+  .step-numeral {
+    transform-origin: left center;
+  }
+  .numeral-trigger {
+    animation: step-numeral-pop 0.55s ease-out 1 both;
+  }
+
+  @keyframes step-numeral-pop {
+    0% {
+      transform: scale(1);
+      filter: brightness(1);
+    }
+    32% {
+      transform: scale(1.07);
+      filter: brightness(1.18);
+    }
+    60% {
+      transform: scale(0.99);
+    }
+    100% {
+      transform: scale(1);
+      filter: brightness(1);
+    }
+  }
+
   /* ── Flow connector ─────────────────────────────────────────────── */
   .step-flow {
     position: relative;
