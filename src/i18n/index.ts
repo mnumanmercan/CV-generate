@@ -124,6 +124,7 @@ export interface Translations {
     yourCv: string
     sectionsLabel: string
     editCv: string
+    viewCv: string
     lastSavedNever: string
     lastSavedJustNow: string
     lastSavedMins: string
@@ -398,6 +399,12 @@ export interface Translations {
     defaultTitle: string
     confirm: string
     cancel: string
+  }
+
+  preview: {
+    eyebrow: string
+    dialogLabel: string
+    close: string
   }
 
   aria: {

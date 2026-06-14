@@ -127,6 +127,7 @@ const tr: Translations = {
     yourCv: "CV'n",
     sectionsLabel: '{n}/8 bölüm hazır',
     editCv: "CV'ni düzenle",
+    viewCv: "CV'ni görüntüle",
     lastSavedNever: 'Henüz yok',
     lastSavedJustNow: 'Az önce',
     lastSavedMins: '{n} dk önce',
@@ -449,6 +450,12 @@ const tr: Translations = {
     defaultTitle: 'Emin misin?',
     confirm: 'Onayla',
     cancel: 'İptal',
+  },
+
+  preview: {
+    eyebrow: 'Önizleme · Salt görünüm',
+    dialogLabel: 'CV önizlemesi',
+    close: 'Önizlemeyi kapat',
   },
 
   aria: {

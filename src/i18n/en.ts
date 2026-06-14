@@ -130,6 +130,7 @@ const en: Translations = {
     yourCv: 'Your CV',
     sectionsLabel: '{n}/8 sections filled',
     editCv: 'Edit CV',
+    viewCv: 'View CV',
     lastSavedNever: 'Never',
     lastSavedJustNow: 'Just now',
     lastSavedMins: '{n}m ago',
@@ -453,6 +454,12 @@ const en: Translations = {
     defaultTitle: 'Are you sure?',
     confirm: 'Confirm',
     cancel: 'Cancel',
+  },
+
+  preview: {
+    eyebrow: 'Preview · Read-only',
+    dialogLabel: 'CV preview',
+    close: 'Close preview',
   },
 
   aria: {

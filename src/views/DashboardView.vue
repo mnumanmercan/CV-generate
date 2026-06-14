@@ -1,22 +1,30 @@
 <script setup lang="ts">
-  import { computed, onMounted } from 'vue'
+  import { computed, onMounted, ref } from 'vue'
   import { RouterLink } from 'vue-router'
   import { storeToRefs } from 'pinia'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import UpgradePrompt from '@/components/ui/UpgradePrompt.vue'
+  import CVPreviewModal from '@/components/preview/CVPreviewModal.vue'
   import { useUserStore } from '@/stores/userStore'
   import { useCVStore } from '@/stores/cvStore'
   import { useI18n } from '@/composables/useI18n'
 
   const { t, t_obj } = useI18n()
 
-  onMounted(() => {
-    document.title = 'Dashboard — Resumark'
-  })
-
   const userStore = useUserStore()
   const cvStore = useCVStore()
   const { cvData } = storeToRefs(cvStore)
+
+  // Read-only CV preview popup.
+  const showPreview = ref(false)
+
+  onMounted(() => {
+    document.title = 'Dashboard — Resumark'
+    // Hydrate the store from the active backend so the cards and the preview
+    // reflect the user's real, current CV (a direct refresh into /dashboard
+    // would otherwise show empty in-memory defaults).
+    cvStore.loadFromStorage()
+  })
 
   /* ── Last saved relative time ─────────────────────────────── */
   const lastSavedLabel = computed(() => {
@@ -136,23 +144,28 @@
               </div>
             </div>
 
-            <RouterLink to="/builder" class="btn-primary shrink-0 text-[13px]">
-              {{ t('dashboard.editCv') }}
-              <svg
-                class="w-3.5 h-3.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </RouterLink>
+            <div class="flex items-center gap-2 shrink-0">
+              <button type="button" class="btn-ghost text-[13px]" @click="showPreview = true">
+                {{ t('dashboard.viewCv') }}
+              </button>
+              <RouterLink to="/builder" class="btn-primary text-[13px]">
+                {{ t('dashboard.editCv') }}
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </RouterLink>
+            </div>
           </div>
         </div>
 
@@ -271,23 +284,32 @@
                 }"
               />
             </div>
-            <RouterLink to="/builder" class="btn-primary w-full justify-center text-[13px]">
-              {{ t('dashboard.editCv') }}
-              <svg
-                class="w-3.5 h-3.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="btn-ghost flex-1 justify-center text-[13px]"
+                @click="showPreview = true"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </RouterLink>
+                {{ t('dashboard.viewCv') }}
+              </button>
+              <RouterLink to="/builder" class="btn-primary flex-1 justify-center text-[13px]">
+                {{ t('dashboard.editCv') }}
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </RouterLink>
+            </div>
           </div>
 
           <!-- Cover Letter card -->
@@ -351,6 +373,8 @@
         </div>
       </template>
     </main>
+
+    <CVPreviewModal :visible="showPreview" @close="showPreview = false" />
 
     <UpgradePrompt />
   </div>
