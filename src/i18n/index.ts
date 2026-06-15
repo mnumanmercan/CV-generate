@@ -402,7 +402,6 @@ export interface Translations {
   }
 
   preview: {
-    eyebrow: string
     dialogLabel: string
     close: string
   }

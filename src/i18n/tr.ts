@@ -453,7 +453,6 @@ const tr: Translations = {
   },
 
   preview: {
-    eyebrow: 'Önizleme · Salt görünüm',
     dialogLabel: 'CV önizlemesi',
     close: 'Önizlemeyi kapat',
   },

@@ -457,7 +457,6 @@ const en: Translations = {
   },
 
   preview: {
-    eyebrow: 'Preview · Read-only',
     dialogLabel: 'CV preview',
     close: 'Close preview',
   },

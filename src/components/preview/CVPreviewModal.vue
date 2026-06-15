@@ -6,29 +6,33 @@
   import { useI18n } from '@/composables/useI18n'
 
   // Read-only CV viewer. Renders the exact same #cv-preview element the builder
-  // captures, so the PDF download here is byte-for-byte identical to the
-  // builder's. No editing affordances — view and download only.
+  // captures, so the PDF download here is identical to the builder's. The only
+  // chrome is the dark overlay behind it and two icon controls floating in the
+  // document's top-right corner — no window, no header.
   const props = defineProps<{ visible: boolean }>()
   const emit = defineEmits<{ close: [] }>()
 
   const { t } = useI18n()
   const { status: pdfStatus, exportPDF } = usePDFExport()
 
-  // ── Auto-fit the fixed 794px A4 preview into the available dialog width ──────
-  // The preview is a rigid 794px wide; we scale it down (never up) so it fits
-  // narrow viewports without a horizontal scrollbar. usePDFExport neutralizes
-  // this transform before capture, so the scaling never affects the PDF.
+  // ── Fit the whole A4 document inside the viewport ───────────────────────────
+  // The CV is a rigid 794×1122 (A4 at 96dpi). We scale it down so the ENTIRE
+  // page is visible without scrolling — bounded by whichever of viewport height
+  // or width is tighter — and never scale above 1. usePDFExport neutralizes this
+  // transform before capture, so the scaling never affects the exported PDF.
   const A4_WIDTH_PX = 794
-  const HORIZONTAL_PADDING_PX = 32
-  const scrollEl = ref<HTMLElement | null>(null)
+  const A4_HEIGHT_PX = 1122
+  const VIEWPORT_MARGIN_PX = 40
+  const rootEl = ref<HTMLElement | null>(null)
   const scale = ref(1)
   let observer: ResizeObserver | null = null
 
   function fit(): void {
-    const el = scrollEl.value
+    const el = rootEl.value
     if (!el) return
-    const available = el.clientWidth - HORIZONTAL_PADDING_PX
-    scale.value = Math.min(1, Math.max(0.2, available / A4_WIDTH_PX))
+    const availW = el.clientWidth - VIEWPORT_MARGIN_PX
+    const availH = el.clientHeight - VIEWPORT_MARGIN_PX
+    scale.value = Math.min(1, availW / A4_WIDTH_PX, availH / A4_HEIGHT_PX)
   }
 
   function teardownObserver(): void {
@@ -46,9 +50,9 @@
       }
       await nextTick()
       fit()
-      if (typeof ResizeObserver !== 'undefined' && scrollEl.value) {
+      if (typeof ResizeObserver !== 'undefined' && rootEl.value) {
         observer = new ResizeObserver(fit)
-        observer.observe(scrollEl.value)
+        observer.observe(rootEl.value)
       }
     },
   )
@@ -79,82 +83,84 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
+      <!-- Overlay doubles as the backdrop; clicking it closes the popup. -->
       <div
         v-if="visible"
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+        ref="rootEl"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
         role="dialog"
         aria-modal="true"
         :aria-label="t('preview.dialogLabel')"
+        @click="emit('close')"
       >
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="emit('close')" />
-
-        <!-- Dialog shell -->
+        <!-- Only the CV document sits on the overlay; clicking it never closes. -->
         <div
-          class="relative flex flex-col w-full max-w-[880px] h-[90vh] rounded-2xl border border-overlay/10 shadow-2xl overflow-hidden"
-          style="background: var(--paper)"
+          class="relative"
+          :style="{ width: `${A4_WIDTH_PX * scale}px`, height: `${A4_HEIGHT_PX * scale}px` }"
+          @click.stop
         >
-          <!-- Top bar -->
-          <header
-            class="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-overlay/10"
-          >
-            <p class="mono-eyebrow text-[10.5px]">{{ t('preview.eyebrow') }}</p>
-
-            <div class="flex items-center gap-2">
-              <button
-                type="button"
-                :disabled="pdfStatus === 'generating'"
-                class="btn-primary text-[13px]"
-                :aria-label="t('aria.downloadCv')"
-                @click="handleDownload"
-              >
-                <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
-                <span v-else aria-hidden="true">↓</span>
-                <!-- Intentionally not localized: matches the builder's download button -->
-                {{ pdfStatus === 'generating' ? 'Generating…' : 'Download PDF' }}
-              </button>
-
-              <button
-                type="button"
-                class="w-9 h-9 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors"
-                :aria-label="t('preview.close')"
-                @click="emit('close')"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    d="M6 6l12 12M6 18L18 6"
-                  />
-                </svg>
-              </button>
-            </div>
-          </header>
-
-          <!-- Scrollable, auto-fitting preview surface -->
-          <div
-            ref="scrollEl"
-            class="flex-1 overflow-auto flex justify-center py-6 px-4"
-            style="background: var(--paper2)"
-          >
-            <div
-              :style="{
-                transform: `scale(${scale})`,
-                transformOrigin: 'top left',
-                width: `${A4_WIDTH_PX * scale}px`,
-                height: `${1122 * scale}px`,
-                flexShrink: '0',
-              }"
+          <!-- In-document controls, top-right corner -->
+          <div class="absolute top-3 right-3 z-10 flex items-center gap-2">
+            <button
+              type="button"
+              :disabled="pdfStatus === 'generating'"
+              class="w-9 h-9 rounded-full flex items-center justify-center text-white shadow-lg transition-opacity hover:opacity-90 disabled:opacity-60"
+              style="background: var(--accent)"
+              :aria-label="t('aria.downloadCv')"
+              @click="handleDownload"
             >
-              <CVPreview />
-            </div>
+              <LoadingSpinner v-if="pdfStatus === 'generating'" size="sm" />
+              <svg
+                v-else
+                class="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M12 4v10m0 0l-4-4m4 4l4-4M5 19h14"
+                />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              class="w-9 h-9 rounded-full flex items-center justify-center text-white bg-black/50 hover:bg-black/70 shadow-lg transition-colors"
+              :aria-label="t('preview.close')"
+              @click="emit('close')"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M6 6l12 12M6 18L18 6"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- The scaled A4 document. The wrapper carries the scaled footprint;
+               the child renders at natural size and is scaled to fill it. -->
+          <div
+            :style="{
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              width: `${A4_WIDTH_PX}px`,
+              height: `${A4_HEIGHT_PX}px`,
+            }"
+          >
+            <CVPreview />
           </div>
         </div>
       </div>
