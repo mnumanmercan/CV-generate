@@ -83,6 +83,7 @@ const CVMetaSchema = z.object({
   version: z.string().max(20),
   templateId: z.enum(['classic', 'modern', 'technical']),
   sectionOrder: z.array(z.enum(SECTION_KEYS)).optional(),
+  educationInColumns: z.boolean().optional(),
 })
 
 export const CVDataSchema = z.object({

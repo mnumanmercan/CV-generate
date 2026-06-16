@@ -331,6 +331,11 @@ export interface Translations {
     eduEndDate: string
     eduGpa: string
     addEducation: string
+    eduLayoutLabel: string
+    eduLayoutFull: string
+    eduLayoutFullDesc: string
+    eduLayoutColumns: string
+    eduLayoutColumnsDesc: string
     eduEntryLabel: string
     skillCategory: string
     skillsHint: string

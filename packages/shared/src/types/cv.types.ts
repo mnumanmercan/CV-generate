@@ -79,6 +79,8 @@ export interface CVMeta {
   version: string
   templateId: string
   sectionOrder?: SectionKey[]
+  /** When true, Education joins Certifications & Languages as a third column in the compact bottom row. */
+  educationInColumns?: boolean
 }
 
 export interface CVData {

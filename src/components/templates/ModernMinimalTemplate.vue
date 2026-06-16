@@ -1,10 +1,8 @@
 <script setup lang="ts">
   import { computed, type Component } from 'vue'
   import type { CVData, SectionKey } from '@/types/cv.types'
+  import { buildDisplaySections } from './displaySections'
 
-  type DisplaySection =
-    | { paired: false; key: SectionKey }
-    | { paired: true; first: SectionKey; second: SectionKey }
   import ExperienceSection from './modern/sections/ExperienceSection.vue'
   import EducationSection from './modern/sections/EducationSection.vue'
   import SkillsSection from './modern/sections/SkillsSection.vue'
@@ -29,27 +27,9 @@
 
   const orderedSections = computed(() => props.sectionOrder.filter((key) => key in sectionMap))
 
-  const displaySections = computed<DisplaySection[]>(() => {
-    const keys = orderedSections.value
-    const result: DisplaySection[] = []
-    let pairEmitted = false
-
-    for (const key of keys) {
-      if (key !== 'certifications' && key !== 'languages') {
-        result.push({ paired: false, key })
-        continue
-      }
-      if (pairEmitted) continue
-      const other = keys.find((k) => k !== key && (k === 'certifications' || k === 'languages'))
-      if (other) {
-        result.push({ paired: true, first: key, second: other })
-        pairEmitted = true
-      } else {
-        result.push({ paired: false, key })
-      }
-    }
-    return result
-  })
+  const displaySections = computed(() =>
+    buildDisplaySections(orderedSections.value, props.cvData.meta.educationInColumns ?? false),
+  )
 
   const socialLinks = computed(() => {
     const p = props.cvData.personal
@@ -149,19 +129,16 @@
     </section>
 
     <!-- ── Ordered Sections ──────────────────────────────────────── -->
-    <template v-for="item in displaySections" :key="item.paired ? 'cert-lang-pair' : item.key">
+    <template v-for="item in displaySections" :key="item.grouped ? 'cert-lang-edu-row' : item.key">
       <component
         :is="sectionMap[item.key]"
-        v-if="!item.paired"
+        v-if="!item.grouped"
         :cv-data="cvData"
         :is-pulsed="isPulsed"
       />
       <div v-else style="display: flex; gap: 24px; align-items: flex-start">
-        <div style="flex: 1; min-width: 0">
-          <component :is="sectionMap[item.first]" :cv-data="cvData" :is-pulsed="isPulsed" />
-        </div>
-        <div style="flex: 1; min-width: 0">
-          <component :is="sectionMap[item.second]" :cv-data="cvData" :is-pulsed="isPulsed" />
+        <div v-for="key in item.keys" :key="key" style="flex: 1; min-width: 0">
+          <component :is="sectionMap[key]" :cv-data="cvData" :is-pulsed="isPulsed" />
         </div>
       </div>
     </template>
