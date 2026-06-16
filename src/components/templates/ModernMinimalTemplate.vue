@@ -27,7 +27,9 @@
 
   const orderedSections = computed(() => props.sectionOrder.filter((key) => key in sectionMap))
 
-  const displaySections = computed(() => buildDisplaySections(orderedSections.value))
+  const displaySections = computed(() =>
+    buildDisplaySections(orderedSections.value, props.cvData.meta.educationInColumns ?? false),
+  )
 
   const socialLinks = computed(() => {
     const p = props.cvData.personal

@@ -142,5 +142,52 @@
     >
       <span aria-hidden="true">+</span> {{ t('forms.addEducation') }}
     </button>
+
+    <!-- Layout option: keep Education full-width, or pull it into the compact
+         bottom row beside Certifications & Languages (meta.educationInColumns). -->
+    <div class="pt-3 border-t border-overlay/5">
+      <p class="mono-eyebrow text-[10.5px] text-muted mb-2">{{ t('forms.eduLayoutLabel') }}</p>
+      <div class="grid grid-cols-2 gap-2" role="radiogroup" :aria-label="t('forms.eduLayoutLabel')">
+        <button
+          type="button"
+          role="radio"
+          :aria-checked="!(cvData.meta.educationInColumns ?? false)"
+          class="text-left rounded-xl border p-3 transition-all"
+          :class="
+            !(cvData.meta.educationInColumns ?? false)
+              ? 'border-accent bg-accent/5'
+              : 'border-overlay/10 hover:border-overlay/20'
+          "
+          @click="cvData.meta.educationInColumns = false"
+        >
+          <span class="block text-[12.5px] font-semibold text-primary">{{
+            t('forms.eduLayoutFull')
+          }}</span>
+          <span class="block text-[11px] text-secondary mt-0.5">{{
+            t('forms.eduLayoutFullDesc')
+          }}</span>
+        </button>
+
+        <button
+          type="button"
+          role="radio"
+          :aria-checked="cvData.meta.educationInColumns ?? false"
+          class="text-left rounded-xl border p-3 transition-all"
+          :class="
+            (cvData.meta.educationInColumns ?? false)
+              ? 'border-accent bg-accent/5'
+              : 'border-overlay/10 hover:border-overlay/20'
+          "
+          @click="cvData.meta.educationInColumns = true"
+        >
+          <span class="block text-[12.5px] font-semibold text-primary">{{
+            t('forms.eduLayoutColumns')
+          }}</span>
+          <span class="block text-[11px] text-secondary mt-0.5">{{
+            t('forms.eduLayoutColumnsDesc')
+          }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 </template>

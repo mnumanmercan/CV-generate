@@ -72,6 +72,8 @@ export interface CVMeta {
   version: string
   templateId: string
   sectionOrder?: SectionKey[]
+  /** When true, Education joins Certifications & Languages as a third column in the compact bottom row. */
+  educationInColumns?: boolean
 }
 
 export interface CVData {
@@ -124,7 +126,7 @@ export const LANGUAGE_PROFICIENCY_LEVELS: readonly string[] = [
   'Basic',
 ] as const
 
-export const CURRENT_VERSION = '1.3.0'
+export const CURRENT_VERSION = '1.4.0'
 export const DEFAULT_TEMPLATE_ID = 'classic'
 
 /**
@@ -149,6 +151,11 @@ export function migrateCVData(stored: CVData): CVData {
   // v1.2.0 → v1.3.0: introduce jobTitleColor
   if (!stored.personal.jobTitleColor) {
     stored.personal.jobTitleColor = 'accent'
+  }
+  // v1.3.0 → v1.4.0: introduce meta.educationInColumns (bottom-row layout opt-in).
+  // Default false preserves the long-standing layout (Education full-width).
+  if (stored.meta.educationInColumns === undefined) {
+    stored.meta.educationInColumns = false
   }
   // Stamp with current version so future migrations can gate on it.
   stored.meta.version = CURRENT_VERSION
@@ -182,6 +189,7 @@ export function createEmptyCVData(): CVData {
       updatedAt: now,
       version: CURRENT_VERSION,
       templateId: DEFAULT_TEMPLATE_ID,
+      educationInColumns: false,
     },
   }
 }
