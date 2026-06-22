@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { apiClient, setAccessToken, BASE_URL } from '@/services/apiClient'
+import { apiClient, setAccessToken, refreshAccessToken } from '@/services/apiClient'
 import { localStorageService, LocalStorageService } from '@/services/storageService'
 import {
   coverLetterStorageService,
@@ -126,16 +126,14 @@ export const useUserStore = defineStore('user', () => {
 
   async function restoreSession(): Promise<void> {
     try {
-      // Use raw fetch — NOT apiClient — so that a missing/expired refresh token
-      // (normal for guests and first-time visitors) does NOT trigger the
-      // resumark:session-expired event, which would redirect everyone to /login.
-      const res = await fetch(`${BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      })
-      if (!res.ok) return // no valid session — silently remain as guest
-      const { accessToken } = (await res.json()) as { accessToken: string }
-      setAccessToken(accessToken)
+      // Share apiClient's single-flight refresh so this boot-time probe and any
+      // 401-triggered refresh collapse into ONE /auth/refresh — otherwise the
+      // two race, and because the endpoint rotates tokens, the loser is logged
+      // out. refreshAccessToken() returns false (not throws) for a missing or
+      // expired token — normal for guests — and never dispatches
+      // resumark:session-expired, so guests aren't redirected to /login.
+      const ok = await refreshAccessToken()
+      if (!ok) return // no valid session — silently remain as guest
       const me = await apiClient.get<{ data: MeResponse }>('/user/me')
       _applyUser(me.data)
     } catch {
