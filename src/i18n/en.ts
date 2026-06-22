@@ -466,6 +466,29 @@ const en: Translations = {
     close: 'Close preview',
   },
 
+  share: {
+    panelTitle: 'Share your CV',
+    panelDesc: 'Create a private link anyone can open to view your CV — no account needed.',
+    create: 'Create share link',
+    creating: 'Creating…',
+    linkLabel: 'Your share link',
+    copy: 'Copy',
+    copied: 'Copied',
+    regenerate: 'New link',
+    turnOff: 'Turn off',
+    activeHint:
+      'Anyone with this link can view your CV. Generate a new link to revoke the old one.',
+    proOnlyTitle: 'Sharing is a Pro feature',
+    proOnlyDesc: 'Upgrade to Pro to publish a live, shareable link to your CV.',
+    error: 'Something went wrong. Please try again.',
+    loading: 'Loading CV…',
+    notFoundTitle: 'This link is no longer available',
+    notFoundDesc: 'The share link may have been turned off or replaced by the owner.',
+    backHome: 'Go to Resumark',
+    download: 'Download PDF',
+    viewerBadge: 'Shared via Resumark',
+  },
+
   aria: {
     switchToDark: 'Switch to dark theme',
     switchToLight: 'Switch to light theme',

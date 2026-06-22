@@ -51,6 +51,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Teams — Resumark' },
   },
   {
+    path: '/p/:slug',
+    name: 'public-cv',
+    component: () => import('@/views/PublicCVView.vue'),
+    meta: { title: 'Shared CV — Resumark' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/',
   },

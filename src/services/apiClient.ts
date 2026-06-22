@@ -128,7 +128,15 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
   return res.json() as Promise<T>
 }
 
-async function tryRefresh(): Promise<boolean> {
+// Single-flight guard. The refresh endpoint ROTATES (revokes the presented
+// token, issues a new one), so two concurrent refreshes would race: the first
+// revokes the token, the second arrives with that now-dead token and 401s,
+// which logs the user out. Funnelling every caller through one shared promise
+// guarantees a single in-flight refresh at a time — concurrent 401s and the
+// boot-time session restore all await the same result.
+let _refreshInFlight: Promise<boolean> | null = null
+
+async function performRefresh(): Promise<boolean> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
   try {
@@ -147,6 +155,23 @@ async function tryRefresh(): Promise<boolean> {
     clearTimeout(timeoutId)
   }
 }
+
+/**
+ * Refresh the access token, deduplicating concurrent callers onto one request.
+ * Returns true (and sets the in-memory access token) on success. Never
+ * dispatches `session-expired` — that decision belongs to the caller.
+ */
+function tryRefresh(): Promise<boolean> {
+  if (_refreshInFlight) return _refreshInFlight
+  _refreshInFlight = performRefresh().finally(() => {
+    _refreshInFlight = null
+  })
+  return _refreshInFlight
+}
+
+// Exported so userStore.restoreSession() shares the same single-flight instead
+// of firing its own parallel /auth/refresh on page load.
+export { tryRefresh as refreshAccessToken }
 
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),

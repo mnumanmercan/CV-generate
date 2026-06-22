@@ -411,6 +411,28 @@ export interface Translations {
     close: string
   }
 
+  share: {
+    panelTitle: string
+    panelDesc: string
+    create: string
+    creating: string
+    linkLabel: string
+    copy: string
+    copied: string
+    regenerate: string
+    turnOff: string
+    activeHint: string
+    proOnlyTitle: string
+    proOnlyDesc: string
+    error: string
+    loading: string
+    notFoundTitle: string
+    notFoundDesc: string
+    backHome: string
+    download: string
+    viewerBadge: string
+  }
+
   aria: {
     switchToDark: string
     switchToLight: string

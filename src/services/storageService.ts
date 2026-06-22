@@ -7,6 +7,13 @@ export interface StorageService {
   save(data: CVData): Promise<void>
   load(): Promise<CVData | null>
   clear(): Promise<void>
+  /**
+   * The active server-side CV id, when the backend is API-backed. Returns null
+   * for local/guest storage, or before the first successful load. Lets callers
+   * (e.g. the share panel) reuse the id `load()` already resolved instead of
+   * issuing a second list request.
+   */
+  getActiveId?(): string | null
 }
 
 // ─── LocalStorage implementation ────────────────────────────────────────────
@@ -73,6 +80,9 @@ export class DelegatingStorageService implements StorageService {
   }
   async clear(): Promise<void> {
     return this._impl.clear()
+  }
+  getActiveId(): string | null {
+    return this._impl.getActiveId?.() ?? null
   }
 }
 

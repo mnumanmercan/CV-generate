@@ -102,7 +102,10 @@ html.theme-transitioning *::after {
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
-  font-size: 16px;
+  /* Base rem unit. Slightly reduced from 16px so the rem-based UI
+     (Tailwind spacing + typography) scales down a touch on large
+     1080p displays. CV preview/PDF use inline px and are unaffected. */
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

@@ -4,10 +4,17 @@
   import { useCVStore } from '@/stores/cvStore'
   import { getTemplate } from '@/components/templates/registry'
   import { DRAGGABLE_SECTION_KEYS } from '@/types/cv.types'
-  import type { SectionKey } from '@/types/cv.types'
+  import type { CVData, SectionKey } from '@/types/cv.types'
+
+  // When `data` is supplied (e.g. the public share viewer), render it directly
+  // instead of the active store — this lets the same #cv-preview element render
+  // a fetched CV without mutating the visitor's own store.
+  const props = defineProps<{ data?: CVData }>()
 
   const cvStore = useCVStore()
-  const { cvData, highlightedSection } = storeToRefs(cvStore)
+  const { cvData: storeCvData, highlightedSection } = storeToRefs(cvStore)
+
+  const cvData = computed<CVData>(() => props.data ?? storeCvData.value)
 
   const pulsedSections = ref<Set<SectionKey>>(new Set())
 

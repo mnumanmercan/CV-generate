@@ -41,3 +41,29 @@ export const deleteCV = asyncHandler(async (req: Request, res: Response) => {
   await cvService.delete(req.user!.sub, String(req.params['id']))
   res.status(204).send()
 })
+
+export const getShareStatusCV = asyncHandler(async (req: Request, res: Response) => {
+  const data = await cvService.getShareStatus(req.user!.sub, String(req.params['id']))
+  res.json({ success: true, data })
+})
+
+export const shareCV = asyncHandler(async (req: Request, res: Response) => {
+  const data = await cvService.share(req.user!.sub, String(req.params['id']))
+  res.json({ success: true, data })
+})
+
+export const regenerateShareCV = asyncHandler(async (req: Request, res: Response) => {
+  const data = await cvService.regenerateShare(req.user!.sub, String(req.params['id']))
+  res.json({ success: true, data })
+})
+
+export const unshareCV = asyncHandler(async (req: Request, res: Response) => {
+  await cvService.unshare(req.user!.sub, String(req.params['id']))
+  res.status(204).send()
+})
+
+// Unauthenticated — resolves a public share slug to its CV. No req.user.
+export const getPublicCV = asyncHandler(async (req: Request, res: Response) => {
+  const data = await cvService.getPublicBySlug(String(req.params['slug']))
+  res.json({ success: true, data })
+})

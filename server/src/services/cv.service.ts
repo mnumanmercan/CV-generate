@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { prisma } from '../db/prisma.js'
 import { AppError } from '../utils/apiError.js'
 import { toPrismaJson } from '../utils/jsonb.js'
@@ -14,6 +15,27 @@ function assertTemplateAllowed(templateId: string, plan: Plan): void {
       'TEMPLATE_NOT_ALLOWED',
     )
   }
+}
+
+// Fetch a CV and assert the caller owns it, mirroring the 404-on-mismatch
+// pattern used everywhere else in this service (a 403 would leak existence).
+async function findOwnedCV(userId: string, id: string) {
+  const cv = await prisma.cV.findUnique({ where: { id } })
+  if (!cv || cv.userId !== userId) {
+    throw new AppError('CV not found.', 404, 'NOT_FOUND')
+  }
+  return cv
+}
+
+// 16 random bytes (~128 bits) base64url-encoded → a short, URL-safe slug that
+// is infeasible to guess or enumerate. Loops on the rare unique collision.
+async function generateUniqueSlug(): Promise<string> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const slug = randomBytes(16).toString('base64url')
+    const existing = await prisma.cV.findUnique({ where: { shareSlug: slug } })
+    if (!existing) return slug
+  }
+  throw new AppError('Could not generate a share link. Please try again.', 500, 'INTERNAL')
 }
 
 export const cvService = {
@@ -91,5 +113,49 @@ export const cvService = {
       throw new AppError('CV not found.', 404, 'NOT_FOUND')
     }
     await prisma.cV.delete({ where: { id } })
+  },
+
+  // ─── Public sharing ──────────────────────────────────────────────────────
+  // A non-null `shareSlug` makes the CV readable at GET /public/cv/:slug.
+
+  async getShareStatus(userId: string, id: string): Promise<{ slug: string | null }> {
+    const cv = await findOwnedCV(userId, id)
+    return { slug: cv.shareSlug }
+  },
+
+  // Idempotent — returns the existing slug if already shared, otherwise mints one.
+  async share(userId: string, id: string): Promise<{ slug: string }> {
+    const cv = await findOwnedCV(userId, id)
+    if (cv.shareSlug) return { slug: cv.shareSlug }
+    const slug = await generateUniqueSlug()
+    await prisma.cV.update({ where: { id }, data: { shareSlug: slug } })
+    return { slug }
+  },
+
+  // Always assigns a fresh slug — the previous URL stops resolving immediately.
+  async regenerateShare(userId: string, id: string): Promise<{ slug: string }> {
+    await findOwnedCV(userId, id)
+    const slug = await generateUniqueSlug()
+    await prisma.cV.update({ where: { id }, data: { shareSlug: slug } })
+    return { slug }
+  },
+
+  async unshare(userId: string, id: string): Promise<void> {
+    await findOwnedCV(userId, id)
+    await prisma.cV.update({ where: { id }, data: { shareSlug: null } })
+  },
+
+  // Unauthenticated read. Returns ONLY title + content — never userId, the row
+  // id, or timestamps, so the public response leaks no owner identity beyond
+  // what the user deliberately put inside their CV.
+  async getPublicBySlug(slug: string): Promise<{ title: string; content: CVData }> {
+    const cv = await prisma.cV.findUnique({
+      where: { shareSlug: slug },
+      select: { title: true, content: true },
+    })
+    if (!cv) {
+      throw new AppError('CV not found.', 404, 'NOT_FOUND')
+    }
+    return { title: cv.title, content: cv.content as unknown as CVData }
   },
 }

@@ -8,6 +8,15 @@
   import { useUserStore } from '@/stores/userStore'
   import { useCVStore } from '@/stores/cvStore'
   import { useI18n } from '@/composables/useI18n'
+  import { localStorageService } from '@/services/storageService'
+  import {
+    getShareStatus,
+    createShareLink,
+    regenerateShareLink,
+    removeShareLink,
+    resolveActiveCvId,
+    buildShareUrl,
+  } from '@/services/cvShareService'
 
   const { t, t_obj } = useI18n()
 
@@ -18,13 +27,104 @@
   // Read-only CV preview popup.
   const showPreview = ref(false)
 
-  onMounted(() => {
+  /* ── Public share link (Pro) ──────────────────────────────── */
+  const shareCvId = ref<string | null>(null)
+  const shareSlug = ref<string | null>(null)
+  const shareBusy = ref(false)
+  const shareError = ref(false)
+  const justCopied = ref(false)
+
+  const shareUrl = computed(() => (shareSlug.value ? buildShareUrl(shareSlug.value) : ''))
+
+  onMounted(async () => {
     document.title = 'Dashboard — Resumark'
     // Hydrate the store from the active backend so the cards and the preview
     // reflect the user's real, current CV (a direct refresh into /dashboard
     // would otherwise show empty in-memory defaults).
-    cvStore.loadFromStorage()
+    try {
+      await cvStore.loadFromStorage()
+    } catch {
+      // Cloud load failed (offline / rate-limited). The cards fall back to
+      // whatever is already in the store — nothing else to do here, and we
+      // must not let the rejection surface as an uncaught promise error.
+    }
+
+    // Load existing share state so the panel reflects reality on refresh.
+    if (!userStore.isPremium) return
+    // Best effort — reuse the id the load above already resolved to show the
+    // current link state. If it's not available yet (e.g. the load was
+    // rate-limited), the button still works: the id is resolved lazily on click.
+    const id = shareCvId.value ?? localStorageService.getActiveId()
+    if (!id) return
+    shareCvId.value = id
+    try {
+      shareSlug.value = (await getShareStatus(id)).slug
+    } catch {
+      // Non-fatal — the panel falls back to its "create link" state.
+    }
   })
+
+  // Resolve the active CV id on demand. Prefers the id the storage layer already
+  // knows; otherwise asks the API. Caches the result so we resolve at most once.
+  async function ensureCvId(): Promise<string | null> {
+    if (shareCvId.value) return shareCvId.value
+    const cached = localStorageService.getActiveId()
+    if (cached) {
+      shareCvId.value = cached
+      return cached
+    }
+    const fetched = await resolveActiveCvId()
+    shareCvId.value = fetched
+    return fetched
+  }
+
+  async function runShareAction(fn: (id: string) => Promise<unknown>): Promise<void> {
+    if (shareBusy.value) return
+    shareBusy.value = true
+    shareError.value = false
+    try {
+      const id = await ensureCvId()
+      if (!id) {
+        shareError.value = true
+        return
+      }
+      await fn(id)
+    } catch {
+      shareError.value = true
+    } finally {
+      shareBusy.value = false
+    }
+  }
+
+  function onCreateShare(): void {
+    void runShareAction(async (id) => {
+      shareSlug.value = (await createShareLink(id)).slug
+    })
+  }
+
+  function onRegenerateShare(): void {
+    void runShareAction(async (id) => {
+      shareSlug.value = (await regenerateShareLink(id)).slug
+    })
+  }
+
+  function onTurnOffShare(): void {
+    void runShareAction(async (id) => {
+      await removeShareLink(id)
+      shareSlug.value = null
+    })
+  }
+
+  async function copyShareUrl(): Promise<void> {
+    if (!shareUrl.value) return
+    try {
+      await navigator.clipboard.writeText(shareUrl.value)
+      justCopied.value = true
+      setTimeout(() => (justCopied.value = false), 1500)
+    } catch {
+      shareError.value = true
+    }
+  }
 
   /* ── Last saved relative time ─────────────────────────────── */
   const lastSavedLabel = computed(() => {
@@ -75,6 +175,12 @@
       title: t('dashboard.multipleCvsTitle'),
       desc: t('dashboard.multipleCvsDesc'),
       trigger: 'Multiple CVs',
+    },
+    {
+      glyph: '⇪',
+      title: t('share.proOnlyTitle'),
+      desc: t('share.proOnlyDesc'),
+      trigger: 'Share Link',
     },
   ])
 
@@ -349,6 +455,79 @@
               </svg>
             </RouterLink>
           </div>
+        </div>
+
+        <!-- Share link panel -->
+        <div class="paper-card p-6 mb-10 stagger-item">
+          <div class="flex items-start gap-4 mb-5">
+            <span
+              class="font-display text-[26px] leading-none shrink-0"
+              :style="{ color: 'var(--accent)' }"
+              aria-hidden="true"
+              >⇪</span
+            >
+            <div class="flex-1 min-w-0">
+              <h2 class="font-display text-[20px] leading-[1.15] tracking-editorial text-ink mb-1">
+                {{ t('share.panelTitle') }}
+              </h2>
+              <p class="text-[13.5px] text-muted leading-[1.55]">{{ t('share.panelDesc') }}</p>
+            </div>
+          </div>
+
+          <!-- No active link yet -->
+          <button
+            v-if="!shareSlug"
+            type="button"
+            class="btn-primary text-[13px]"
+            :disabled="shareBusy"
+            @click="onCreateShare"
+          >
+            {{ shareBusy ? t('share.creating') : t('share.create') }}
+          </button>
+
+          <!-- Active link -->
+          <div v-else class="flex flex-col gap-3">
+            <label class="mono-eyebrow text-[10.5px]">{{ t('share.linkLabel') }}</label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                readonly
+                :value="shareUrl"
+                class="flex-1 min-w-0 rounded-lg px-3 py-2 text-[13px] text-ink border border-overlay/15 bg-[var(--paper)] focus:outline-none focus:border-[var(--accent)]"
+                @focus="($event.target as HTMLInputElement).select()"
+              />
+              <button
+                type="button"
+                class="btn-primary text-[13px] justify-center shrink-0"
+                @click="copyShareUrl"
+              >
+                {{ justCopied ? t('share.copied') : t('share.copy') }}
+              </button>
+            </div>
+            <p class="text-[12px] text-muted leading-[1.5]">{{ t('share.activeHint') }}</p>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="btn-ghost text-[12.5px]"
+                :disabled="shareBusy"
+                @click="onRegenerateShare"
+              >
+                {{ t('share.regenerate') }}
+              </button>
+              <button
+                type="button"
+                class="btn-ghost text-[12.5px]"
+                :disabled="shareBusy"
+                @click="onTurnOffShare"
+              >
+                {{ t('share.turnOff') }}
+              </button>
+            </div>
+          </div>
+
+          <p v-if="shareError" class="text-[12.5px] mt-3" style="color: var(--accent)">
+            {{ t('share.error') }}
+          </p>
         </div>
 
         <!-- Stats row -->
