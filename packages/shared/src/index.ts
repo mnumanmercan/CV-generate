@@ -10,6 +10,8 @@ export type {
   Certification,
   Language,
   SectionKey,
+  ShareStatus,
+  PublicCV,
 } from './types/cv.types.js'
 export type { CoverLetterData } from './types/coverLetter.types.js'
 

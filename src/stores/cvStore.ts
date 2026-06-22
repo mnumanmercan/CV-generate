@@ -59,24 +59,31 @@ export const useCVStore = defineStore('cv', () => {
 
   async function loadFromStorage(): Promise<void> {
     loadingData.value = true
-    const stored = await localStorageService.load()
-    if (stored) {
-      // Run all pending migrations while loadingData is still true so
-      // useAutoSave ignores this synthetic write.
-      cvData.value = migrateCVData(stored)
-    } else {
-      // Storage is empty (e.g. after logout when the cloud user had no local
-      // data). Reset to blank so stale in-memory data from the previous
-      // session doesn't leak into the UI.
-      cvData.value = createEmptyCVData()
+    try {
+      const stored = await localStorageService.load()
+      if (stored) {
+        // Run all pending migrations while loadingData is still true so
+        // useAutoSave ignores this synthetic write.
+        cvData.value = migrateCVData(stored)
+      } else {
+        // Storage is empty (e.g. after logout when the cloud user had no local
+        // data). Reset to blank so stale in-memory data from the previous
+        // session doesn't leak into the UI.
+        cvData.value = createEmptyCVData()
+      }
+      // Wait for Vue to flush the queued watchers (triggered by the cvData
+      // replacement above) BEFORE clearing the flag — this lets every watcher
+      // see loadingData === true and bail out, preventing spurious auto-saves
+      // and preview-section flashes on initial page load.
+      await nextTick()
+      isLoaded.value = true
+    } finally {
+      // Always clear the flag — a failed cloud load (offline / rate-limited)
+      // must not leave loadingData stuck true, which would silently disable
+      // auto-save for the rest of the session. The rejection still propagates
+      // to the caller, which decides how to surface it.
+      loadingData.value = false
     }
-    // Wait for Vue to flush the queued watchers (triggered by the cvData
-    // replacement above) BEFORE clearing the flag — this lets every watcher
-    // see loadingData === true and bail out, preventing spurious auto-saves
-    // and preview-section flashes on initial page load.
-    await nextTick()
-    isLoaded.value = true
-    loadingData.value = false
   }
 
   async function saveToStorage(): Promise<void> {

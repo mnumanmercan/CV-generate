@@ -462,6 +462,29 @@ const tr: Translations = {
     close: 'Önizlemeyi kapat',
   },
 
+  share: {
+    panelTitle: 'CV’ni paylaş',
+    panelDesc: 'Özel bir bağlantı oluştur; herkes hesap açmadan CV’ni görüntüleyebilsin.',
+    create: 'Paylaşım bağlantısı oluştur',
+    creating: 'Oluşturuluyor…',
+    linkLabel: 'Paylaşım bağlantın',
+    copy: 'Kopyala',
+    copied: 'Kopyalandı',
+    regenerate: 'Yeni bağlantı',
+    turnOff: 'Kapat',
+    activeHint:
+      'Bu bağlantıya sahip olan herkes CV’ni görebilir. Eski bağlantıyı geçersiz kılmak için yeni bir bağlantı oluştur.',
+    proOnlyTitle: 'Paylaşım, Pro’ya özel',
+    proOnlyDesc: 'CV’ni canlı bir bağlantıyla paylaşmak için Pro’ya geç.',
+    error: 'Bir şeyler ters gitti. Lütfen tekrar dene.',
+    loading: 'CV yükleniyor…',
+    notFoundTitle: 'Bu bağlantı artık geçerli değil',
+    notFoundDesc: 'Bağlantı kapatılmış ya da sahibi tarafından yenisiyle değiştirilmiş olabilir.',
+    backHome: 'Resumark’a git',
+    download: 'PDF indir',
+    viewerBadge: 'Resumark ile paylaşıldı',
+  },
+
   aria: {
     switchToDark: 'Koyu temaya geç',
     switchToLight: 'Açık temaya geç',

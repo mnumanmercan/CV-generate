@@ -56,6 +56,11 @@ function classifyError(err: unknown): StorageError {
 export class ApiCVStorageService implements StorageService {
   private cvId: string | null = null
 
+  /** The id of the CV resolved by the most recent load() — used by the share panel. */
+  getActiveId(): string | null {
+    return this.cvId
+  }
+
   async load(): Promise<CVData | null> {
     try {
       // The list endpoint is slim (no `content` JSONB) — it just gives us the
@@ -84,6 +89,14 @@ export class ApiCVStorageService implements StorageService {
 
   async save(data: CVData): Promise<void> {
     try {
+      // Get-or-create: when we don't yet know our CV id, resolve an existing one
+      // BEFORE deciding to POST. Without this, an auto-save that fires before the
+      // initial load() has populated cvId would create a duplicate, near-empty
+      // CV — which then shadows the user's real CV (load() returns the
+      // most-recently-updated row), presenting as "data deleted after login".
+      if (!this.cvId) {
+        await this.load()
+      }
       if (this.cvId) {
         await apiClient.put(`/cv/${this.cvId}`, { content: data })
       } else {

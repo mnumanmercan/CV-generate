@@ -94,3 +94,14 @@ export interface CVData {
   languages: Language[]
   meta: CVMeta
 }
+
+/** Share-link state for a CV. `slug` is null when the CV is private. */
+export interface ShareStatus {
+  slug: string | null
+}
+
+/** Payload returned by the unauthenticated public-CV endpoint. */
+export interface PublicCV {
+  title: string
+  content: CVData
+}

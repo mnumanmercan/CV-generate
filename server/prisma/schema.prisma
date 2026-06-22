@@ -104,6 +104,7 @@ model CV {
   userId    String   @db.Uuid
   title     String   @default("Untitled CV")
   content   Json // PostgreSQL JSONB — stores CVData verbatim
+  shareSlug String?  @unique // null = private; unguessable token when a public share link is active
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -6,11 +6,13 @@ import userRoutes from './user.routes.js'
 import billingRoutes from './billing.routes.js'
 import waitlistRoutes from './waitlist.routes.js'
 import aiRoutes from './ai.routes.js'
+import publicRoutes from './public.routes.js'
 
 const router = Router()
 
 router.use('/auth', authRoutes)
 router.use('/cv', cvRoutes)
+router.use('/public', publicRoutes) // unauthenticated → GET /api/v1/public/cv/:slug
 router.use('/cover-letter', coverLetterRoutes)
 router.use('/user', userRoutes)
 router.use('/waitlist', waitlistRoutes)
