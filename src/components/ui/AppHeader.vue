@@ -147,8 +147,20 @@
         </button>
       </div>
 
+      <!-- Session probe still in flight: a neutral placeholder so a returning
+           user doesn't see a flash of the guest (login/register) buttons
+           before restoreSession() resolves. The access token is in-memory
+           only, so auth state is unknown until the refresh round-trip lands. -->
+      <template v-if="!userStore.isSessionRestored">
+        <div
+          class="h-9 w-[124px] rounded-lg animate-pulse"
+          style="background: color-mix(in oklab, var(--ink) 8%, transparent)"
+          aria-hidden="true"
+        />
+      </template>
+
       <!-- Guest -->
-      <template v-if="!userStore.isLoggedIn">
+      <template v-else-if="!userStore.isLoggedIn">
         <RouterLink
           to="/login"
           class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg text-sm text-ink hover:bg-overlay/5 transition-colors"
