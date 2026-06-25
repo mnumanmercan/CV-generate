@@ -12,6 +12,13 @@ import apiRoutes, { billingRoutes } from './routes/index.js'
 export function createApp() {
   const app = express()
 
+  // ── Trust proxy ───────────────────────────────────────────────────────────
+  // Controls how `req.ip` (used by the IP-keyed rate limiters) is derived from
+  // X-Forwarded-For. Env-driven and defaults to 0 (trust none) so a direct
+  // deploy can't be XFF-spoofed into bypassing the auth brute-force limiter.
+  // Set TRUST_PROXY to the number of proxies in front of the app in prod.
+  app.set('trust proxy', env.TRUST_PROXY)
+
   // ── Request logger + correlation ID ───────────────────────────────────────
   // Mounted first so every request — including those that 404 or fail in
   // later middleware — gets a logger child and an x-request-id response

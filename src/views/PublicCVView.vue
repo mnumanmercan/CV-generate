@@ -13,7 +13,10 @@
   const { t } = useI18n()
   const { status: pdfStatus, exportPDF } = usePDFExport()
 
-  type ViewState = 'loading' | 'ready' | 'notFound'
+  // `notFound` is the permanent dead-end (slug never existed / link revoked).
+  // `error` is transient (rate-limit, 5xx, network) — recoverable, so we offer
+  // a retry instead of wrongly telling the visitor a live link is gone.
+  type ViewState = 'loading' | 'ready' | 'notFound' | 'error'
   const state = ref<ViewState>('loading')
   const cv = ref<CVData | null>(null)
 
@@ -48,8 +51,8 @@
     await exportPDF('cv-preview')
   }
 
-  onMounted(async () => {
-    addNoIndex()
+  async function load(): Promise<void> {
+    state.value = 'loading'
     const slug = String(route.params.slug ?? '')
     try {
       const data = await fetchPublicCV(slug)
@@ -58,15 +61,27 @@
       await nextTick()
       fit()
       if (typeof ResizeObserver !== 'undefined' && rootEl.value) {
+        observer?.disconnect()
         observer = new ResizeObserver(fit)
         observer.observe(rootEl.value)
       }
     } catch (err) {
-      // Any failure (404, turned-off link, network) lands on the same dead-end
-      // screen — we never reveal whether a slug ever existed.
-      if (!(err instanceof ApiError)) console.error('[PublicCVView] load failed:', err)
-      state.value = 'notFound'
+      // Only a genuine 404 is a permanent dead-end (slug never existed / link
+      // revoked). Everything else — 429 rate-limit, 5xx, network, timeout — is
+      // transient: surface a retryable error so a temporary hiccup never tells
+      // a visitor that a live link is "no longer available".
+      if (err instanceof ApiError && err.status === 404) {
+        state.value = 'notFound'
+      } else {
+        if (!(err instanceof ApiError)) console.error('[PublicCVView] load failed:', err)
+        state.value = 'error'
+      }
     }
+  }
+
+  onMounted(() => {
+    addNoIndex()
+    void load()
   })
 
   onUnmounted(() => {
@@ -95,6 +110,16 @@
       <h1 class="font-display text-3xl text-[var(--ink)]">{{ t('share.notFoundTitle') }}</h1>
       <p class="text-[var(--muted)]">{{ t('share.notFoundDesc') }}</p>
       <a href="/" class="btn-primary mt-2">{{ t('share.backHome') }}</a>
+    </div>
+
+    <!-- Transient error (rate-limit / 5xx / network) — recoverable, offer retry -->
+    <div
+      v-else-if="state === 'error'"
+      class="flex flex-col items-center gap-4 px-6 text-center max-w-md"
+    >
+      <h1 class="font-display text-3xl text-[var(--ink)]">{{ t('share.errorTitle') }}</h1>
+      <p class="text-[var(--muted)]">{{ t('share.errorDesc') }}</p>
+      <button type="button" class="btn-primary mt-2" @click="load">{{ t('share.retry') }}</button>
     </div>
 
     <!-- The shared CV -->

@@ -214,7 +214,16 @@
           </div>
 
           <div class="flex flex-col gap-2">
-            <template v-if="!userStore.isLoggedIn">
+            <!-- Pending session probe: neutral placeholder (see AppHeader) so the
+                 footer doesn't flash guest buttons before restoreSession() lands. -->
+            <template v-if="!userStore.isSessionRestored">
+              <div
+                class="h-[42px] w-full rounded-lg animate-pulse"
+                style="background: color-mix(in oklab, var(--ink) 8%, transparent)"
+                aria-hidden="true"
+              />
+            </template>
+            <template v-else-if="!userStore.isLoggedIn">
               <RouterLink
                 to="/login"
                 class="w-full inline-flex items-center justify-center px-3 py-2.5 rounded-lg text-sm text-ink hover:bg-overlay/5 transition-colors border border-overlay/12"

@@ -480,6 +480,10 @@ const tr: Translations = {
     loading: 'CV yükleniyor…',
     notFoundTitle: 'Bu bağlantı artık geçerli değil',
     notFoundDesc: 'Bağlantı kapatılmış ya da sahibi tarafından yenisiyle değiştirilmiş olabilir.',
+    errorTitle: 'CV yüklenemedi',
+    errorDesc:
+      'Bizim tarafımızda bir sorun oluştu. Bağlantıda bir sıkıntı yok; birazdan tekrar dener misin?',
+    retry: 'Tekrar dene',
     backHome: 'Resumark’a git',
     download: 'PDF indir',
     viewerBadge: 'Resumark ile paylaşıldı',
