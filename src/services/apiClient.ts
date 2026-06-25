@@ -36,11 +36,18 @@ export class ApiError extends Error {
   // shorthand emits runtime assignments TS can't erase.
   readonly status: number
   readonly code: string | undefined
+  /**
+   * Parsed `Retry-After` (in ms) for 429 responses, when the server sent one.
+   * Lets callers back off for exactly as long as the limiter window dictates
+   * instead of guessing. Undefined for non-429s or when the header is absent.
+   */
+  readonly retryAfterMs: number | undefined
 
-  constructor(status: number, code: string | undefined, message: string) {
+  constructor(status: number, code: string | undefined, message: string, retryAfterMs?: number) {
     super(message)
     this.status = status
     this.code = code
+    this.retryAfterMs = retryAfterMs
     this.name = 'ApiError'
   }
 }
@@ -121,7 +128,21 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
     const body = (await res.json().catch(() => ({}))) as {
       error?: { message?: string; code?: string }
     }
-    throw new ApiError(res.status, body.error?.code, body.error?.message ?? `HTTP ${res.status}`)
+    // On a 429, surface the server's Retry-After (seconds) as ms so callers
+    // (e.g. the auto-save cool-down) can pause for exactly the limiter window
+    // rather than retrying immediately and keeping the bucket saturated.
+    let retryAfterMs: number | undefined
+    if (res.status === 429) {
+      const header = res.headers.get('Retry-After')
+      const seconds = header ? Number(header) : NaN
+      if (Number.isFinite(seconds) && seconds >= 0) retryAfterMs = seconds * 1000
+    }
+    throw new ApiError(
+      res.status,
+      body.error?.code,
+      body.error?.message ?? `HTTP ${res.status}`,
+      retryAfterMs,
+    )
   }
 
   if (res.status === 204) return undefined as T

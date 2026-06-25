@@ -7,17 +7,25 @@ import { apiClient, ApiError, TimeoutError } from './apiClient'
 // ─── Typed storage error ──────────────────────────────────────────────────────
 // Callers can distinguish between error types to show appropriate UI feedback.
 
-export type StorageErrorReason = 'not_found' | 'unauthorized' | 'network' | 'unknown'
+export type StorageErrorReason =
+  | 'not_found'
+  | 'unauthorized'
+  | 'network'
+  | 'rate_limited'
+  | 'unknown'
 
 export class StorageError extends Error {
   // Plain field instead of the constructor-parameter shorthand because the
   // app tsconfig enables `erasableSyntaxOnly` (which forbids emitted runtime
   // assignments from parameter properties).
   readonly reason: StorageErrorReason
+  /** For `rate_limited`: how long to wait before retrying (ms), if the server said. */
+  readonly retryAfterMs: number | undefined
 
-  constructor(reason: StorageErrorReason, message: string) {
+  constructor(reason: StorageErrorReason, message: string, retryAfterMs?: number) {
     super(message)
     this.reason = reason
+    this.retryAfterMs = retryAfterMs
     this.name = 'StorageError'
   }
 }
@@ -37,6 +45,7 @@ function classifyError(err: unknown): StorageError {
     if (err.status === 404) return new StorageError('not_found', err.message)
     if (err.status === 401 || err.status === 403)
       return new StorageError('unauthorized', err.message)
+    if (err.status === 429) return new StorageError('rate_limited', err.message, err.retryAfterMs)
     if (err.status >= 500) return new StorageError('network', err.message)
     return new StorageError('unknown', err.message)
   }
@@ -56,27 +65,55 @@ function classifyError(err: unknown): StorageError {
 export class ApiCVStorageService implements StorageService {
   private cvId: string | null = null
 
+  // Single-flight guard for resolving the active CV id. Without it, a burst of
+  // auto-saves that fire before `cvId` is cached each issued their own slim
+  // GET /cv — and if those reads got 429'd, `cvId` never cached, so every
+  // subsequent save re-requested it, pinning the read limiter in a
+  // self-sustaining loop. Funnelling every caller through one shared promise
+  // guarantees a single in-flight resolve at a time.
+  private resolveInFlight: Promise<string | null> | null = null
+
   /** The id of the CV resolved by the most recent load() — used by the share panel. */
   getActiveId(): string | null {
     return this.cvId
   }
 
-  async load(): Promise<CVData | null> {
-    try {
-      // The list endpoint is slim (no `content` JSONB) — it just gives us the
-      // id of the most-recently-edited CV. Fetch the full document with a
-      // targeted GET so the dashboard doesn't pay for every row's payload.
-      const list = await apiClient.get<{
+  /**
+   * Resolve (and memoize) the id of the most-recently-edited CV with a single
+   * slim GET /cv — no `content` JSONB. Returns the cached id without any
+   * network call once known; deduplicates concurrent callers onto one request.
+   * Returns null when the user has no CV yet.
+   */
+  private resolveCvId(): Promise<string | null> {
+    if (this.cvId) return Promise.resolve(this.cvId)
+    if (this.resolveInFlight) return this.resolveInFlight
+    this.resolveInFlight = apiClient
+      .get<{
         success: boolean
         data: Array<{ id: string; title: string; updatedAt: string }>
       }>('/cv')
-      const first = list.data?.[0]
-      if (!first) return null
-      this.cvId = first.id
+      .then((list) => {
+        this.cvId = list.data?.[0]?.id ?? null
+        return this.cvId
+      })
+      .finally(() => {
+        this.resolveInFlight = null
+      })
+    return this.resolveInFlight
+  }
+
+  async load(): Promise<CVData | null> {
+    try {
+      // Resolve the id with a single slim list read (or the cached id, free).
+      // Then fetch the full document with a targeted GET so the dashboard
+      // doesn't pay for every row's payload. A re-load with a cached id costs
+      // one read (detail only) instead of two.
+      const id = await this.resolveCvId()
+      if (!id) return null
       const detail = await apiClient.get<{
         success: boolean
         data: { id: string; content: CVData }
-      }>(`/cv/${first.id}`)
+      }>(`/cv/${id}`)
       return detail.data.content
     } catch (err) {
       const storageErr = classifyError(err)
@@ -94,11 +131,14 @@ export class ApiCVStorageService implements StorageService {
       // initial load() has populated cvId would create a duplicate, near-empty
       // CV — which then shadows the user's real CV (load() returns the
       // most-recently-updated row), presenting as "data deleted after login".
-      if (!this.cvId) {
-        await this.load()
-      }
-      if (this.cvId) {
-        await apiClient.put(`/cv/${this.cvId}`, { content: data })
+      //
+      // We resolve with a slim list read only (not a full load() — that pulled
+      // the detail document too, costing 2 reads per save while cvId was
+      // unknown). Once resolved, cvId is memoized and steady-state saves issue
+      // ZERO reads — just the PUT.
+      const id = await this.resolveCvId()
+      if (id) {
+        await apiClient.put(`/cv/${id}`, { content: data })
       } else {
         const res = await apiClient.post<{ success: boolean; data: { id: string } }>('/cv', {
           content: data,

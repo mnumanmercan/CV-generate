@@ -1,4 +1,5 @@
 import rateLimit, { type Options } from 'express-rate-limit'
+import type { Request } from 'express'
 import { UpstashRateLimitStore } from './rateLimitStore.js'
 import { isRedisConfigured } from '../config/redis.js'
 
@@ -7,6 +8,19 @@ import { isRedisConfigured } from '../config/redis.js'
 // MemoryStore (per-process) — fine for local dev / single-dyno deploys.
 function makeStore(prefix: string): Options['store'] | undefined {
   return isRedisConfigured ? new UpstashRateLimitStore(prefix) : undefined
+}
+
+// Key authenticated traffic by user id, falling back to IP for guests.
+//
+// The default key generator buckets by IP. On the authenticated CV / cover-
+// letter / user routes that's wrong on two counts: in dev the Vite proxy makes
+// every request arrive from 127.0.0.1, so all tabs/users share ONE bucket; and
+// in prod two users behind the same NAT/proxy share a bucket. Keying by
+// `req.user.sub` gives each account its own budget. Unauthenticated routes
+// (e.g. the public share view) have no user, so they keep per-IP keying —
+// identical to the previous behaviour.
+function userOrIpKey(req: Request): string {
+  return req.user?.sub ?? req.ip ?? 'unknown'
 }
 
 // Strict: auth brute-force protection
@@ -55,6 +69,7 @@ export const refreshLimiter = rateLimit({
 export const apiWriteLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 60,
+  keyGenerator: userOrIpKey,
   message: {
     success: false,
     error: { code: 'RATE_LIMITED', message: 'Too many save requests. Please slow down.' },
@@ -68,6 +83,7 @@ export const apiWriteLimiter = rateLimit({
 export const apiReadLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 120,
+  keyGenerator: userOrIpKey,
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many requests.' } },
   standardHeaders: true,
   legacyHeaders: false,

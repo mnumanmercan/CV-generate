@@ -37,6 +37,14 @@ const EnvSchema = z.object({
 
   // Security
   BCRYPT_ROUNDS: z.coerce.number().default(12),
+
+  // Number of reverse-proxy hops to trust for the client IP (X-Forwarded-For).
+  // 0 (default) trusts none — req.ip is the socket IP and XFF is ignored, so a
+  // direct-to-Node deploy can't be tricked into spoofing IPs to bypass the
+  // IP-keyed limiters. Set to the proxy count in front of the app in prod
+  // (e.g. 1 behind a single nginx / load balancer) so rate-limit keying and
+  // logging see the real client IP.
+  TRUST_PROXY: z.coerce.number().int().min(0).default(0),
 })
 
 const parsed = EnvSchema.safeParse(process.env)

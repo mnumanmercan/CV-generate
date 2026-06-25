@@ -62,7 +62,16 @@
 
   onMounted(() => {
     document.title = 'CV Builder — Resumark'
-    cvStore.loadFromStorage()
+    // Guard with isLoaded (matching HomeView) so navigating back into /builder
+    // doesn't re-issue the CV read(s) every visit — the store is already
+    // hydrated and re-loading only burns the read rate-limit budget.
+    if (!cvStore.isLoaded) {
+      cvStore.loadFromStorage()
+    } else {
+      // Already hydrated from a previous mount — the load watcher won't fire,
+      // so re-sync the draggable order from the store directly (no network).
+      applySectionOrder(cvData.value.meta.sectionOrder)
+    }
   })
 
   // Watch each section for changes and trigger preview highlight.
@@ -175,19 +184,27 @@
     languages: isLanguagesComplete.value,
   }))
 
+  // Rebuild draggableSections to match a stored section order, appending any
+  // sections the stored order is missing (e.g. after a schema migration adds a
+  // new section). Shared by the load watcher and the already-loaded mount path.
+  function applySectionOrder(order: SectionKey[] | undefined): void {
+    if (!order) return
+    const known = order.filter((k) => k in DRAGGABLE_META) as SectionKey[]
+    const missing = DRAGGABLE_SECTION_KEYS.filter((k) => !known.includes(k))
+    draggableSections.value = [...known, ...missing].map((key) => ({
+      key,
+      ...DRAGGABLE_META[key],
+    }))
+  }
+
   // Sync draggableSections order from store after loadFromStorage completes.
   // The loadingData guard ensures this only runs during the initial load, not
   // after every setSectionOrder call (which would create a redundant re-sync).
   watch(
     () => cvData.value.meta.sectionOrder,
     (order) => {
-      if (!order || !cvStore.loadingData) return
-      const known = order.filter((k) => k in DRAGGABLE_META) as SectionKey[]
-      const missing = DRAGGABLE_SECTION_KEYS.filter((k) => !known.includes(k))
-      draggableSections.value = [...known, ...missing].map((key) => ({
-        key,
-        ...DRAGGABLE_META[key],
-      }))
+      if (!cvStore.loadingData) return
+      applySectionOrder(order)
     },
   )
 

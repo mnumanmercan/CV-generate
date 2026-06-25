@@ -70,4 +70,54 @@ describe('ApiCVStorageService.save (get-or-create)', () => {
 
     expect(post).toHaveBeenCalledWith('/cv', { content: fakeCV })
   })
+
+  it('resolves the CV id with a single slim list read — not a full detail fetch', async () => {
+    // Regression for the read-amplification loop: save() used to call load(),
+    // which issued GET /cv AND GET /cv/:id (2 reads) per save while cvId was
+    // unknown. It must now resolve with the list only.
+    get.mockResolvedValueOnce({ success: true, data: [{ id: 'cv-1', title: 'x', updatedAt: 'z' }] })
+
+    const svc = new ApiCVStorageService()
+    await svc.save(fakeCV)
+
+    expect(get).toHaveBeenCalledTimes(1)
+    expect(get).toHaveBeenCalledWith('/cv')
+    expect(put).toHaveBeenCalledWith('/cv/cv-1', { content: fakeCV })
+  })
+
+  it('memoizes the resolved id so steady-state saves issue ZERO reads', async () => {
+    get.mockResolvedValueOnce({ success: true, data: [{ id: 'cv-1', title: 'x', updatedAt: 'z' }] })
+
+    const svc = new ApiCVStorageService()
+    await svc.save(fakeCV) // first save resolves + caches cv-1
+    await svc.save(fakeCV) // second save must reuse the cached id
+    await svc.save(fakeCV)
+
+    expect(get).toHaveBeenCalledTimes(1) // only the first save read the list
+    expect(put).toHaveBeenCalledTimes(3)
+    expect(put).toHaveBeenLastCalledWith('/cv/cv-1', { content: fakeCV })
+  })
+
+  it('single-flights concurrent id resolution onto one GET /cv', async () => {
+    let resolveList: (v: unknown) => void = () => {}
+    get.mockReturnValueOnce(
+      new Promise((res) => {
+        resolveList = res
+      }),
+    )
+
+    const svc = new ApiCVStorageService()
+    // Fire a save and a load before the list request settles.
+    const p1 = svc.save(fakeCV)
+    const p2 = svc.load()
+    resolveList({ success: true, data: [{ id: 'cv-1', title: 'x', updatedAt: 'z' }] })
+    // load() then fetches the detail document.
+    get.mockResolvedValueOnce({ success: true, data: { id: 'cv-1', content: fakeCV } })
+    await Promise.all([p1, p2])
+
+    // One list read shared by both callers, plus load()'s single detail read.
+    expect(get).toHaveBeenCalledWith('/cv')
+    expect(get).toHaveBeenCalledWith('/cv/cv-1')
+    expect(get).toHaveBeenCalledTimes(2)
+  })
 })
