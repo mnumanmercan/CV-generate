@@ -38,11 +38,17 @@ export class UpstashRateLimitStore implements Store {
     const key = this.key(id)
     const totalHits = await redis.incr(key)
 
-    // First hit in the window — apply TTL so the key expires and the
-    // counter resets automatically.
-    if (totalHits === 1) {
-      await redis.expire(key, Math.ceil(this.windowMs / 1000))
-    }
+    // Idempotently guarantee the key has a TTL. EXPIRE … NX sets the window
+    // only when the key currently has none, so this:
+    //   • applies the window on the first hit, and
+    //   • REPAIRS a key that lost its TTL — INCR and EXPIRE are two separate,
+    //     non-atomic Upstash REST calls, so under a concurrent burst a
+    //     first-hit EXPIRE can be dropped, leaving the counter pinned above
+    //     the limit with no expiry. Such a key would 429 every request
+    //     forever; with NX the very next request re-arms the TTL and it
+    //     self-heals within one window.
+    // NX never extends an existing TTL, so fixed-window semantics hold.
+    await redis.expire(key, Math.ceil(this.windowMs / 1000), 'NX')
 
     // resetTime is advisory — used to set the Retry-After header. Without
     // a TTL roundtrip this is an approximation, which is fine for 429 UX.

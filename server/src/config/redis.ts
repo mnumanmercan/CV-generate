@@ -7,7 +7,10 @@ export type RedisLike = {
   get(key: string): Promise<string | null>
   set(key: string, value: string, opts?: { ex?: number }): Promise<unknown>
   incr(key: string): Promise<number>
-  expire(key: string, seconds: number): Promise<unknown>
+  // `mode` maps to Redis 7's EXPIRE options. We use 'NX' (set only when the key
+  // has no TTL) so the rate-limit store can idempotently guarantee an expiry
+  // without extending an existing window.
+  expire(key: string, seconds: number, mode?: 'NX' | 'XX' | 'GT' | 'LT'): Promise<unknown>
   decr(key: string): Promise<number>
   del(key: string): Promise<unknown>
 }

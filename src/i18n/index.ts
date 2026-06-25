@@ -428,6 +428,9 @@ export interface Translations {
     loading: string
     notFoundTitle: string
     notFoundDesc: string
+    errorTitle: string
+    errorDesc: string
+    retry: string
     backHome: string
     download: string
     viewerBadge: string
