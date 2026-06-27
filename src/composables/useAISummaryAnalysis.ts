@@ -12,10 +12,40 @@ const error = ref<string | null>(null)
 
 export function useAISummaryAnalysis() {
   const cvStore = useCVStore()
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
 
   // hasResult computed: sonuç panelinin açılıp açılmayacağını kontrol eder
   const hasResult = computed(() => !!feedback.value || !!suggestion.value)
+
+  // Bounded CV context so the rewrite is role-aligned and grounded in the
+  // candidate's real experience (not generic / fabricated). Truncated to the
+  // shared schema's caps so a long field never trips server validation.
+  function buildContext() {
+    const cv = cvStore.cvData
+
+    const jobTitle = cv.personal.jobTitle?.trim().slice(0, 150) || undefined
+
+    const experience = cv.experience
+      .slice(0, 8)
+      .map((e) => ({
+        title: (e.position ?? '').trim().slice(0, 150),
+        company: e.company?.trim() ? e.company.trim().slice(0, 150) : undefined,
+      }))
+      .filter((e) => e.title.length > 0)
+
+    const skills = cv.skills
+      .flatMap((s) => s.items)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 20)
+      .map((s) => s.slice(0, 60))
+
+    return {
+      jobTitle,
+      experience: experience.length ? experience : undefined,
+      skills: skills.length ? skills : undefined,
+    }
+  }
 
   async function analyze(summary: string): Promise<void> {
     isLoading.value = true
@@ -24,7 +54,11 @@ export function useAISummaryAnalysis() {
     suggestion.value = ''
 
     try {
-      const raw = await apiClient.post<unknown>('/ai/analyze-summary', { summary })
+      const raw = await apiClient.post<unknown>('/ai/analyze-summary', {
+        summary,
+        locale: locale.value === 'tr' ? 'tr' : 'en',
+        ...buildContext(),
+      })
       // Defensive: validate the response shape even though the server is the
       // contract owner — a future regression in the AI parser, a misbehaving
       // proxy, or a stale cache could all break the invariant, and reading

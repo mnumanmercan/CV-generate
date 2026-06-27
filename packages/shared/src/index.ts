@@ -37,8 +37,10 @@ export { WaitlistSchema } from './schemas/waitlist.schema.js'
 // AI Schemas
 export {
   AnalyzeSummarySchema,
+  SummaryAnalysisResultSchema,
   AnalyzeSummaryResponseSchema,
   type AnalyzeSummaryInput,
+  type SummaryAnalysisResult,
   type AnalyzeSummaryResponse,
 } from './schemas/ai.schema.js'
 

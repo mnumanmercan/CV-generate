@@ -99,7 +99,8 @@ registry.registerPath({
 registry.registerPath({
   method: 'post',
   path: '/api/v1/ai/analyze-summary',
-  description: 'Ask Claude Haiku 4.5 to critique + rewrite a CV summary.',
+  description:
+    'Ask Claude to critique + rewrite a CV summary (Haiku 4.5 for FREE, Sonnet 4.6 for paid plans), grounded in the supplied CV context.',
   tags: ['ai'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -113,6 +114,10 @@ registry.registerPath({
     401: { description: 'Unauthorized', content: { 'application/json': { schema: ErrorSchema } } },
     429: {
       description: 'Per-user rate limit hit',
+      content: { 'application/json': { schema: ErrorSchema } },
+    },
+    502: {
+      description: 'AI returned an invalid/incomplete/refused response',
       content: { 'application/json': { schema: ErrorSchema } },
     },
     503: {
