@@ -1,0 +1,210 @@
+{
+  "datasetVersion": "1.0.0",
+  "description": "Golden cases for the summary-analyzer eval harness. Hand-authored starter set spanning roles x {en, tr} x quality levels. Several 'fabrication-bait' cases deliberately ship thin context (no metrics) so the judge can catch invented numbers. Grow this set from real downvotes via `npm run eval:export-downvotes`.",
+  "cases": [
+    {
+      "id": "en-backend-weak-01",
+      "locale": "en",
+      "role": "Backend Engineer",
+      "qualityLevel": "weak",
+      "notes": "Passive, generic; no metrics in context -> rewrite must not invent numbers.",
+      "input": {
+        "summary": "Responsible for working on various backend tasks and helping the team. Worked on different projects and systems. Did my best to complete assignments on time and support other developers when needed.",
+        "jobTitle": "Backend Engineer",
+        "experience": [
+          { "title": "Backend Developer", "company": "Acme Software" },
+          { "title": "Junior Developer", "company": "WebCo" }
+        ],
+        "skills": ["Node.js", "PostgreSQL", "REST APIs", "Docker"]
+      }
+    },
+    {
+      "id": "en-frontend-medium-01",
+      "locale": "en",
+      "role": "Frontend Developer",
+      "qualityLevel": "medium",
+      "notes": "Decent but soft; should sharpen verbs and add grounded specifics.",
+      "input": {
+        "summary": "Frontend developer building responsive web apps with React and TypeScript. I enjoy creating clean user interfaces and improving page performance. Comfortable working with designers and backend teams to ship features.",
+        "jobTitle": "Frontend Developer",
+        "experience": [{ "title": "Frontend Developer", "company": "Pixel Labs" }],
+        "skills": ["React", "TypeScript", "CSS", "Vite", "Accessibility"]
+      }
+    },
+    {
+      "id": "en-data-analyst-weak-01",
+      "locale": "en",
+      "role": "Data Analyst",
+      "qualityLevel": "weak",
+      "notes": "Generic; no employer context; fabrication-bait.",
+      "input": {
+        "summary": "Data analyst with experience in analyzing data and making reports. Familiar with various tools and able to work with large datasets. Good at finding insights and helping the business make decisions.",
+        "jobTitle": "Data Analyst",
+        "skills": ["SQL", "Excel", "Tableau", "Python"]
+      }
+    },
+    {
+      "id": "en-pm-strong-01",
+      "locale": "en",
+      "role": "Senior Product Manager",
+      "qualityLevel": "strong",
+      "notes": "Already strong with real metrics; model should preserve/ground, not bloat or fabricate.",
+      "input": {
+        "summary": "Product manager who led a payments redesign that lifted checkout conversion by 18% across 2M monthly users. Partnered with engineering and design to ship 12 roadmap features in a year. Skilled at turning customer research into prioritized, measurable bets.",
+        "jobTitle": "Senior Product Manager",
+        "experience": [{ "title": "Product Manager", "company": "FinPay" }],
+        "skills": ["Roadmapping", "A/B testing", "SQL", "User research"]
+      }
+    },
+    {
+      "id": "en-marketing-weak-01",
+      "locale": "en",
+      "role": "Marketing Specialist",
+      "qualityLevel": "weak",
+      "notes": "Buzzword soup, zero specifics; should become concrete and channel-specific.",
+      "input": {
+        "summary": "A passionate, results-oriented marketing professional and team player with a proven track record of synergistic, dynamic campaigns that leverage cutting-edge strategies to drive impactful growth and meaningful value.",
+        "jobTitle": "Marketing Specialist",
+        "skills": ["SEO", "Email marketing", "Content", "Google Analytics"]
+      }
+    },
+    {
+      "id": "en-nurse-medium-01",
+      "locale": "en",
+      "role": "Registered Nurse",
+      "qualityLevel": "medium",
+      "notes": "Non-tech role; should stay grounded and add scope without inventing stats.",
+      "input": {
+        "summary": "Registered nurse with six years in busy hospital wards, caring for post-surgical patients. Known for staying calm under pressure and coordinating closely with doctors and families. Committed to safe, compassionate patient care.",
+        "jobTitle": "Registered Nurse",
+        "experience": [{ "title": "Staff Nurse", "company": "City General Hospital" }],
+        "skills": ["Patient care", "IV therapy", "EHR", "Triage"]
+      }
+    },
+    {
+      "id": "en-sales-weak-01",
+      "locale": "en",
+      "role": "Sales Representative",
+      "qualityLevel": "weak",
+      "notes": "Vague; no numbers in context -> placeholders, not invented quotas.",
+      "input": {
+        "summary": "Hardworking sales representative who is responsible for selling products and meeting customers. Always trying to hit targets and build good relationships. Looking to bring my skills to a new and growing company.",
+        "jobTitle": "Sales Representative",
+        "skills": ["B2B sales", "CRM", "Negotiation"]
+      }
+    },
+    {
+      "id": "en-ux-medium-01",
+      "locale": "en",
+      "role": "UX Designer",
+      "qualityLevel": "medium",
+      "notes": "Solid; sharpen impact and ground in real work.",
+      "input": {
+        "summary": "UX designer focused on turning complex workflows into simple, usable interfaces. I run user interviews, build prototypes in Figma, and test designs with real users before handoff. I care about accessibility and consistency.",
+        "jobTitle": "UX Designer",
+        "experience": [{ "title": "Product Designer", "company": "Northwind" }],
+        "skills": ["Figma", "Prototyping", "Usability testing", "Design systems"]
+      }
+    },
+    {
+      "id": "tr-backend-weak-01",
+      "locale": "tr",
+      "role": "Backend Geliştirici",
+      "qualityLevel": "weak",
+      "notes": "Edilgen, genel; baglamda metrik yok -> uydurma sayi olmamali.",
+      "input": {
+        "summary": "Cesitli backend islerinden sorumluydum ve ekibe yardimci oldum. Farkli projelerde calistim ve gorevlerimi zamaninda tamamlamaya calistim. Yeni teknolojiler ogrenmeye acigim.",
+        "jobTitle": "Backend Gelistirici",
+        "experience": [{ "title": "Backend Gelistirici", "company": "Yazilim A.S." }],
+        "skills": ["Node.js", "PostgreSQL", "Docker", "REST API"]
+      }
+    },
+    {
+      "id": "tr-marketing-weak-01",
+      "locale": "tr",
+      "role": "Pazarlama Uzmanı",
+      "qualityLevel": "weak",
+      "notes": "Genel; somut kanal/sonuc yok.",
+      "input": {
+        "summary": "Cesitli pazarlama islerinden sorumluydum ve kampanyalara yardimci oldum. Sosyal medya ve icerik konularinda calistim. Takim calismasina yatkin, ogrenmeye hevesli biriyim.",
+        "jobTitle": "Pazarlama Uzmani",
+        "skills": ["SEO", "Sosyal medya", "E-posta pazarlama", "Google Analytics"]
+      }
+    },
+    {
+      "id": "tr-teacher-medium-01",
+      "locale": "tr",
+      "role": "Matematik Öğretmeni",
+      "qualityLevel": "medium",
+      "notes": "Teknik olmayan; dogal Turkce; uydurma istatistik olmamali.",
+      "input": {
+        "summary": "Sekiz yildir ortaokul matematik ogretmeniyim. Ogrencilerin sinav kaygisini azaltmak icin birebir calismalar yurutuyor, veliyle duzenli iletisim kuruyorum. Ogrenci basarisini artirmaya odaklaniyorum.",
+        "jobTitle": "Matematik Ogretmeni",
+        "experience": [{ "title": "Matematik Ogretmeni", "company": "Ataturk Ortaokulu" }],
+        "skills": ["Sinif yonetimi", "Olcme degerlendirme", "Birebir egitim"]
+      }
+    },
+    {
+      "id": "tr-accountant-weak-01",
+      "locale": "tr",
+      "role": "Muhasebe Uzmanı",
+      "qualityLevel": "weak",
+      "notes": "Genel; guclu fiil ve somutluk eksik.",
+      "input": {
+        "summary": "Muhasebe alaninda calistim ve cesitli gorevlerden sorumluydum. Faturalari ve raporlari hazirladim. Dikkatli ve duzenli biriyim, ekiple uyumlu calisirim.",
+        "jobTitle": "Muhasebe Uzmani",
+        "skills": ["Logo", "Excel", "KDV beyannamesi", "Mizan"]
+      }
+    },
+    {
+      "id": "tr-data-strong-01",
+      "locale": "tr",
+      "role": "Veri Analisti",
+      "qualityLevel": "strong",
+      "notes": "Gercek metrikli guclu ozet; model bozmamali, uydurmamali.",
+      "input": {
+        "summary": "Veri analisti olarak satis ekibine kurdugum panolarla raporlama suresini haftada 10 saat azalttim. SQL ve Python ile 5 milyon satirlik veriyi modelleyip yoneticilere haftalik icgoru sundum. Kararlari veriyle desteklemeye odaklaniyorum.",
+        "jobTitle": "Veri Analisti",
+        "experience": [{ "title": "Veri Analisti", "company": "Perakende Ltd." }],
+        "skills": ["SQL", "Python", "Power BI", "Istatistik"]
+      }
+    },
+    {
+      "id": "tr-sales-medium-01",
+      "locale": "tr",
+      "role": "Kurumsal Satış Temsilcisi",
+      "qualityLevel": "medium",
+      "notes": "Orta; somut sonuc eklenebilir ama uydurulmamali.",
+      "input": {
+        "summary": "Kurumsal satis temsilcisi olarak yeni musteri kazanimi ve mevcut hesaplarin yonetiminden sorumluyum. Teklif hazirlama ve muzakere konusunda deneyimliyim. Hedef odakli calismayi severim.",
+        "jobTitle": "Kurumsal Satis Temsilcisi",
+        "skills": ["B2B satis", "CRM", "Muzakere", "Teklif yonetimi"]
+      }
+    },
+    {
+      "id": "tr-frontend-weak-01",
+      "locale": "tr",
+      "role": "Frontend Geliştirici",
+      "qualityLevel": "weak",
+      "notes": "Genel; guclu fiil ve teknoloji vurgusu eksik.",
+      "input": {
+        "summary": "Frontend tarafinda cesitli projelerde calistim. Arayuz gelistirme ve hata duzeltme isleri yaptim. Yeni seyler ogrenmeye acigim ve takimla uyumluyum.",
+        "jobTitle": "Frontend Gelistirici",
+        "skills": ["Vue", "JavaScript", "CSS", "Git"]
+      }
+    },
+    {
+      "id": "tr-nurse-medium-01",
+      "locale": "tr",
+      "role": "Hemşire",
+      "qualityLevel": "medium",
+      "notes": "Teknik olmayan; dogal Turkce; uydurma istatistik olmamali.",
+      "input": {
+        "summary": "Alti yildir devlet hastanesinde hemsire olarak calisiyorum, ameliyat sonrasi hasta bakimiyla ilgileniyorum. Yogun tempoda sakin kalir, doktor ve hasta yakinlariyla iyi iletisim kururum.",
+        "jobTitle": "Hemsire",
+        "experience": [{ "title": "Servis Hemsiresi", "company": "Devlet Hastanesi" }],
+        "skills": ["Hasta bakimi", "Ilac uygulama", "Triyaj"]
+      }
+    }
+  ]
+}

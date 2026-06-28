@@ -37,6 +37,23 @@ export interface Translations {
       apply: string
       discard: string
     }
+    vote: {
+      prompt: string
+      up: string
+      down: string
+      thanks: string
+      reasonsPrompt: string
+      done: string
+      error: string
+      reasons: {
+        INACCURATE: string
+        TOO_GENERIC: string
+        NOT_RELEVANT: string
+        WRONG_TONE: string
+        BAD_LANGUAGE: string
+        OTHER: string
+      }
+    }
     errors: {
       unauthorized: string
       tooManyRequests: string

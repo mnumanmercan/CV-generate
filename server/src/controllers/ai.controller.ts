@@ -1,12 +1,27 @@
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { aiService } from '../services/ai.service.js'
-import type { AnalyzeSummaryInput } from '../schemas/ai.schema.js'
+import { summaryFeedbackService } from '../services/summaryFeedback.service.js'
+import { AppError } from '../utils/apiError.js'
+import type { AnalyzeSummaryInput, SubmitFeedbackInput } from '@resumark/shared'
 
 // Handler
 export const aiController = {
   analyzeSummary: asyncHandler(async (req, res) => {
-    const { summary } = req.body as AnalyzeSummaryInput
-    const result = await aiService.analyzeSummary(summary)
+    const input = req.body as AnalyzeSummaryInput
+    // `authenticate` guarantees req.user; assert defensively for the type and
+    // because we now persist the analysis against the owning user id.
+    const userId = req.user?.sub
+    if (!userId) throw new AppError('Authentication required.', 401, 'UNAUTHORIZED')
+    const plan = req.user?.plan ?? 'FREE'
+    const result = await aiService.analyzeSummary(input, userId, plan)
     res.status(200).json({ success: true, data: result })
+  }),
+
+  submitFeedback: asyncHandler(async (req, res) => {
+    const input = req.body as SubmitFeedbackInput
+    const userId = req.user?.sub
+    if (!userId) throw new AppError('Authentication required.', 401, 'UNAUTHORIZED')
+    const data = await summaryFeedbackService.record(userId, input)
+    res.status(200).json({ success: true, data })
   }),
 }

@@ -24,6 +24,23 @@ const en: Translations = {
       apply: 'Apply Suggestion',
       discard: 'Discard',
     },
+    vote: {
+      prompt: 'Was this helpful?',
+      up: 'Helpful',
+      down: 'Not helpful',
+      thanks: 'Thanks — your feedback helps improve these suggestions.',
+      reasonsPrompt: "What didn't work? (optional)",
+      done: 'Done',
+      error: "Couldn't save your feedback. Please try again.",
+      reasons: {
+        INACCURATE: 'Inaccurate or made-up details',
+        TOO_GENERIC: 'Too generic',
+        NOT_RELEVANT: 'Not relevant to my role',
+        WRONG_TONE: 'Wrong tone',
+        BAD_LANGUAGE: 'Awkward language',
+        OTHER: 'Something else',
+      },
+    },
     errors: {
       unauthorized: 'Please log in again to use AI features.',
       tooManyRequests: 'Too many requests. Please wait a moment before trying again.',

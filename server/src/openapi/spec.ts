@@ -13,6 +13,7 @@ import {
   LoginSchema,
   AnalyzeSummarySchema,
   AnalyzeSummaryResponseSchema,
+  SubmitFeedbackSchema,
 } from '@resumark/shared'
 
 // Minimal OpenAPI spec covering the auth + AI endpoints — the surface most
@@ -38,6 +39,7 @@ registry.register('Register', RegisterSchema)
 registry.register('Login', LoginSchema)
 registry.register('AnalyzeSummaryRequest', AnalyzeSummarySchema)
 registry.register('AnalyzeSummaryResponse', AnalyzeSummaryResponseSchema)
+registry.register('SubmitFeedbackRequest', SubmitFeedbackSchema)
 
 registry.registerComponent('securitySchemes', 'bearerAuth', {
   type: 'http',
@@ -99,7 +101,8 @@ registry.registerPath({
 registry.registerPath({
   method: 'post',
   path: '/api/v1/ai/analyze-summary',
-  description: 'Ask Claude Haiku 4.5 to critique + rewrite a CV summary.',
+  description:
+    'Ask Claude to critique + rewrite a CV summary (Haiku 4.5 for FREE, Sonnet 4.6 for paid plans), grounded in the supplied CV context.',
   tags: ['ai'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -115,6 +118,10 @@ registry.registerPath({
       description: 'Per-user rate limit hit',
       content: { 'application/json': { schema: ErrorSchema } },
     },
+    502: {
+      description: 'AI returned an invalid/incomplete/refused response',
+      content: { 'application/json': { schema: ErrorSchema } },
+    },
     503: {
       description: 'AI service not configured',
       content: { 'application/json': { schema: ErrorSchema } },
@@ -123,6 +130,41 @@ registry.registerPath({
       description: 'AI service timed out (30 s ceiling)',
       content: { 'application/json': { schema: ErrorSchema } },
     },
+  },
+})
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/ai/feedback',
+  description:
+    "Record the signed-in user's up/down vote (with optional reason codes on a downvote) on a prior summary analysis. One vote per analysis; re-voting updates it.",
+  tags: ['ai'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: { content: { 'application/json': { schema: SubmitFeedbackSchema } } },
+  },
+  responses: {
+    200: {
+      description: 'Vote recorded',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.literal(true),
+            data: z.object({
+              analysisId: z.string().uuid(),
+              vote: z.enum(['UP', 'DOWN']),
+              reasons: z.array(z.string()),
+            }),
+          }),
+        },
+      },
+    },
+    401: { description: 'Unauthorized', content: { 'application/json': { schema: ErrorSchema } } },
+    404: {
+      description: 'Analysis not found or not owned by the caller',
+      content: { 'application/json': { schema: ErrorSchema } },
+    },
+    429: { description: 'Rate-limited', content: { 'application/json': { schema: ErrorSchema } } },
   },
 })
 

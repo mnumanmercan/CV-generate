@@ -37,10 +37,24 @@ export { WaitlistSchema } from './schemas/waitlist.schema.js'
 // AI Schemas
 export {
   AnalyzeSummarySchema,
+  SummaryAnalysisResultSchema,
+  AnalyzeSummaryDataSchema,
   AnalyzeSummaryResponseSchema,
+  SubmitFeedbackSchema,
   type AnalyzeSummaryInput,
+  type SummaryAnalysisResult,
+  type AnalyzeSummaryData,
   type AnalyzeSummaryResponse,
+  type SubmitFeedbackInput,
 } from './schemas/ai.schema.js'
+
+// AI Feedback taxonomy
+export {
+  FEEDBACK_VOTES,
+  SUMMARY_FEEDBACK_REASONS,
+  type FeedbackVoteValue,
+  type SummaryFeedbackReason,
+} from './constants/aiFeedback.js'
 
 // Constants
 export {

@@ -24,6 +24,23 @@ const tr: Translations = {
       apply: 'Öneriyi Uygula',
       discard: 'İptal Et',
     },
+    vote: {
+      prompt: 'İşine yaradı mı?',
+      up: 'Faydalı',
+      down: 'Faydasız',
+      thanks: 'Teşekkürler — geri bildirimin önerileri daha da iyileştirmemize yardımcı oluyor.',
+      reasonsPrompt: 'Nesi eksik kaldı? (isteğe bağlı)',
+      done: 'Tamam',
+      error: 'Geri bildirimin kaydedilemedi. Tekrar dener misin?',
+      reasons: {
+        INACCURATE: 'Yanlış veya uydurma bilgi',
+        TOO_GENERIC: 'Fazla genel kalmış',
+        NOT_RELEVANT: 'Rolümle alakası yok',
+        WRONG_TONE: 'Üslubu yanlış',
+        BAD_LANGUAGE: 'Dili doğal değil',
+        OTHER: 'Başka bir sebep',
+      },
+    },
     errors: {
       unauthorized: 'AI özelliklerini kullanmak için tekrar giriş yap.',
       tooManyRequests: 'Çok hızlı gidiyorsun, biraz sonra tekrar dene.',
