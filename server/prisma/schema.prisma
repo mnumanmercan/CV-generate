@@ -31,6 +31,11 @@ enum TokenType {
   EMAIL_VERIFY
 }
 
+enum FeedbackVote {
+  UP
+  DOWN
+}
+
 // ─── User ─────────────────────────────────────────────────────────────────────
 
 model User {
@@ -44,11 +49,13 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  cvs           CV[]
-  coverLetters  CoverLetter[]
-  tokens        Token[]
-  subscription  Subscription?
-  waitlistEntry WaitlistEntry?
+  cvs             CV[]
+  coverLetters    CoverLetter[]
+  tokens          Token[]
+  subscription    Subscription?
+  waitlistEntry   WaitlistEntry?
+  summaryAnalyses SummaryAnalysis[]
+  summaryFeedback SummaryFeedback[]
 
   @@index([email])
 }
@@ -169,4 +176,60 @@ model WaitlistEntry {
 
   @@index([email])
   @@index([notified])
+}
+
+// ─── SummaryAnalysis ──────────────────────────────────────────────────────────
+// One persisted AI summary analysis. Captured on every /ai/analyze-summary call
+// so each output is an attributable, versioned data point for the evals loop:
+//   - `input`/`output` are JSONB snapshots (CV summary text is PII — same
+//     category the CV table already stores; removed via Cascade on user delete).
+//   - `model` + `promptVersion` tie the output to exactly what produced it,
+//     enabling A/B comparison and regression attribution across prompt revisions.
+//   - token/latency columns are lightweight usage + cost telemetry.
+// Retention: a periodic job may prune rows with no `feedback` older than ~90d;
+// voted rows are eval gold and kept.
+
+model SummaryAnalysis {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @db.Uuid
+  input           Json // { summary, locale, jobTitle?, experience?, skills? } snapshot
+  output          Json // { feedback, suggestion }
+  model           String // e.g. "claude-haiku-4-5"
+  promptVersion   String // e.g. "1.0.0"
+  plan            Plan
+  inputTokens     Int? // response.usage.input_tokens
+  outputTokens    Int? // response.usage.output_tokens
+  cacheReadTokens Int? // response.usage.cache_read_input_tokens
+  latencyMs       Int? // wall-clock of the Anthropic call
+  createdAt       DateTime @default(now())
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedback SummaryFeedback?
+
+  @@index([userId])
+  @@index([promptVersion])
+  @@index([createdAt])
+}
+
+// ─── SummaryFeedback ──────────────────────────────────────────────────────────
+// A user's up/down vote on a SummaryAnalysis (+ reason codes on a downvote).
+// `analysisId @unique` enforces one vote per analysis; the controller upserts so
+// a user can flip their vote. `reasons` holds codes from the shared taxonomy
+// (packages/shared SUMMARY_FEEDBACK_REASONS) — the inverse of the eval rubric
+// dimensions, which makes downvote error-analysis map straight onto the judge.
+
+model SummaryFeedback {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  analysisId String       @unique @db.Uuid
+  userId     String       @db.Uuid
+  vote       FeedbackVote
+  reasons    String[] // reason codes on a downvote; empty for an upvote
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  analysis SummaryAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([vote])
 }

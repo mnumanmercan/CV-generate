@@ -3,12 +3,20 @@ import { useCVStore } from '@/stores/cvStore'
 import { useI18n } from '@/composables/useI18n'
 import { apiClient, ApiError } from '@/services/apiClient'
 import { AnalyzeSummaryResponseSchema } from '@resumark/shared'
+import type { FeedbackVoteValue, SummaryFeedbackReason } from '@resumark/shared'
 
 // Module-scoped state (tüm component'lerin aynı state'i paylaşması için)
 const isLoading = ref(false)
 const feedback = ref('')
 const suggestion = ref('')
 const error = ref<string | null>(null)
+// Server-generated handle for the current analysis. Sent back when the user
+// votes on this output (POST /ai/feedback) so the vote joins to its exact result.
+const analysisId = ref<string | null>(null)
+// The user's vote on the current analysis (null = not voted yet).
+const vote = ref<FeedbackVoteValue | null>(null)
+const isVoting = ref(false)
+const voteError = ref<string | null>(null)
 
 export function useAISummaryAnalysis() {
   const cvStore = useCVStore()
@@ -52,6 +60,9 @@ export function useAISummaryAnalysis() {
     error.value = null
     feedback.value = ''
     suggestion.value = ''
+    analysisId.value = null
+    vote.value = null
+    voteError.value = null
 
     try {
       const raw = await apiClient.post<unknown>('/ai/analyze-summary', {
@@ -69,6 +80,7 @@ export function useAISummaryAnalysis() {
       }
       feedback.value = parsed.data.data.feedback
       suggestion.value = parsed.data.data.suggestion
+      analysisId.value = parsed.data.data.analysisId
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 401) {
@@ -91,6 +103,33 @@ export function useAISummaryAnalysis() {
     }
   }
 
+  // Record an up/down vote on the current analysis. Optimistic: the UI flips
+  // immediately and only rolls back if the write fails. Reasons travel only with
+  // a downvote (the server ignores them on an upvote regardless).
+  async function submitFeedback(
+    v: FeedbackVoteValue,
+    reasons: SummaryFeedbackReason[] = [],
+  ): Promise<void> {
+    if (!analysisId.value || isVoting.value) return
+    const previous = vote.value
+    vote.value = v
+    isVoting.value = true
+    voteError.value = null
+    try {
+      await apiClient.post<unknown>('/ai/feedback', {
+        analysisId: analysisId.value,
+        vote: v,
+        ...(v === 'DOWN' && reasons.length ? { reasons } : {}),
+      })
+    } catch (err) {
+      vote.value = previous
+      voteError.value = t('ai.vote.error')
+      console.error('[useAISummaryAnalysis] feedback failed:', err)
+    } finally {
+      isVoting.value = false
+    }
+  }
+
   // applySuggestion fonksiyonu
   function applySuggestion(): void {
     if (suggestion.value) {
@@ -104,15 +143,23 @@ export function useAISummaryAnalysis() {
     feedback.value = ''
     suggestion.value = ''
     error.value = null
+    analysisId.value = null
+    vote.value = null
+    voteError.value = null
   }
 
   return {
     isLoading,
     feedback,
     suggestion,
+    analysisId,
+    vote,
+    isVoting,
+    voteError,
     hasResult,
     error,
     analyze,
+    submitFeedback,
     applySuggestion,
     reset,
   }
