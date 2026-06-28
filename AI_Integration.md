@@ -228,3 +228,43 @@ generate (versioned, structured, grounded)  →  user votes 👍/👎 + reasons
 **To reproduce the measured impact:** set `ANTHROPIC_API_KEY` in `server/.env`, then run
 `npm run eval:summary` (baseline) and again after a prompt change to fill in the `[X]`
 values above.
+
+
+## Result: before vs. after
+
+The same candidate summary, analyzed by the original prompt (**v1.0.0**) and by the
+improved one (**v1.1.0**). This is the clearest demonstration of the grounding, few-shot,
+and feedback work described above.
+
+### Before — Simple AI usage
+
+![Before: the analyzer's rewrite invents metrics that are not in the candidate's CV](image-2.png)
+
+The rewrite *sounds* impressive but **fabricates specifics** — "15+ production features,"
+"35%" faster load times, and "10K+ users" appear nowhere in the candidate's input. The
+model simply made them up. There is also no way for the user to tell us whether the
+result was any good.
+
+### After — Improved AI Techniques
+
+![After: a grounded rewrite using the candidate's real employers and skills, a bracketed placeholder instead of an invented number, and a thumbs up/down feedback control](image.png)
+
+The rewrite is **grounded in the candidate's real data**: it uses their actual employers
+(Jotform, Insider One) and differentiating skills (React, TypeScript, Node.js, Go, and AI
+tooling — Claude Code, MCP) instead of made-up numbers. Where a metric is genuinely
+missing, it inserts a bracketed **`[X]%` placeholder** for the candidate to fill in —
+never a fabricated figure. The feedback is sharper too (it names the exact employers and
+tools that were absent), and a **"Was this helpful?" 👍 / 👎 control** now captures the
+evals signal.
+
+### At a glance
+
+| | Before (v1.0.0) | After (v1.1.0) |
+|---|---|---|
+| **Metrics** | Invented: "15+", "35%", "10K+" | Real facts + `[X]%` placeholder to fill in |
+| **Grounding** | Ignores the candidate's actual CV | Uses real employers + skills from context |
+| **Feedback quality** | Generic ("add achievements") | Names the exact missing items |
+| **User signal** | None | 👍 / 👎 voting captured |
+
+**Takeaway:** the improved version trades *invented* impressiveness for *true*, verifiable
+specifics — exactly what a recruiter, and an ATS, can trust.
