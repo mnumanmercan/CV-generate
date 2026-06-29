@@ -8,6 +8,7 @@ import {
   migrateCVData,
 } from '@/types/cv.types'
 import { localStorageService } from '@/services/storageService'
+import { useUserStore } from '@/stores/userStore'
 import { SAVE_INDICATOR_MS, SECTION_HIGHLIGHT_MS } from '@/constants/timing'
 
 export const useCVStore = defineStore('cv', () => {
@@ -60,6 +61,12 @@ export const useCVStore = defineStore('cv', () => {
   async function loadFromStorage(): Promise<void> {
     loadingData.value = true
     try {
+      // Wait for an in-flight boot session probe to settle BEFORE reading, so a
+      // cold load on a public route (/, /builder) reads from the correct backend
+      // (cloud once logged in) rather than racing the local→cloud delegate swap.
+      // No-op once the probe has resolved. Set loadingData first so any cvData
+      // replacement during the wait still suppresses auto-save.
+      await useUserStore().ensureSessionRestored()
       const stored = await localStorageService.load()
       if (stored) {
         // Run all pending migrations while loadingData is still true so

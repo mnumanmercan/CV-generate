@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { apiClient, setAccessToken, refreshAccessToken } from '@/services/apiClient'
+import { useCVStore } from '@/stores/cvStore'
 import { localStorageService, LocalStorageService } from '@/services/storageService'
 import {
   coverLetterStorageService,
@@ -44,6 +45,11 @@ export const useUserStore = defineStore('user', () => {
    */
   const isSessionRestored = ref(false)
 
+  // Captured promise for the boot-time session probe so other code (e.g.
+  // cvStore.loadFromStorage) can AWAIT it instead of racing it. Memoized so
+  // repeat callers and the router guard share the single in-flight run.
+  let sessionRestorePromise: Promise<void> | null = null
+
   const showUpgradeModal = ref(false)
   const upgradeModalTrigger = ref<string>('')
 
@@ -60,6 +66,24 @@ export const useUserStore = defineStore('user', () => {
   function _switchToLocalStorage(): void {
     localStorageService.setDelegate(new LocalStorageService())
     coverLetterStorageService.setDelegate(new LocalCoverLetterStorageService())
+  }
+
+  /**
+   * Re-hydrate the CV store from whichever backend is now active.
+   *
+   * Called immediately after every storage-delegate swap (login, register,
+   * session-restore, logout). Without this, the store keeps the data it loaded
+   * from the PREVIOUS backend and the sticky `isLoaded` guard stops any
+   * subsequently-mounted view from re-reading — so the form shows empty/stale
+   * data until a hard refresh. We clear `isLoaded` (so future view mounts also
+   * re-read) and reload now (so an already-mounted view updates in place).
+   *
+   * Lazy `useCVStore()` keeps the user↔cv store dependency cycle resolvable.
+   */
+  function _reloadActiveCV(): void {
+    const cvStore = useCVStore()
+    cvStore.isLoaded = false
+    void cvStore.loadFromStorage()
   }
 
   // ── Internal: apply user state after successful auth ──────────────────────
@@ -83,6 +107,10 @@ export const useUserStore = defineStore('user', () => {
       )
       setAccessToken(data.accessToken)
       _applyUser(data.user)
+      // Swap to cloud storage just happened — pull this user's CV so the
+      // post-register redirect (→ /dashboard) shows real data, not the guest
+      // defaults still sitting in the store.
+      _reloadActiveCV()
     } catch (err) {
       authError.value =
         err instanceof Error ? err.message : 'Registration failed. Please try again.'
@@ -114,6 +142,9 @@ export const useUserStore = defineStore('user', () => {
       )
       setAccessToken(data.accessToken)
       _applyUser(data.user)
+      // Storage delegate is now cloud — reload so the data the user just
+      // signed in to see is in the store before /dashboard mounts.
+      _reloadActiveCV()
     } catch (err) {
       authError.value = err instanceof Error ? err.message : 'Invalid email or password.'
       throw err
@@ -124,24 +155,48 @@ export const useUserStore = defineStore('user', () => {
 
   // ── Restore session on page load (silent, non-blocking) ──────────────────
 
-  async function restoreSession(): Promise<void> {
-    try {
-      // Share apiClient's single-flight refresh so this boot-time probe and any
-      // 401-triggered refresh collapse into ONE /auth/refresh — otherwise the
-      // two race, and because the endpoint rotates tokens, the loser is logged
-      // out. refreshAccessToken() returns false (not throws) for a missing or
-      // expired token — normal for guests — and never dispatches
-      // resumark:session-expired, so guests aren't redirected to /login.
-      const ok = await refreshAccessToken()
-      if (!ok) return // no valid session — silently remain as guest
-      const me = await apiClient.get<{ data: MeResponse }>('/user/me')
-      _applyUser(me.data)
-    } catch {
-      // Network error or server down — remain as guest
-    } finally {
-      // Flip regardless of outcome so router guards unblock.
-      isSessionRestored.value = true
-    }
+  function restoreSession(): Promise<void> {
+    // Memoize so the boot call (main.ts) and any awaiter (cvStore via
+    // ensureSessionRestored, the router guard) share ONE probe.
+    if (sessionRestorePromise) return sessionRestorePromise
+    sessionRestorePromise = (async () => {
+      try {
+        // Share apiClient's single-flight refresh so this boot-time probe and any
+        // 401-triggered refresh collapse into ONE /auth/refresh — otherwise the
+        // two race, and because the endpoint rotates tokens, the loser is logged
+        // out. refreshAccessToken() returns false (not throws) for a missing or
+        // expired token — normal for guests — and never dispatches
+        // resumark:session-expired, so guests aren't redirected to /login.
+        const ok = await refreshAccessToken()
+        if (!ok) return // no valid session — silently remain as guest
+        const me = await apiClient.get<{ data: MeResponse }>('/user/me')
+        _applyUser(me.data)
+      } catch {
+        // Network error or server down — remain as guest
+      } finally {
+        // Flip regardless of outcome so router guards unblock.
+        isSessionRestored.value = true
+      }
+      // Reload the active CV from the now-correct backend. Deliberately AFTER
+      // the finally above flipped isSessionRestored — so the loadFromStorage
+      // this kicks off finds ensureSessionRestored() already resolved and can't
+      // deadlock awaiting this very probe.
+      if (isLoggedIn.value) _reloadActiveCV()
+    })()
+    return sessionRestorePromise
+  }
+
+  /**
+   * Resolve once the boot-time session probe has settled (success or not).
+   * cvStore.loadFromStorage awaits this so a cold load on a PUBLIC route
+   * (/, /builder — whose router guards don't wait) reads from the correct
+   * cloud-vs-local backend instead of the local default the probe may not
+   * have swapped away from yet. No-op (returns immediately) once restored, or
+   * if no probe is in flight, so it never blocks indefinitely.
+   */
+  async function ensureSessionRestored(): Promise<void> {
+    if (isSessionRestored.value) return
+    if (sessionRestorePromise) await sessionRestorePromise
   }
 
   // ── Logout ────────────────────────────────────────────────────────────────
@@ -162,6 +217,9 @@ export const useUserStore = defineStore('user', () => {
     isLoggedIn.value = false
     isPremium.value = false
     _switchToLocalStorage()
+    // Back on local storage — reload so a still-mounted view drops the cloud
+    // user's data instead of leaving it on screen after logout/session-expiry.
+    _reloadActiveCV()
   }
 
   async function logout(): Promise<void> {
@@ -203,6 +261,7 @@ export const useUserStore = defineStore('user', () => {
     logout,
     clearLocalSession,
     restoreSession,
+    ensureSessionRestored,
     openUpgradeModal,
     closeUpgradeModal,
   }
