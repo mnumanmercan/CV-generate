@@ -30,6 +30,9 @@
 
   const charCount = computed(() => cvData.value.summary.trim().length)
 
+  // Chars still missing before AI analysis unlocks (0 once unlocked)
+  const charsToUnlock = computed(() => Math.max(0, 50 - charCount.value))
+
   // ── AI feedback voting ──────────────────────────────────────────────────
   const reasons = SUMMARY_FEEDBACK_REASONS
   const showReasons = ref(false)
@@ -137,6 +140,15 @@
           </svg>
           {{ isLoading ? t('ai.analyzeButton.analyzing') : t('ai.analyzeButton.text') }}
         </button>
+
+        <!-- Why the analyze button is locked — live countdown to the 50-char minimum -->
+        <p
+          v-if="charsToUnlock > 0"
+          class="mt-1.5 text-xs text-secondary text-center"
+          aria-live="polite"
+        >
+          {{ t('ai.analyzeButton.minChars', { n: String(charsToUnlock) }) }}
+        </p>
 
         <!-- Error Message -->
         <div

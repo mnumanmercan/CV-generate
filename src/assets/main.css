@@ -352,6 +352,87 @@ select:focus {
 .section-visible .reveal-item:nth-child(7)  { animation-delay: 420ms; }
 .section-visible .reveal-item:nth-child(8)  { animation-delay: 490ms; }
 
+/* ─── AI-assist chip (FormSection header) ────────────────────────────── */
+/* Pill matches the saved-indicator grammar (dot + mono micro-label); the
+   dot breathes and emits a slow halo ring so the section reads as "live". */
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 9999px;
+  border: 1px solid rgba(184, 83, 42, 0.28);
+  border-color: color-mix(in oklab, var(--accent) 28%, transparent);
+  background: rgba(184, 83, 42, 0.07);
+  background: color-mix(in oklab, var(--accent) 7%, transparent);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.ai-badge-dot {
+  position: relative;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ai-badge-dot {
+    animation: aiBreathe 2.8s ease-in-out infinite;
+  }
+  /* Expanding halo ring — the quiet "radar blip" */
+  .ai-badge-dot::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 9999px;
+    border: 1px solid var(--accent);
+    animation: aiHalo 2.8s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  }
+}
+
+@keyframes aiBreathe {
+  0%, 100% { transform: scale(0.85); opacity: 0.75; }
+  40%      { transform: scale(1.1);  opacity: 1;    }
+}
+
+@keyframes aiHalo {
+  0%        { transform: scale(1);   opacity: 0.55; }
+  55%, 100% { transform: scale(3.4); opacity: 0;    }
+}
+
+/* Hover tooltip for the AI chip — translucent paper + blur so the content
+   behind stays legible. Fixed-position & teleported to <body> (the accordion
+   card's overflow-hidden would clip it otherwise). */
+.ai-badge-tip {
+  position: fixed;
+  z-index: 60;
+  max-width: 264px; /* must match AI_TIP_MAX_WIDTH in FormSection.vue */
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(184, 83, 42, 0.18);
+  border-color: color-mix(in oklab, var(--accent) 18%, transparent);
+  background: rgba(246, 242, 234, 0.88);
+  background: color-mix(in oklab, var(--paper) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.10),
+    0 2px 6px rgba(0, 0, 0, 0.06);
+  font-family: 'DM Sans', ui-sans-serif, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink);
+  pointer-events: none;
+}
+
 /* ─── Hero Mini Demo float ───────────────────────────────────────────── */
 
 @keyframes floatCard {

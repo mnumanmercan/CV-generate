@@ -15,6 +15,7 @@ const en: Translations = {
     analyzeButton: {
       text: 'Analyze with AI',
       analyzing: 'Analyzing...',
+      minChars: 'Write at least 50 characters to unlock AI analysis — {n} to go',
     },
     feedback: {
       label: 'AI Feedback',
@@ -112,6 +113,10 @@ const en: Translations = {
     cvBuilderTab: '◉ CV Builder',
     coverLetterTab: '✎ Cover Letter',
     resumeTemplate: 'Resume template',
+    aiBadge: {
+      label: 'AI analyze and suggestion',
+      hint: 'AI assistant inside — get instant feedback and a suggested rewrite of your summary',
+    },
     sections: {
       personal: 'Personal Info',
       summary: 'Professional Summary',

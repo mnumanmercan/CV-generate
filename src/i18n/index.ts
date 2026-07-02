@@ -28,6 +28,7 @@ export interface Translations {
     analyzeButton: {
       text: string
       analyzing: string
+      minChars: string
     }
     feedback: {
       label: string
@@ -110,6 +111,10 @@ export interface Translations {
     cvBuilderTab: string
     coverLetterTab: string
     resumeTemplate: string
+    aiBadge: {
+      label: string
+      hint: string
+    }
     sections: {
       personal: string
       summary: string

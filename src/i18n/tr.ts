@@ -15,6 +15,7 @@ const tr: Translations = {
     analyzeButton: {
       text: 'AI ile Analiz Et',
       analyzing: 'Analiz ediliyor...',
+      minChars: 'AI analizi için en az 50 karakter gerekiyor — {n} karakter kaldı',
     },
     feedback: {
       label: 'AI Geri Bildirimi',
@@ -112,6 +113,10 @@ const tr: Translations = {
     cvBuilderTab: '◉ CV Oluşturucu',
     coverLetterTab: '✎ Ön Yazı',
     resumeTemplate: 'Şablon',
+    aiBadge: {
+      label: 'AI analiz ve öneri',
+      hint: 'Bu bölümde AI asistanı var — özetin için anında geri bildirim ve yeniden yazım önerisi al',
+    },
     sections: {
       personal: 'Kişisel Bilgiler',
       summary: 'Profesyonel Özet',
