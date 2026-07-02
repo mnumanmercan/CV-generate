@@ -149,12 +149,14 @@
       icon: '◉',
       defaultOpen: true,
       completed: isPersonalComplete.value,
+      hasAI: false,
     },
     {
       key: 'summary' as SectionKey,
       icon: '§',
       defaultOpen: false,
       completed: isSummaryComplete.value,
+      hasAI: true,
     },
   ])
 
@@ -255,6 +257,8 @@
               :default-open="section.defaultOpen"
               :step-index="idx"
               :completed="section.completed"
+              :ai-label="section.hasAI ? t('builder.aiBadge.label') : undefined"
+              :ai-hint="section.hasAI ? t('builder.aiBadge.hint') : undefined"
             >
               <PersonalInfoForm v-if="section.key === 'personal'" />
               <SummaryForm v-else-if="section.key === 'summary'" />

@@ -2,6 +2,8 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue'
 
+  const AI_TIP_MAX_WIDTH = 264 // must match .ai-badge-tip max-width in main.css
+
   interface Props {
     title: string
     icon?: string
@@ -9,6 +11,10 @@
     completed?: boolean
     stepIndex?: number
     draggable?: boolean
+    /** When set, renders the animated AI-assist chip after the title. */
+    aiLabel?: string
+    /** Tooltip + screen-reader description for the AI chip. */
+    aiHint?: string
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -22,6 +28,27 @@
 
   function toggle(): void {
     isOpen.value = !isOpen.value
+  }
+
+  // ── AI chip tooltip ─────────────────────────────────────────────────────
+  // Teleported to <body> with fixed positioning because the accordion card
+  // uses overflow-hidden — an absolute popup would be clipped when collapsed.
+  const aiChipEl = ref<HTMLElement | null>(null)
+  const aiTipVisible = ref(false)
+  const aiTipPos = ref({ top: 0, left: 0 })
+
+  function showAiTip(): void {
+    const rect = aiChipEl.value?.getBoundingClientRect()
+    if (!rect) return
+    aiTipPos.value = {
+      top: rect.bottom + 8,
+      left: Math.max(12, Math.min(rect.left, window.innerWidth - AI_TIP_MAX_WIDTH - 12)),
+    }
+    aiTipVisible.value = true
+  }
+
+  function hideAiTip(): void {
+    aiTipVisible.value = false
   }
 
   // Once the stagger-item entrance animation has played, remove the class so
@@ -123,6 +150,23 @@
         >
           {{ title }}
         </span>
+
+        <!--
+          AI-assist chip: sienna pill with a breathing dot that emits a slow
+          halo ring — signals a live assistant inside without adding a second
+          colour or fighting the step indicator for attention.
+        -->
+        <span
+          v-if="aiLabel"
+          ref="aiChipEl"
+          class="ai-badge shrink-0"
+          @mouseenter="showAiTip"
+          @mouseleave="hideAiTip"
+        >
+          <span class="ai-badge-dot" aria-hidden="true" />
+          {{ aiLabel }}
+          <span v-if="aiHint" class="sr-only">— {{ aiHint }}</span>
+        </span>
       </div>
 
       <!-- Chevron -->
@@ -139,6 +183,27 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
       </svg>
     </button>
+
+    <!-- AI chip tooltip — teleported so the card's overflow-hidden can't clip it -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-all duration-150 ease-out"
+        enter-from-class="opacity-0 translate-y-1"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition-all duration-100 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="aiTipVisible && aiHint"
+          class="ai-badge-tip"
+          :style="{ top: `${aiTipPos.top}px`, left: `${aiTipPos.left}px` }"
+          role="tooltip"
+        >
+          {{ aiHint }}
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Section content -->
     <Transition

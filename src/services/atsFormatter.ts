@@ -59,13 +59,8 @@ export function analyzeSummary(summary: string): ATSWarning[] {
   const warnings: ATSWarning[] = []
   const len = summary.trim().length
 
-  if (len > 0 && len < 50) {
-    warnings.push({
-      field: 'summary',
-      message: `Summary is too short (${len} chars). ATS scanners prefer 50–500 characters.`,
-      severity: 'warning',
-    })
-  }
+  // No too-short warning here: the builder's analyze-button hint already
+  // shows a live countdown to the 50-char minimum.
 
   if (len > 500) {
     warnings.push({
