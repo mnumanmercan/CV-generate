@@ -40,8 +40,7 @@ export function useStepSequence(options: StepSequenceOptions = {}) {
   let running = false
 
   const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
   function clearTimer() {
     if (timer) {

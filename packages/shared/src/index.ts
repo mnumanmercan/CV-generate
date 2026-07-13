@@ -63,3 +63,4 @@ export {
   ALLOWED_TEMPLATES_BY_PLAN,
   STRIPE_GRACE_PERIOD_DAYS,
 } from './constants/plans.js'
+export { CV_LIMITS } from './constants/limits.js'

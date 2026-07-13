@@ -3,8 +3,10 @@
   import { useRoute } from 'vue-router'
   import CVPreview from '@/components/preview/CVPreview.vue'
   import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
-  import { usePDFExport } from '@/composables/usePDFExport'
+  import ConfirmModal from '@/components/ui/ConfirmModal.vue'
+  import { usePDFExport, willOverflow } from '@/composables/usePDFExport'
   import { useI18n } from '@/composables/useI18n'
+  import { A4_WIDTH_PX, A4_HEIGHT_PX } from '@/constants/layout'
   import { fetchPublicCV } from '@/services/cvShareService'
   import { ApiError } from '@/services/apiClient'
   import type { CVData } from '@/types/cv.types'
@@ -23,8 +25,6 @@
   // ── Fit the rigid A4 document (794×1122) into the viewport, never above 1 ────
   // Same approach as CVPreviewModal; usePDFExport neutralizes this transform
   // before capture, so the exported PDF is unaffected.
-  const A4_WIDTH_PX = 794
-  const A4_HEIGHT_PX = 1122
   const VIEWPORT_MARGIN_PX = 48
   const rootEl = ref<HTMLElement | null>(null)
   const scale = ref(1)
@@ -47,7 +47,19 @@
     document.head.appendChild(robotsMeta)
   }
 
+  // The export clamps to page 1 — confirm before cutting an overflowing CV.
+  const showOverflowConfirm = ref(false)
+
   async function handleDownload(): Promise<void> {
+    if (willOverflow('cv-preview')) {
+      showOverflowConfirm.value = true
+      return
+    }
+    await exportPDF('cv-preview')
+  }
+
+  async function confirmOverflowDownload(): Promise<void> {
+    showOverflowConfirm.value = false
     await exportPDF('cv-preview')
   }
 
@@ -170,5 +182,14 @@
         <CVPreview :data="cv ?? undefined" />
       </div>
     </div>
+
+    <ConfirmModal
+      :visible="showOverflowConfirm"
+      :title="t('builder.overflow.confirmTitle')"
+      :message="t('builder.overflow.confirmMessage')"
+      :confirm-label="t('builder.overflow.confirmLabel')"
+      @confirm="confirmOverflowDownload"
+      @cancel="showOverflowConfirm = false"
+    />
   </div>
 </template>

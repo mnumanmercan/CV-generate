@@ -6,6 +6,7 @@
   import FormField from './FormField.vue'
   import { createSkill } from '@/types/cv.types'
   import { useI18n } from '@/composables/useI18n'
+  import { CV_LIMITS } from '@resumark/shared'
 
   const { t } = useI18n()
   const cvStore = useCVStore()
@@ -16,7 +17,16 @@
   const tagInputs = ref<Record<string, string>>({})
   const duplicateWarnings = ref(new Set<string>())
 
+  const categoryLimitReached = computed(
+    () => cvData.value.skills.length >= CV_LIMITS.skills.maxItems,
+  )
+
+  function tagLimitReached(index: number): boolean {
+    return (cvData.value.skills[index]?.items.length ?? 0) >= CV_LIMITS.skills.maxItemsPerCategory
+  }
+
   function addSkill(): void {
+    if (categoryLimitReached.value) return
     const skill = createSkill()
     cvData.value.skills.push(skill)
     tagInputs.value[skill.id] = ''
@@ -29,6 +39,7 @@
   function addTag(skillId: string, index: number): void {
     const input = (tagInputs.value[skillId] ?? '').trim()
     if (!input) return
+    if (tagLimitReached(index)) return
     const skill = cvData.value.skills[index]
     if (skill) {
       if (skill.items.includes(input)) {
@@ -98,6 +109,7 @@
         :label="t('forms.skillCategory')"
         placeholder="Frontend, Backend, DevOps..."
         required
+        :maxlength="CV_LIMITS.skills.category"
       />
 
       <!-- Tag chips -->
@@ -124,11 +136,12 @@
           </span>
         </div>
 
-        <div class="flex gap-2">
+        <div v-if="!tagLimitReached(index)" class="flex gap-2">
           <input
             :id="`skill-tag-input-${skill.id}`"
             v-model="tagInputs[skill.id]"
             type="text"
+            :maxlength="CV_LIMITS.skills.item"
             :placeholder="t('forms.addSkillPlaceholder')"
             class="flex-1 px-3 py-2 text-sm rounded-lg"
             :aria-label="`Add skill to ${skill.category || 'category'}`"
@@ -143,6 +156,9 @@
             {{ t('forms.add') }}
           </button>
         </div>
+        <p v-else class="text-xs text-secondary">
+          {{ t('forms.limitReached', { n: String(CV_LIMITS.skills.maxItemsPerCategory) }) }}
+        </p>
         <p
           v-if="duplicateWarnings.has(skill.id)"
           class="text-xs text-yellow-400 mt-1 flex items-center gap-1"
@@ -168,11 +184,15 @@
     </div>
 
     <button
+      v-if="!categoryLimitReached"
       type="button"
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addSkill"
     >
       <span aria-hidden="true">+</span> {{ t('forms.addSkillCategory') }}
     </button>
+    <p v-else class="text-center text-xs text-secondary py-2">
+      {{ t('forms.limitReached', { n: String(CV_LIMITS.skills.maxItems) }) }}
+    </p>
   </div>
 </template>

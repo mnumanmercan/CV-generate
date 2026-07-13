@@ -16,6 +16,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useCVStore } from './cvStore'
 import { localStorageService } from '@/services/storageService'
+import { StorageError, type StorageErrorReason } from '@/services/storageErrors'
 import type { StorageService } from '@/services/storageService'
 import type { CVData } from '@/types/cv.types'
 
@@ -137,5 +138,86 @@ describe('cvStore', () => {
     expect(Number.isFinite(afterMs)).toBe(true)
     expect(afterMs).toBeGreaterThanOrEqual(beforeMs)
     expect(typeof snapshot.meta.version).toBe('string')
+  })
+})
+
+/** Storage stub whose save() always rejects with the given StorageError reason. */
+function makeFailingStorage(reason: StorageErrorReason): StorageService {
+  return {
+    async save() {
+      throw new StorageError(reason, `save failed: ${reason}`)
+    },
+    async load() {
+      return null
+    },
+    async clear() {},
+  }
+}
+
+function makeSucceedingStorage(): StorageService {
+  return {
+    async save() {},
+    async load() {
+      return null
+    },
+    async clear() {},
+  }
+}
+
+describe('cvStore.lastSaveError', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('sets lastSaveError after a single failure for terminal reasons (too_large)', async () => {
+    localStorageService.setDelegate(makeFailingStorage('too_large'))
+    const store = useCVStore()
+
+    await expect(store.saveToStorage()).rejects.toBeInstanceOf(StorageError)
+    expect(store.lastSaveError?.reason).toBe('too_large')
+  })
+
+  it('sets lastSaveError immediately for quota_exceeded (guest storage full)', async () => {
+    localStorageService.setDelegate(makeFailingStorage('quota_exceeded'))
+    const store = useCVStore()
+
+    await expect(store.saveToStorage()).rejects.toBeInstanceOf(StorageError)
+    expect(store.lastSaveError?.reason).toBe('quota_exceeded')
+  })
+
+  it('surfaces network failures only after 2 consecutive failures', async () => {
+    localStorageService.setDelegate(makeFailingStorage('network'))
+    const store = useCVStore()
+
+    await expect(store.saveToStorage()).rejects.toBeInstanceOf(StorageError)
+    expect(store.lastSaveError).toBeNull() // one blip — stay quiet
+
+    await expect(store.saveToStorage()).rejects.toBeInstanceOf(StorageError)
+    expect(store.lastSaveError?.reason).toBe('network')
+  })
+
+  it('never surfaces rate_limited (auto-save cooldown self-heals)', async () => {
+    localStorageService.setDelegate(makeFailingStorage('rate_limited'))
+    const store = useCVStore()
+
+    await expect(store.saveToStorage()).rejects.toBeInstanceOf(StorageError)
+    await expect(store.saveToStorage()).rejects.toBeInstanceOf(StorageError)
+    expect(store.lastSaveError).toBeNull()
+  })
+
+  it('clears lastSaveError and resets the failure streak on a successful save', async () => {
+    localStorageService.setDelegate(makeFailingStorage('too_large'))
+    const store = useCVStore()
+    await expect(store.saveToStorage()).rejects.toBeInstanceOf(StorageError)
+    expect(store.lastSaveError).not.toBeNull()
+
+    localStorageService.setDelegate(makeSucceedingStorage())
+    await store.saveToStorage()
+    expect(store.lastSaveError).toBeNull()
+
+    // Streak was reset — a single new network failure must not alert.
+    localStorageService.setDelegate(makeFailingStorage('network'))
+    await expect(store.saveToStorage()).rejects.toBeInstanceOf(StorageError)
+    expect(store.lastSaveError).toBeNull()
   })
 })

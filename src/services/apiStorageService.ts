@@ -3,32 +3,11 @@ import type { CoverLetterData } from '@/types/coverLetter.types'
 import type { StorageService } from './storageService'
 import type { CoverLetterStorageService } from './coverLetterStorageService'
 import { apiClient, ApiError, TimeoutError } from './apiClient'
+import { StorageError } from './storageErrors'
 
-// ─── Typed storage error ──────────────────────────────────────────────────────
-// Callers can distinguish between error types to show appropriate UI feedback.
-
-export type StorageErrorReason =
-  | 'not_found'
-  | 'unauthorized'
-  | 'network'
-  | 'rate_limited'
-  | 'unknown'
-
-export class StorageError extends Error {
-  // Plain field instead of the constructor-parameter shorthand because the
-  // app tsconfig enables `erasableSyntaxOnly` (which forbids emitted runtime
-  // assignments from parameter properties).
-  readonly reason: StorageErrorReason
-  /** For `rate_limited`: how long to wait before retrying (ms), if the server said. */
-  readonly retryAfterMs: number | undefined
-
-  constructor(reason: StorageErrorReason, message: string, retryAfterMs?: number) {
-    super(message)
-    this.reason = reason
-    this.retryAfterMs = retryAfterMs
-    this.name = 'StorageError'
-  }
-}
+// StorageError now lives in storageErrors.ts (shared with the localStorage
+// backend); re-exported here so existing imports keep working.
+export { StorageError, type StorageErrorReason } from './storageErrors'
 
 /**
  * Map transport-layer errors to storage-domain reasons.
@@ -46,6 +25,8 @@ function classifyError(err: unknown): StorageError {
     if (err.status === 401 || err.status === 403)
       return new StorageError('unauthorized', err.message)
     if (err.status === 429) return new StorageError('rate_limited', err.message, err.retryAfterMs)
+    if (err.status === 413) return new StorageError('too_large', err.message)
+    if (err.status === 422) return new StorageError('invalid', err.message)
     if (err.status >= 500) return new StorageError('network', err.message)
     return new StorageError('unknown', err.message)
   }

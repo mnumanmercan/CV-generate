@@ -1,5 +1,7 @@
 <!-- Reusable labeled input field with validation -->
 <script setup lang="ts">
+  import { computed } from 'vue'
+
   interface Props {
     id: string
     label: string
@@ -11,9 +13,15 @@
     modelValue: string | undefined
     autocomplete?: string
     disabled?: boolean
+    /**
+     * Hard character cap (native maxlength — blocks new typing but never
+     * truncates a pre-filled over-limit value). A counter appears once the
+     * value reaches 80% of the cap.
+     */
+    maxlength?: number
   }
 
-  withDefaults(defineProps<Props>(), {
+  const props = withDefaults(defineProps<Props>(), {
     type: 'text',
     required: false,
     disabled: false,
@@ -23,6 +31,17 @@
     'update:modelValue': [value: string | undefined]
     blur: []
   }>()
+
+  const charCount = computed(() => props.modelValue?.length ?? 0)
+  const showCounter = computed(
+    () => props.maxlength !== undefined && charCount.value >= props.maxlength * 0.8,
+  )
+  const counterClass = computed(() => {
+    if (!props.maxlength) return 'text-secondary'
+    if (charCount.value >= props.maxlength) return 'text-red-400'
+    if (charCount.value >= props.maxlength * 0.9) return 'text-yellow-400'
+    return 'text-secondary'
+  })
 </script>
 
 <template>
@@ -38,8 +57,11 @@
       :value="modelValue"
       :placeholder="placeholder"
       :required="required"
+      :maxlength="maxlength"
       :aria-required="required"
-      :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined"
+      :aria-describedby="
+        error ? `${id}-error` : hint ? `${id}-hint` : showCounter ? `${id}-count` : undefined
+      "
       :aria-invalid="!!error"
       :autocomplete="autocomplete"
       class="w-full px-3 py-2 text-sm rounded-lg resize-none min-h-[80px]"
@@ -56,8 +78,11 @@
       :placeholder="placeholder"
       :required="required"
       :disabled="disabled"
+      :maxlength="maxlength"
       :aria-required="required"
-      :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined"
+      :aria-describedby="
+        error ? `${id}-error` : hint ? `${id}-hint` : showCounter ? `${id}-count` : undefined
+      "
       :aria-invalid="!!error"
       :autocomplete="autocomplete"
       class="w-full px-3 py-2 text-sm rounded-lg"
@@ -90,6 +115,15 @@
     </p>
     <p v-else-if="hint" :id="`${id}-hint`" class="text-xs text-secondary">
       {{ hint }}
+    </p>
+    <p
+      v-else-if="showCounter"
+      :id="`${id}-count`"
+      class="text-xs font-mono text-right tabular-nums"
+      :class="counterClass"
+      aria-live="polite"
+    >
+      {{ charCount }}/{{ maxlength }}
     </p>
   </div>
 </template>

@@ -7,6 +7,7 @@
   import { createProject } from '@/types/cv.types'
   import { validateUrl } from '@/services/atsFormatter'
   import { useI18n } from '@/composables/useI18n'
+  import { CV_LIMITS } from '@resumark/shared'
 
   const { t } = useI18n()
   const cvStore = useCVStore()
@@ -15,7 +16,16 @@
   const drag = useDragSort(computed(() => cvData.value.projects))
   const techInputs = ref<Record<string, string>>({})
 
+  const projectLimitReached = computed(
+    () => cvData.value.projects.length >= CV_LIMITS.projects.maxItems,
+  )
+
+  function techLimitReached(index: number): boolean {
+    return (cvData.value.projects[index]?.techStack.length ?? 0) >= CV_LIMITS.projects.maxTech
+  }
+
   function addProject(): void {
+    if (projectLimitReached.value) return
     const project = createProject()
     cvData.value.projects.push(project)
     techInputs.value[project.id] = ''
@@ -28,6 +38,7 @@
   function addTech(projectId: string, index: number): void {
     const input = (techInputs.value[projectId] ?? '').trim()
     if (!input) return
+    if (techLimitReached(index)) return
     const project = cvData.value.projects[index]
     if (project && !project.techStack.includes(input)) {
       project.techStack.push(input)
@@ -95,6 +106,7 @@
           :label="t('forms.projectName')"
           placeholder="Open Source CV Builder"
           required
+          :maxlength="CV_LIMITS.projects.name"
         />
         <FormField
           :id="`project-desc-${project.id}`"
@@ -103,6 +115,7 @@
           type="textarea"
           placeholder="Built a full-stack CV builder with real-time preview..."
           required
+          :maxlength="CV_LIMITS.projects.description"
         />
         <FormField
           :id="`project-link-${project.id}`"
@@ -110,6 +123,7 @@
           :label="t('forms.projectUrl')"
           type="url"
           placeholder="https://github.com/you/project"
+          :maxlength="CV_LIMITS.projects.link"
           :error="getLinkError(project.link)"
         />
 
@@ -135,11 +149,12 @@
               </button>
             </span>
           </div>
-          <div class="flex gap-2">
+          <div v-if="!techLimitReached(index)" class="flex gap-2">
             <input
               :id="`tech-input-${project.id}`"
               v-model="techInputs[project.id]"
               type="text"
+              :maxlength="CV_LIMITS.projects.techItem"
               placeholder="Vue, TypeScript, Node..."
               class="flex-1 px-3 py-2 text-sm rounded-lg"
               :aria-label="`Add tech to ${project.name || 'project'}`"
@@ -153,16 +168,23 @@
               {{ t('forms.addTech') }}
             </button>
           </div>
+          <p v-else class="text-xs text-secondary">
+            {{ t('forms.limitReached', { n: String(CV_LIMITS.projects.maxTech) }) }}
+          </p>
         </div>
       </div>
     </div>
 
     <button
+      v-if="!projectLimitReached"
       type="button"
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addProject"
     >
       <span aria-hidden="true">+</span> {{ t('forms.addProject') }}
     </button>
+    <p v-else class="text-center text-xs text-secondary py-2">
+      {{ t('forms.limitReached', { n: String(CV_LIMITS.projects.maxItems) }) }}
+    </p>
   </div>
 </template>

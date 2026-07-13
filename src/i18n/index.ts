@@ -128,7 +128,21 @@ export interface Translations {
     toast: {
       pdfSuccess: string
       pdfError: string
-      pdfOverflow: string
+    }
+    overflow: {
+      badge: string
+      pageEnd: string
+      confirmTitle: string
+      confirmMessage: string
+      confirmLabel: string
+    }
+    saveError: {
+      tooLarge: string
+      invalid: string
+      quota: string
+      unavailable: string
+      network: string
+      toast: string
     }
     clearTitle: string
     clearMessage: string
@@ -365,6 +379,7 @@ export interface Translations {
     skillCatEntryLabel: string
     addSkillCategory: string
     duplicateSkill: string
+    limitReached: string
     projectName: string
     projectEntryLabel: string
     projectDesc: string

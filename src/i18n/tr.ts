@@ -130,7 +130,22 @@ const tr: Translations = {
     toast: {
       pdfSuccess: 'PDF hazır!',
       pdfError: 'PDF hazırlanamadı. Tekrar dene.',
-      pdfOverflow: "CV'n bir sayfaya sığmıyor. Alttaki kısımlar PDF'de kesilebilir.",
+    },
+    overflow: {
+      badge: 'Bir sayfaya sığmıyor',
+      pageEnd: '1. sayfanın sonu',
+      confirmTitle: "CV'n bir sayfaya sığmıyor",
+      confirmMessage:
+        "PDF'e yalnızca 1. sayfa aktarılır. Kesikli çizginin altında kalanlar dosyada yer almaz.",
+      confirmLabel: '1. sayfayı indir',
+    },
+    saveError: {
+      tooLarge: 'Kaydedilmedi — CV eşitlenemeyecek kadar büyük',
+      invalid: 'Kaydedilmedi — bazı içerikler kabul edilmedi',
+      quota: 'Kaydedilmedi — tarayıcı depolama alanı dolu',
+      unavailable: 'Kaydedilmedi — tarayıcı depolaması kapalı',
+      network: 'Kaydedilmedi — bağlantı sorunu, tekrar deneniyor',
+      toast: 'Değişikliklerin kaydedilmiyor.',
     },
     clearTitle: 'Hepsi silinsin mi?',
     clearMessage: 'Tüm CV bilgilerin kalıcı olarak silinir. Bu işlem geri alınamaz.',
@@ -415,6 +430,7 @@ const tr: Translations = {
     skillCatEntryLabel: 'Kategori {n}',
     addSkillCategory: 'Beceri Kategorisi Ekle',
     duplicateSkill: 'Zaten var',
+    limitReached: 'Sınıra ulaştın (en fazla {n})',
     projectName: 'Proje Adı',
     projectEntryLabel: 'Proje {n}',
     projectDesc: 'Açıklama',

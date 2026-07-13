@@ -7,6 +7,7 @@
   import { createWorkExperience } from '@/types/cv.types'
   import { validateDateFormat, validateDateRange, analyzeBullet } from '@/services/atsFormatter'
   import { useI18n } from '@/composables/useI18n'
+  import { CV_LIMITS } from '@resumark/shared'
 
   const { t } = useI18n()
   const cvStore = useCVStore()
@@ -24,7 +25,18 @@
     return touchedFields.has(`${expId}-${field}`)
   }
 
+  const experienceLimitReached = computed(
+    () => cvData.value.experience.length >= CV_LIMITS.experience.maxItems,
+  )
+
+  function bulletLimitReached(expIndex: number): boolean {
+    return (
+      (cvData.value.experience[expIndex]?.bullets.length ?? 0) >= CV_LIMITS.experience.maxBullets
+    )
+  }
+
   function addExperience(): void {
+    if (experienceLimitReached.value) return
     cvData.value.experience.push(createWorkExperience())
   }
 
@@ -40,6 +52,7 @@
   }
 
   function addBullet(expIndex: number): void {
+    if (bulletLimitReached(expIndex)) return
     cvData.value.experience[expIndex]?.bullets.push('')
   }
 
@@ -117,6 +130,7 @@
           :label="t('forms.expJobTitle')"
           placeholder="Software Engineer"
           required
+          :maxlength="CV_LIMITS.experience.position"
         />
         <FormField
           :id="`exp-company-${exp.id}`"
@@ -124,6 +138,7 @@
           :label="t('forms.expCompany')"
           placeholder="Acme Inc."
           required
+          :maxlength="CV_LIMITS.experience.company"
         />
         <FormField
           :id="`exp-start-${exp.id}`"
@@ -131,6 +146,7 @@
           :label="t('forms.expStartDate')"
           placeholder="MM/YYYY"
           required
+          :maxlength="CV_LIMITS.experience.date"
           :error="isTouched(exp.id, 'startDate') ? getDateError(exp.startDate, true) : ''"
           @blur="markTouched(exp.id, 'startDate')"
         />
@@ -141,6 +157,7 @@
             :label="t('forms.expEndDate')"
             placeholder="MM/YYYY"
             :disabled="exp.endDate === 'Present'"
+            :maxlength="CV_LIMITS.experience.date"
             :error="
               isTouched(exp.id, 'endDate') && exp.endDate !== 'Present'
                 ? getRangeError(exp.startDate, exp.endDate) || getDateError(exp.endDate, false)
@@ -169,6 +186,7 @@
             v-model="exp.location"
             :label="t('forms.expLocation')"
             placeholder="New York, NY (optional)"
+            :maxlength="CV_LIMITS.experience.location"
           />
         </div>
       </div>
@@ -187,6 +205,7 @@
                   :id="`bullet-${exp.id}-${bIdx}`"
                   :value="bullet"
                   type="text"
+                  :maxlength="CV_LIMITS.experience.bullet"
                   :placeholder="`Led cross-functional team of 5 engineers to deliver...`"
                   class="w-full px-3 py-2 text-sm rounded-lg"
                   :class="bullet.length > 120 ? 'border-yellow-500/50' : ''"
@@ -238,22 +257,30 @@
         </div>
 
         <button
+          v-if="!bulletLimitReached(index)"
           type="button"
           class="mt-2 text-xs text-accent hover:text-accent-hover flex items-center gap-1 transition-colors"
           @click="addBullet(index)"
         >
           <span aria-hidden="true">+</span> {{ t('forms.addBullet') }}
         </button>
+        <p v-else class="mt-2 text-xs text-secondary">
+          {{ t('forms.limitReached', { n: String(CV_LIMITS.experience.maxBullets) }) }}
+        </p>
       </div>
     </div>
 
     <!-- Add experience button -->
     <button
+      v-if="!experienceLimitReached"
       type="button"
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addExperience"
     >
       <span aria-hidden="true">+</span> {{ t('forms.addExperience') }}
     </button>
+    <p v-else class="text-center text-xs text-secondary py-2">
+      {{ t('forms.limitReached', { n: String(CV_LIMITS.experience.maxItems) }) }}
+    </p>
   </div>
 </template>

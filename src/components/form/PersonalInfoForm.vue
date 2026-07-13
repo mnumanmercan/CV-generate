@@ -5,6 +5,7 @@
   import FormField from './FormField.vue'
   import { validateEmail, validatePhone, validateUrl } from '@/services/atsFormatter'
   import { useI18n } from '@/composables/useI18n'
+  import { CV_LIMITS } from '@resumark/shared'
 
   const { t } = useI18n()
   const cvStore = useCVStore()
@@ -69,6 +70,7 @@
         placeholder="Jane Doe"
         autocomplete="name"
         required
+        :maxlength="CV_LIMITS.personal.fullName"
         :error="errors.fullName"
         @blur="validateField('fullName')"
       />
@@ -79,6 +81,7 @@
         placeholder="Senior Software Engineer"
         autocomplete="organization-title"
         required
+        :maxlength="CV_LIMITS.personal.jobTitle"
         :error="errors.jobTitle"
         @blur="validateField('jobTitle')"
       />
@@ -153,6 +156,7 @@
         placeholder="jane@example.com"
         autocomplete="email"
         required
+        :maxlength="CV_LIMITS.personal.email"
         :error="errors.email"
         @blur="validateField('email')"
       />
@@ -164,6 +168,7 @@
         placeholder="+1 555 000 0000"
         autocomplete="tel"
         required
+        :maxlength="CV_LIMITS.personal.phone"
         :error="errors.phone"
         @blur="validateField('phone')"
       />
@@ -176,6 +181,7 @@
       placeholder="New York, NY"
       autocomplete="address-level2"
       required
+      :maxlength="CV_LIMITS.personal.location"
       :error="errors.location"
       @blur="validateField('location')"
     />
@@ -191,6 +197,7 @@
           type="url"
           placeholder="https://linkedin.com/in/janedoe"
           autocomplete="url"
+          :maxlength="CV_LIMITS.personal.url"
           :error="errors.linkedin"
           @blur="validateField('linkedin')"
         />
@@ -201,6 +208,7 @@
           type="url"
           placeholder="https://github.com/janedoe"
           autocomplete="url"
+          :maxlength="CV_LIMITS.personal.url"
           :error="errors.github"
           @blur="validateField('github')"
         />
@@ -211,6 +219,7 @@
           type="url"
           placeholder="https://janedoe.dev"
           autocomplete="url"
+          :maxlength="CV_LIMITS.personal.url"
           :error="errors.website"
           @blur="validateField('website')"
         />
