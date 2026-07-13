@@ -1,9 +1,9 @@
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useMediaQuery } from './useMediaQuery'
+import { A4_WIDTH_PX } from '@/constants/layout'
 
 const ZOOM_MAX = 1.0
 const ZOOM_STEP = 0.1
-const A4_WIDTH_PX = 794
 const MOBILE_ZOOM_FLOOR = 0.35
 const DESKTOP_ZOOM_FLOOR = 0.55
 const RESIZE_DEBOUNCE_MS = 150

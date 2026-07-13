@@ -11,6 +11,33 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
   // "I got an error, request id abc123" can be grepped directly from logs.
   const requestId = req.id
 
+  // Body-parser errors (express.json) are not AppErrors but must not surface
+  // as 500s: an oversized body is the client's problem (413), and the client
+  // relies on the status code to tell the user "your CV is too large to sync".
+  const bodyParserErr = err as Error & { type?: string; statusCode?: number }
+  if (bodyParserErr.type === 'entity.too.large' || bodyParserErr.statusCode === 413) {
+    res.status(413).json({
+      success: false,
+      error: {
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'Request body exceeds the maximum allowed size.',
+      },
+      requestId,
+    })
+    return
+  }
+  if (bodyParserErr.type === 'entity.parse.failed') {
+    res.status(400).json({
+      success: false,
+      error: {
+        code: 'INVALID_JSON',
+        message: 'Request body is not valid JSON.',
+      },
+      requestId,
+    })
+    return
+  }
+
   if (err instanceof AppError) {
     const body: Record<string, unknown> = {
       success: false,

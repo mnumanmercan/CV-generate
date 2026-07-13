@@ -1,16 +1,27 @@
 import { ref } from 'vue'
 import { useCVStore } from '@/stores/cvStore'
 import { PDF_SUCCESS_RESET_MS, PDF_ERROR_RESET_MS } from '@/constants/timing'
+import { A4_HEIGHT_PX } from '@/constants/layout'
 
 export type PDFExportStatus = 'idle' | 'generating' | 'success' | 'error'
 
-// A4 portrait height in CSS pixels, matching jsPDF's own conversion:
-// 297 mm × (96 px / 25.4 mm) = 1122.68 → floor to 1122 (see jspdf-plugin.js
-// `toPx` helper). Clamping the element to exactly 1122 ensures
-// html2canvas produces a canvas of ≤ `pxPageHeight` (=Math.floor(1588 × 297/210)
-// = 2245) at scale:2, so html2pdf's `Math.ceil(pxFullHeight / pxPageHeight)`
-// resolves to 1 page instead of 2. Previously 1123 forced a 1-pixel second page.
-const A4_HEIGHT_PX = 1122
+// Clamping the element to exactly A4_HEIGHT_PX (1122 — see constants/layout.ts
+// for the derivation) ensures html2canvas produces a canvas of ≤ `pxPageHeight`
+// (=Math.floor(1588 × 297/210) = 2245) at scale:2, so html2pdf's
+// `Math.ceil(pxFullHeight / pxPageHeight)` resolves to 1 page instead of 2.
+// Previously 1123 forced a 1-pixel second page.
+
+/**
+ * Whether the rendered CV currently exceeds one A4 page. Callers use this to
+ * warn/confirm BEFORE exporting, since the export clamps to page 1 and cuts
+ * everything below. Must be read before capture — normalizeForCapture
+ * temporarily forces the element to exactly one page tall.
+ */
+export function willOverflow(elementId: string): boolean {
+  const element = document.getElementById(elementId)
+  if (!element) return false
+  return element.scrollHeight > A4_HEIGHT_PX
+}
 
 // ─── Transform neutralization helpers ────────────────────────────────────────
 // html2canvas includes parent CSS transforms in its render context.

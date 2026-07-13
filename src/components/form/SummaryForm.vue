@@ -5,7 +5,7 @@
   import { analyzeSummary, getKeywordHints } from '@/services/atsFormatter'
   import { useI18n } from '@/composables/useI18n'
   import { useAISummaryAnalysis } from '@/composables/useAISummaryAnalysis'
-  import { SUMMARY_FEEDBACK_REASONS, type SummaryFeedbackReason } from '@resumark/shared'
+  import { SUMMARY_FEEDBACK_REASONS, CV_LIMITS, type SummaryFeedbackReason } from '@resumark/shared'
 
   const { t } = useI18n()
   const cvStore = useCVStore()
@@ -95,7 +95,7 @@
           placeholder="Results-driven software engineer with 5+ years of experience building scalable web applications..."
           class="w-full px-3 py-2.5 text-sm rounded-lg resize-none h-32"
           :aria-describedby="'summary-hints summary-counter'"
-          maxlength="500"
+          :maxlength="CV_LIMITS.summary.editorMax"
         />
         <!-- Character counter -->
         <div
@@ -103,7 +103,7 @@
           :class="['mt-1 text-xs font-mono text-right transition-colors', counterColor]"
           aria-live="polite"
         >
-          {{ charCount }}/500
+          {{ charCount }}/{{ CV_LIMITS.summary.editorMax }}
         </div>
         <!-- Analyze button -->
         <button

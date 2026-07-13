@@ -130,8 +130,22 @@ const en: Translations = {
     toast: {
       pdfSuccess: 'PDF downloaded successfully!',
       pdfError: 'PDF generation failed. Please try again.',
-      pdfOverflow:
-        'Your CV exceeds one page — some content at the bottom may be cut off in the PDF.',
+    },
+    overflow: {
+      badge: 'Exceeds one page',
+      pageEnd: 'Page 1 ends',
+      confirmTitle: 'Your CV exceeds one page',
+      confirmMessage:
+        'Only page 1 will be exported. Content below the dashed line will be cut off in the PDF.',
+      confirmLabel: 'Download page 1',
+    },
+    saveError: {
+      tooLarge: 'Not saved — CV is too large to sync',
+      invalid: 'Not saved — some content could not be accepted',
+      quota: 'Not saved — browser storage is full',
+      unavailable: 'Not saved — browser storage is disabled',
+      network: 'Not saved — connection problem, retrying',
+      toast: 'Your changes are not being saved.',
     },
     clearTitle: 'Clear all CV data?',
     clearMessage:
@@ -417,6 +431,7 @@ const en: Translations = {
     skillCatEntryLabel: 'Category {n}',
     addSkillCategory: 'Add Skill Category',
     duplicateSkill: 'Already added',
+    limitReached: 'Limit reached ({n} max)',
     projectName: 'Project Name',
     projectEntryLabel: 'Project {n}',
     projectDesc: 'Description',

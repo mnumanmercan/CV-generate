@@ -3,8 +3,10 @@
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
   import { useAutoSave } from '@/composables/useAutoSave'
-  import { usePDFExport } from '@/composables/usePDFExport'
+  import { usePDFExport, willOverflow } from '@/composables/usePDFExport'
   import { usePreviewZoom } from '@/composables/usePreviewZoom'
+  import { useCVOverflow } from '@/composables/useCVOverflow'
+  import { A4_HEIGHT_PX, A4_WIDTH_PX } from '@/constants/layout'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import BuilderToolSwitcher from '@/components/ui/BuilderToolSwitcher.vue'
   import SplitLayout from '@/components/ui/SplitLayout.vue'
@@ -35,6 +37,7 @@
   const {
     cvData,
     saveIndicatorVisible: showSaved,
+    lastSaveError,
     isPersonalComplete,
     isSummaryComplete,
     isExperienceComplete,
@@ -44,12 +47,8 @@
     isCertificationsComplete,
     isLanguagesComplete,
   } = storeToRefs(cvStore)
-  const {
-    status: pdfStatus,
-    errorMessage: pdfError,
-    overflowWarning: pdfOverflow,
-    exportPDF,
-  } = usePDFExport()
+  const { status: pdfStatus, errorMessage: pdfError, exportPDF } = usePDFExport()
+  const { isOverflowing, contentHeight } = useCVOverflow('cv-preview')
   const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } =
     usePreviewZoom()
   // previewScrollEl is bound in the template via `ref="previewScrollEl"` but
@@ -122,10 +121,57 @@
     { deep: false },
   )
 
-  // PDF download
+  // PDF download — when the CV runs past one page, the export cuts everything
+  // below the page-1 boundary, so ask for explicit confirmation first.
+  const showOverflowConfirm = ref(false)
+
   async function handleDownload(): Promise<void> {
+    if (willOverflow('cv-preview')) {
+      showOverflowConfirm.value = true
+      return
+    }
     await exportPDF('cv-preview')
   }
+
+  async function confirmOverflowDownload(): Promise<void> {
+    showOverflowConfirm.value = false
+    await exportPDF('cv-preview')
+  }
+
+  // Save-failure surfacing: the pill (template) is persistent while the error
+  // lasts; the toast fires once per transition into an error state so the
+  // problem is noticed even if the pill is off-screen on mobile.
+  const showSaveErrorToast = ref(false)
+  let saveErrorToastTimer: ReturnType<typeof setTimeout> | null = null
+
+  const saveErrorText = computed(() => {
+    const reason = lastSaveError.value?.reason
+    if (!reason) return ''
+    switch (reason) {
+      case 'too_large':
+        return t('builder.saveError.tooLarge')
+      case 'invalid':
+        return t('builder.saveError.invalid')
+      case 'quota_exceeded':
+        return t('builder.saveError.quota')
+      case 'unavailable':
+        return t('builder.saveError.unavailable')
+      default:
+        return t('builder.saveError.network')
+    }
+  })
+
+  watch(lastSaveError, (err, prev) => {
+    if (err && !prev) {
+      showSaveErrorToast.value = true
+      if (saveErrorToastTimer) clearTimeout(saveErrorToastTimer)
+      saveErrorToastTimer = setTimeout(() => {
+        showSaveErrorToast.value = false
+        saveErrorToastTimer = null
+      }, 5000)
+    }
+    if (!err) showSaveErrorToast.value = false
+  })
 
   // ── Section config ──────────────────────────────────────────────────────────
   //
@@ -323,16 +369,44 @@
               class="h-full overflow-auto flex justify-center py-8 px-4"
               style="background: var(--paper2)"
             >
+              <!--
+                Height tracks the real content height (not a fixed one page) so
+                an overflowing CV stays reachable by scrolling. The dashed line
+                marks where page 1 — the only page the PDF exports — ends.
+              -->
               <div
+                class="relative"
                 :style="{
-                  transform: `scale(${previewScale})`,
-                  transformOrigin: 'top left',
-                  height: `${1122 * previewScale}px`,
-                  width: `${794 * previewScale}px`,
+                  height: `${Math.max(A4_HEIGHT_PX, contentHeight) * previewScale}px`,
+                  width: `${A4_WIDTH_PX * previewScale}px`,
                   flexShrink: '0',
                 }"
               >
-                <CVPreview />
+                <div
+                  :style="{
+                    transform: `scale(${previewScale})`,
+                    transformOrigin: 'top left',
+                  }"
+                >
+                  <CVPreview />
+                </div>
+
+                <div
+                  v-if="isOverflowing"
+                  class="absolute left-0 right-0 pointer-events-none"
+                  :style="{
+                    top: `${A4_HEIGHT_PX * previewScale}px`,
+                    borderTop: '1px dashed var(--accent)',
+                  }"
+                  aria-hidden="true"
+                >
+                  <span
+                    class="mono-eyebrow text-[9.5px] absolute right-0 -top-0.5 -translate-y-full px-1.5 py-0.5 rounded"
+                    style="color: var(--accent); background: var(--paper)"
+                  >
+                    {{ t('builder.overflow.pageEnd') }}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -346,7 +420,7 @@
               leave-to-class="opacity-0"
             >
               <div
-                v-if="showSaved"
+                v-if="showSaved && !lastSaveError"
                 class="absolute top-4 left-1/2 -translate-x-1/2 md:top-5 md:left-5 md:translate-x-0 z-10 flex items-center gap-2 rounded-full px-3 py-1.5"
                 style="
                   background: var(--paper);
@@ -365,6 +439,48 @@
                 <span class="mono-eyebrow text-[10.5px]">{{ t('builder.saved') }}</span>
               </div>
             </Transition>
+
+            <!-- Persistent save-failure pill — stays until a save succeeds -->
+            <div
+              v-if="lastSaveError"
+              class="absolute top-4 left-1/2 -translate-x-1/2 md:top-5 md:left-5 md:translate-x-0 z-10 flex items-center gap-2 rounded-full px-3 py-1.5"
+              style="
+                background: var(--paper);
+                box-shadow:
+                  0 2px 12px rgba(0, 0, 0, 0.08),
+                  0 0 0 1px rgba(239, 68, 68, 0.35);
+              "
+              role="alert"
+            >
+              <span
+                class="w-1.5 h-1.5 rounded-full shrink-0"
+                style="background: #ef4444"
+                aria-hidden="true"
+              />
+              <span class="mono-eyebrow text-[10.5px]">{{ saveErrorText }}</span>
+            </div>
+
+            <!-- Overflow badge — the CV no longer fits the one exported page -->
+            <div
+              v-if="isOverflowing"
+              class="absolute top-14 left-1/2 -translate-x-1/2 md:top-16 md:left-5 md:translate-x-0 z-10 flex items-center gap-2 rounded-full px-3 py-1.5"
+              style="
+                background: var(--paper);
+                box-shadow:
+                  0 2px 12px rgba(0, 0, 0, 0.08),
+                  0 0 0 1px rgba(0, 0, 0, 0.06);
+              "
+              role="status"
+            >
+              <span
+                class="w-1.5 h-1.5 rounded-full shrink-0"
+                style="background: var(--accent)"
+                aria-hidden="true"
+              />
+              <span class="mono-eyebrow text-[10.5px]" style="color: var(--accent)">
+                {{ t('builder.overflow.badge') }}
+              </span>
+            </div>
 
             <!-- Floating zoom island — bottom-left (desktop only) -->
             <div
@@ -597,13 +713,23 @@
       type="error"
     />
     <ToastNotification
-      :visible="pdfOverflow && pdfStatus === 'success'"
-      :message="t('builder.toast.pdfOverflow')"
-      type="info"
+      :visible="showSaveErrorToast"
+      :message="t('builder.saveError.toast')"
+      type="error"
     />
 
     <!-- Upgrade modal -->
     <UpgradePrompt />
+
+    <!-- Overflow export confirmation — export cuts everything below page 1 -->
+    <ConfirmModal
+      :visible="showOverflowConfirm"
+      :title="t('builder.overflow.confirmTitle')"
+      :message="t('builder.overflow.confirmMessage')"
+      :confirm-label="t('builder.overflow.confirmLabel')"
+      @confirm="confirmOverflowDownload"
+      @cancel="showOverflowConfirm = false"
+    />
 
     <!-- Clear data confirmation -->
     <ConfirmModal

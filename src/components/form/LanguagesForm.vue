@@ -6,6 +6,7 @@
   import FormField from './FormField.vue'
   import { createLanguage, LANGUAGE_PROFICIENCY_LEVELS } from '@/types/cv.types'
   import { useI18n } from '@/composables/useI18n'
+  import { CV_LIMITS } from '@resumark/shared'
 
   const { t } = useI18n()
   const cvStore = useCVStore()
@@ -26,7 +27,12 @@
     return key ? t(key) : level
   }
 
+  const languageLimitReached = computed(
+    () => cvData.value.languages.length >= CV_LIMITS.languages.maxItems,
+  )
+
   function addLanguage(): void {
+    if (languageLimitReached.value) return
     cvData.value.languages.push(createLanguage())
   }
 
@@ -79,6 +85,7 @@
           placeholder="English"
           autocomplete="off"
           required
+          :maxlength="CV_LIMITS.languages.name"
         />
 
         <!--
@@ -108,11 +115,15 @@
     </div>
 
     <button
+      v-if="!languageLimitReached"
       type="button"
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addLanguage"
     >
       <span aria-hidden="true">+</span> {{ t('forms.addLanguage') }}
     </button>
+    <p v-else class="text-center text-xs text-secondary py-2">
+      {{ t('forms.limitReached', { n: String(CV_LIMITS.languages.maxItems) }) }}
+    </p>
   </div>
 </template>

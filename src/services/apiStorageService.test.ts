@@ -35,7 +35,8 @@ vi.mock('@/services/apiClient', () => ({
   TimeoutError: class TimeoutError extends Error {},
 }))
 
-import { ApiCVStorageService } from './apiStorageService'
+import { ApiCVStorageService, StorageError } from './apiStorageService'
+import { ApiError } from '@/services/apiClient'
 import type { CVData } from '@/types/cv.types'
 
 const fakeCV = { meta: { version: '1.4.0' } } as unknown as CVData
@@ -96,6 +97,38 @@ describe('ApiCVStorageService.save (get-or-create)', () => {
     expect(get).toHaveBeenCalledTimes(1) // only the first save read the list
     expect(put).toHaveBeenCalledTimes(3)
     expect(put).toHaveBeenLastCalledWith('/cv/cv-1', { content: fakeCV })
+  })
+
+  it('classifies HTTP 413 as StorageError(too_large)', async () => {
+    get.mockResolvedValueOnce({ success: true, data: [{ id: 'cv-1', title: 'x', updatedAt: 'z' }] })
+    put.mockRejectedValueOnce(
+      new (ApiError as unknown as new (s: number, c: string, m: string) => Error)(
+        413,
+        'PAYLOAD_TOO_LARGE',
+        'Request body exceeds the maximum allowed size.',
+      ),
+    )
+
+    const svc = new ApiCVStorageService()
+    await expect(svc.save(fakeCV)).rejects.toSatisfy(
+      (err: unknown) => err instanceof StorageError && err.reason === 'too_large',
+    )
+  })
+
+  it('classifies HTTP 422 as StorageError(invalid)', async () => {
+    get.mockResolvedValueOnce({ success: true, data: [{ id: 'cv-1', title: 'x', updatedAt: 'z' }] })
+    put.mockRejectedValueOnce(
+      new (ApiError as unknown as new (s: number, c: string, m: string) => Error)(
+        422,
+        'VALIDATION_ERROR',
+        'Validation failed',
+      ),
+    )
+
+    const svc = new ApiCVStorageService()
+    await expect(svc.save(fakeCV)).rejects.toSatisfy(
+      (err: unknown) => err instanceof StorageError && err.reason === 'invalid',
+    )
   })
 
   it('single-flights concurrent id resolution onto one GET /cv', async () => {

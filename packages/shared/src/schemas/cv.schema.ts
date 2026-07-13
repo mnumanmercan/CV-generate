@@ -1,16 +1,19 @@
 import { z } from 'zod'
+import { CV_LIMITS } from '../constants/limits.js'
 
 // ─── Strict schemas ───────────────────────────────────────────────────────────
 // Used for completeness scoring and future "validate before export" endpoints.
 // These enforce all business rules: non-empty required fields, date format, etc.
+// All size caps come from CV_LIMITS (constants/limits.ts) — the same values the
+// builder forms use as input maxlengths.
 
 const PersonalInfoSchema = z.object({
-  fullName: z.string().min(1).max(100),
-  jobTitle: z.string().min(1).max(100),
+  fullName: z.string().min(1).max(CV_LIMITS.personal.fullName),
+  jobTitle: z.string().min(1).max(CV_LIMITS.personal.jobTitle),
   jobTitleColor: z.enum(['accent', 'dark']).optional(),
-  email: z.string().email().max(254),
-  phone: z.string().min(1).max(30),
-  location: z.string().min(1).max(100),
+  email: z.string().email().max(CV_LIMITS.personal.email),
+  phone: z.string().min(1).max(CV_LIMITS.personal.phone),
+  location: z.string().min(1).max(CV_LIMITS.personal.location),
   linkedin: z.string().url().optional().or(z.literal('')),
   github: z.string().url().optional().or(z.literal('')),
   website: z.string().url().optional().or(z.literal('')),
@@ -19,51 +22,53 @@ const PersonalInfoSchema = z.object({
 
 const WorkExperienceSchema = z.object({
   id: z.string().uuid(),
-  company: z.string().min(1).max(200),
-  position: z.string().min(1).max(200),
-  startDate: z.string().min(1).max(20),
-  endDate: z.string().min(1).max(20), // 'Present' or date string
-  location: z.string().max(100).optional(),
-  bullets: z.array(z.string().max(500)).max(20),
+  company: z.string().min(1).max(CV_LIMITS.experience.company),
+  position: z.string().min(1).max(CV_LIMITS.experience.position),
+  startDate: z.string().min(1).max(CV_LIMITS.experience.date),
+  endDate: z.string().min(1).max(CV_LIMITS.experience.date), // 'Present' or date string
+  location: z.string().max(CV_LIMITS.experience.location).optional(),
+  bullets: z
+    .array(z.string().max(CV_LIMITS.experience.bullet))
+    .max(CV_LIMITS.experience.maxBullets),
 })
 
 const EducationSchema = z.object({
   id: z.string().uuid(),
-  institution: z.string().min(1).max(200),
-  degree: z.string().min(1).max(200),
-  field: z.string().min(1).max(200),
-  startDate: z.string().min(1).max(20),
-  endDate: z.string().min(1).max(20),
-  gpa: z.string().max(10).optional(),
+  institution: z.string().min(1).max(CV_LIMITS.education.institution),
+  degree: z.string().min(1).max(CV_LIMITS.education.degree),
+  field: z.string().min(1).max(CV_LIMITS.education.field),
+  startDate: z.string().min(1).max(CV_LIMITS.education.date),
+  endDate: z.string().min(1).max(CV_LIMITS.education.date),
+  gpa: z.string().max(CV_LIMITS.education.gpa).optional(),
 })
 
 const SkillSchema = z.object({
   id: z.string().uuid(),
-  category: z.string().min(1).max(100),
-  items: z.array(z.string().max(100)).max(50),
+  category: z.string().min(1).max(CV_LIMITS.skills.category),
+  items: z.array(z.string().max(CV_LIMITS.skills.item)).max(CV_LIMITS.skills.maxItemsPerCategory),
 })
 
 const ProjectSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().min(1).max(200),
-  description: z.string().max(1000),
-  techStack: z.array(z.string().max(50)).max(30),
+  name: z.string().min(1).max(CV_LIMITS.projects.name),
+  description: z.string().max(CV_LIMITS.projects.description),
+  techStack: z.array(z.string().max(CV_LIMITS.projects.techItem)).max(CV_LIMITS.projects.maxTech),
   link: z.string().url().optional().or(z.literal('')),
 })
 
 const CertificationSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().min(1).max(200),
-  issuer: z.string().min(1).max(200),
+  name: z.string().min(1).max(CV_LIMITS.certifications.name),
+  issuer: z.string().min(1).max(CV_LIMITS.certifications.issuer),
   date: z.string().regex(/^\d{2}\/\d{4}$/, 'Format must be MM/YYYY'),
-  credentialId: z.string().max(100).optional(),
+  credentialId: z.string().max(CV_LIMITS.certifications.credentialId).optional(),
   credentialUrl: z.string().url().optional().or(z.literal('')),
 })
 
 const LanguageSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().min(1).max(100),
-  proficiency: z.string().max(50),
+  name: z.string().min(1).max(CV_LIMITS.languages.name),
+  proficiency: z.string().max(CV_LIMITS.languages.proficiency),
 })
 
 const SECTION_KEYS = [
@@ -88,13 +93,13 @@ const CVMetaSchema = z.object({
 
 export const CVDataSchema = z.object({
   personal: PersonalInfoSchema,
-  summary: z.string().max(2000),
-  experience: z.array(WorkExperienceSchema).max(20),
-  education: z.array(EducationSchema).max(10),
-  skills: z.array(SkillSchema).max(20),
-  projects: z.array(ProjectSchema).max(20),
-  certifications: z.array(CertificationSchema).max(20),
-  languages: z.array(LanguageSchema).max(30),
+  summary: z.string().max(CV_LIMITS.summary.max),
+  experience: z.array(WorkExperienceSchema).max(CV_LIMITS.experience.maxItems),
+  education: z.array(EducationSchema).max(CV_LIMITS.education.maxItems),
+  skills: z.array(SkillSchema).max(CV_LIMITS.skills.maxItems),
+  projects: z.array(ProjectSchema).max(CV_LIMITS.projects.maxItems),
+  certifications: z.array(CertificationSchema).max(CV_LIMITS.certifications.maxItems),
+  languages: z.array(LanguageSchema).max(CV_LIMITS.languages.maxItems),
   meta: CVMetaSchema,
 })
 
@@ -117,76 +122,82 @@ export const CVDataSchema = z.object({
 //     and would throw 403 for an unknown value regardless
 
 const DraftPersonalInfoSchema = z.object({
-  fullName: z.string().max(100),
-  jobTitle: z.string().max(100),
+  fullName: z.string().max(CV_LIMITS.personal.fullName),
+  jobTitle: z.string().max(CV_LIMITS.personal.jobTitle),
   jobTitleColor: z.enum(['accent', 'dark']).optional(),
-  email: z.string().max(254),
-  phone: z.string().max(30),
-  location: z.string().max(100),
-  linkedin: z.string().max(500).optional().or(z.literal('')),
-  github: z.string().max(500).optional().or(z.literal('')),
-  website: z.string().max(500).optional().or(z.literal('')),
-  profilePhoto: z.string().max(2048).optional().or(z.literal('')),
+  email: z.string().max(CV_LIMITS.personal.email),
+  phone: z.string().max(CV_LIMITS.personal.phone),
+  location: z.string().max(CV_LIMITS.personal.location),
+  linkedin: z.string().max(CV_LIMITS.personal.url).optional().or(z.literal('')),
+  github: z.string().max(CV_LIMITS.personal.url).optional().or(z.literal('')),
+  website: z.string().max(CV_LIMITS.personal.url).optional().or(z.literal('')),
+  profilePhoto: z.string().max(CV_LIMITS.personal.profilePhoto).optional().or(z.literal('')),
 })
 
 const DraftWorkExperienceSchema = z.object({
   id: z.string().uuid(),
-  company: z.string().max(200),
-  position: z.string().max(200),
-  startDate: z.string().max(20),
-  endDate: z.string().max(20),
-  location: z.string().max(100).optional(),
-  bullets: z.array(z.string().max(500)).max(20),
+  company: z.string().max(CV_LIMITS.experience.company),
+  position: z.string().max(CV_LIMITS.experience.position),
+  startDate: z.string().max(CV_LIMITS.experience.date),
+  endDate: z.string().max(CV_LIMITS.experience.date),
+  location: z.string().max(CV_LIMITS.experience.location).optional(),
+  bullets: z
+    .array(z.string().max(CV_LIMITS.experience.bullet))
+    .max(CV_LIMITS.experience.maxBullets),
 })
 
 const DraftEducationSchema = z.object({
   id: z.string().uuid(),
-  institution: z.string().max(200),
-  degree: z.string().max(200),
-  field: z.string().max(200),
-  startDate: z.string().max(20),
-  endDate: z.string().max(20),
-  gpa: z.string().max(10).optional(),
+  institution: z.string().max(CV_LIMITS.education.institution),
+  degree: z.string().max(CV_LIMITS.education.degree),
+  field: z.string().max(CV_LIMITS.education.field),
+  startDate: z.string().max(CV_LIMITS.education.date),
+  endDate: z.string().max(CV_LIMITS.education.date),
+  gpa: z.string().max(CV_LIMITS.education.gpa).optional(),
 })
 
 const DraftSkillSchema = z.object({
   id: z.string().uuid(),
-  category: z.string().max(100),
-  items: z.array(z.string().max(100)).max(50),
+  category: z.string().max(CV_LIMITS.skills.category),
+  items: z.array(z.string().max(CV_LIMITS.skills.item)).max(CV_LIMITS.skills.maxItemsPerCategory),
 })
 
 const DraftProjectSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().max(200),
-  description: z.string().max(1000),
-  techStack: z.array(z.string().max(50)).max(30),
-  link: z.string().max(500).optional().or(z.literal('')),
+  name: z.string().max(CV_LIMITS.projects.name),
+  description: z.string().max(CV_LIMITS.projects.description),
+  techStack: z.array(z.string().max(CV_LIMITS.projects.techItem)).max(CV_LIMITS.projects.maxTech),
+  link: z.string().max(CV_LIMITS.projects.link).optional().or(z.literal('')),
 })
 
 const DraftCertificationSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().max(200),
-  issuer: z.string().max(200),
-  date: z.string().max(7),
-  credentialId: z.string().max(100).optional(),
-  credentialUrl: z.string().max(500).optional().or(z.literal('')),
+  name: z.string().max(CV_LIMITS.certifications.name),
+  issuer: z.string().max(CV_LIMITS.certifications.issuer),
+  date: z.string().max(CV_LIMITS.certifications.date),
+  credentialId: z.string().max(CV_LIMITS.certifications.credentialId).optional(),
+  credentialUrl: z
+    .string()
+    .max(CV_LIMITS.certifications.credentialUrl)
+    .optional()
+    .or(z.literal('')),
 })
 
 const DraftLanguageSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().max(100),
-  proficiency: z.string().max(50),
+  name: z.string().max(CV_LIMITS.languages.name),
+  proficiency: z.string().max(CV_LIMITS.languages.proficiency),
 })
 
 export const DraftCVDataSchema = z.object({
   personal: DraftPersonalInfoSchema,
-  summary: z.string().max(2000),
-  experience: z.array(DraftWorkExperienceSchema).max(20),
-  education: z.array(DraftEducationSchema).max(10),
-  skills: z.array(DraftSkillSchema).max(20),
-  projects: z.array(DraftProjectSchema).max(20),
-  certifications: z.array(DraftCertificationSchema).max(20),
-  languages: z.array(DraftLanguageSchema).max(30),
+  summary: z.string().max(CV_LIMITS.summary.max),
+  experience: z.array(DraftWorkExperienceSchema).max(CV_LIMITS.experience.maxItems),
+  education: z.array(DraftEducationSchema).max(CV_LIMITS.education.maxItems),
+  skills: z.array(DraftSkillSchema).max(CV_LIMITS.skills.maxItems),
+  projects: z.array(DraftProjectSchema).max(CV_LIMITS.projects.maxItems),
+  certifications: z.array(DraftCertificationSchema).max(CV_LIMITS.certifications.maxItems),
+  languages: z.array(DraftLanguageSchema).max(CV_LIMITS.languages.maxItems),
   meta: CVMetaSchema,
 })
 
@@ -196,17 +207,17 @@ export const DraftCVDataSchema = z.object({
 
 export const CreateCVSchema = z.object({
   content: DraftCVDataSchema,
-  title: z.string().max(200).optional(),
+  title: z.string().max(CV_LIMITS.cvTitle).optional(),
 })
 
 export const UpdateCVSchema = z.object({
   content: DraftCVDataSchema,
-  title: z.string().max(200).optional(),
+  title: z.string().max(CV_LIMITS.cvTitle).optional(),
 })
 
 export const PatchCVSchema = z
   .object({
-    title: z.string().max(200).optional(),
+    title: z.string().max(CV_LIMITS.cvTitle).optional(),
   })
   .refine((obj) => Object.keys(obj).length > 0, { message: 'At least one field required' })
 

@@ -1,4 +1,5 @@
 import type { CVData } from '@/types/cv.types'
+import { StorageError } from './storageErrors'
 
 // ─── Abstraction interface ───────────────────────────────────────────────────
 // Phase 2: swap LocalStorageService for MongoDBService without touching
@@ -33,13 +34,23 @@ class LocalStorageService implements StorageService {
 
   async save(data: CVData): Promise<void> {
     if (!this.isAvailable()) {
-      console.warn('localStorage is unavailable — data will not persist.')
-      return
+      // Throw instead of silently returning — the caller (cvStore) surfaces
+      // the "not saved" state to the user; swallowing it here meant guests in
+      // private-browsing mode believed their edits were persisting.
+      throw new StorageError('unavailable', 'localStorage is unavailable — data will not persist.')
     }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     } catch (err) {
-      console.error('Failed to save CV data to localStorage:', err)
+      // isAvailable()'s tiny probe passes even when the real payload no longer
+      // fits, so quota errors surface here.
+      if (err instanceof DOMException && (err.name === 'QuotaExceededError' || err.code === 22)) {
+        throw new StorageError('quota_exceeded', 'Browser storage is full — CV was not saved.')
+      }
+      throw new StorageError(
+        'unknown',
+        err instanceof Error ? err.message : 'Failed to save CV data to localStorage.',
+      )
     }
   }
 

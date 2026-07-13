@@ -7,6 +7,7 @@
   import { createCertification } from '@/types/cv.types'
   import { validateDateFormat } from '@/services/atsFormatter'
   import { useI18n } from '@/composables/useI18n'
+  import { CV_LIMITS } from '@resumark/shared'
 
   const { t } = useI18n()
   const cvStore = useCVStore()
@@ -14,7 +15,12 @@
 
   const drag = useDragSort(computed(() => cvData.value.certifications))
 
+  const certificationLimitReached = computed(
+    () => cvData.value.certifications.length >= CV_LIMITS.certifications.maxItems,
+  )
+
   function addCertification(): void {
+    if (certificationLimitReached.value) return
     cvData.value.certifications.push(createCertification())
   }
 
@@ -72,6 +78,7 @@
             :label="t('forms.certName')"
             placeholder="AWS Certified Solutions Architect"
             required
+            :maxlength="CV_LIMITS.certifications.name"
           />
         </div>
         <FormField
@@ -80,6 +87,7 @@
           :label="t('forms.certIssuer')"
           placeholder="Amazon Web Services"
           required
+          :maxlength="CV_LIMITS.certifications.issuer"
         />
         <FormField
           :id="`cert-date-${cert.id}`"
@@ -87,6 +95,7 @@
           :label="t('forms.certDate')"
           placeholder="06/2023"
           required
+          :maxlength="CV_LIMITS.certifications.date"
           :error="getDateError(cert.date)"
         />
         <FormField
@@ -94,6 +103,7 @@
           v-model="cert.credentialId"
           :label="t('forms.certCredentialId')"
           placeholder="ABC-12345"
+          :maxlength="CV_LIMITS.certifications.credentialId"
         />
         <FormField
           :id="`cert-url-${cert.id}`"
@@ -101,16 +111,21 @@
           :label="t('forms.certCredentialUrl')"
           type="url"
           placeholder="https://www.credly.com/badges/…"
+          :maxlength="CV_LIMITS.certifications.credentialUrl"
         />
       </div>
     </div>
 
     <button
+      v-if="!certificationLimitReached"
       type="button"
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addCertification"
     >
       <span aria-hidden="true">+</span> {{ t('forms.addCertification') }}
     </button>
+    <p v-else class="text-center text-xs text-secondary py-2">
+      {{ t('forms.limitReached', { n: String(CV_LIMITS.certifications.maxItems) }) }}
+    </p>
   </div>
 </template>

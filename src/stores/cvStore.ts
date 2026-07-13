@@ -8,8 +8,14 @@ import {
   migrateCVData,
 } from '@/types/cv.types'
 import { localStorageService } from '@/services/storageService'
+import { StorageError, isTerminalReason, type StorageErrorReason } from '@/services/storageErrors'
 import { useUserStore } from '@/stores/userStore'
 import { SAVE_INDICATOR_MS, SECTION_HIGHLIGHT_MS } from '@/constants/timing'
+
+// A single failed save on a flaky connection shouldn't flash an alarming
+// "not saved" state — transient reasons only surface after this many
+// consecutive failures. Terminal reasons (too_large, quota…) surface at once.
+const TRANSIENT_FAILURES_BEFORE_ALERT = 2
 
 export const useCVStore = defineStore('cv', () => {
   const cvData = ref<CVData>(createEmptyCVData())
@@ -20,6 +26,9 @@ export const useCVStore = defineStore('cv', () => {
   const isLoaded = ref(false)
   const lastSavedAt = ref<Date | null>(null)
   const saveIndicatorVisible = ref(false)
+  /** Set when saves are failing and the user must be told; null while healthy. */
+  const lastSaveError = ref<{ reason: StorageErrorReason; message: string } | null>(null)
+  let consecutiveTransientFailures = 0
 
   const isPersonalComplete = computed(() => {
     const p = cvData.value.personal
@@ -106,12 +115,35 @@ export const useCVStore = defineStore('cv', () => {
       snapshot.meta.version = CURRENT_VERSION
       await localStorageService.save(snapshot)
       lastSavedAt.value = new Date()
+      lastSaveError.value = null
+      consecutiveTransientFailures = 0
       saveIndicatorVisible.value = true
       setTimeout(() => {
         saveIndicatorVisible.value = false
       }, SAVE_INDICATOR_MS)
+    } catch (err) {
+      recordSaveFailure(err)
+      // Re-throw so useAutoSave's rate-limit cooldown handling still runs.
+      throw err
     } finally {
       isSaving.value = false
+    }
+  }
+
+  function recordSaveFailure(err: unknown): void {
+    const reason: StorageErrorReason = err instanceof StorageError ? err.reason : 'unknown'
+    const message = err instanceof Error ? err.message : 'Save failed.'
+    // rate_limited self-heals via useAutoSave's cooldown + trailing save —
+    // showing an error for it would just alarm the user mid-typing-burst.
+    if (reason === 'rate_limited') return
+    if (isTerminalReason(reason)) {
+      // Retrying the same payload can't fix these — tell the user now.
+      lastSaveError.value = { reason, message }
+      return
+    }
+    consecutiveTransientFailures += 1
+    if (consecutiveTransientFailures >= TRANSIENT_FAILURES_BEFORE_ALERT) {
+      lastSaveError.value = { reason, message }
     }
   }
 
@@ -149,6 +181,7 @@ export const useCVStore = defineStore('cv', () => {
     isLoaded,
     lastSavedAt,
     saveIndicatorVisible,
+    lastSaveError,
     isPersonalComplete,
     isSummaryComplete,
     isExperienceComplete,

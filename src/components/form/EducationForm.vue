@@ -7,6 +7,7 @@
   import { createEducation } from '@/types/cv.types'
   import { validateDateFormat, validateDateRange } from '@/services/atsFormatter'
   import { useI18n } from '@/composables/useI18n'
+  import { CV_LIMITS } from '@resumark/shared'
 
   const { t } = useI18n()
   const cvStore = useCVStore()
@@ -24,7 +25,12 @@
     return touchedFields.has(`${eduId}-${field}`)
   }
 
+  const educationLimitReached = computed(
+    () => cvData.value.education.length >= CV_LIMITS.education.maxItems,
+  )
+
   function addEducation(): void {
+    if (educationLimitReached.value) return
     cvData.value.education.push(createEducation())
   }
 
@@ -89,6 +95,7 @@
           :label="t('forms.eduInstitution')"
           placeholder="University of Technology"
           required
+          :maxlength="CV_LIMITS.education.institution"
         />
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormField
@@ -97,6 +104,7 @@
             :label="t('forms.eduDegree')"
             placeholder="Bachelor of Science"
             required
+            :maxlength="CV_LIMITS.education.degree"
           />
           <FormField
             :id="`edu-field-${edu.id}`"
@@ -104,12 +112,14 @@
             :label="t('forms.eduField')"
             placeholder="Computer Science"
             required
+            :maxlength="CV_LIMITS.education.field"
           />
           <FormField
             :id="`edu-start-${edu.id}`"
             v-model="edu.startDate"
             :label="t('forms.eduStartDate')"
             placeholder="MM/YYYY"
+            :maxlength="CV_LIMITS.education.date"
             :error="isTouched(edu.id, 'startDate') ? getDateError(edu.startDate) : ''"
             @blur="markTouched(edu.id, 'startDate')"
           />
@@ -118,6 +128,7 @@
             v-model="edu.endDate"
             :label="t('forms.eduEndDate')"
             placeholder="MM/YYYY"
+            :maxlength="CV_LIMITS.education.date"
             :error="
               isTouched(edu.id, 'endDate')
                 ? getDateError(edu.endDate) || getRangeError(edu.startDate, edu.endDate)
@@ -130,18 +141,23 @@
             v-model="edu.gpa"
             :label="t('forms.eduGpa')"
             placeholder="3.8"
+            :maxlength="CV_LIMITS.education.gpa"
           />
         </div>
       </div>
     </div>
 
     <button
+      v-if="!educationLimitReached"
       type="button"
       class="w-full py-3 rounded-xl border-2 border-dashed border-overlay/10 text-secondary text-sm hover:border-accent/50 hover:text-accent transition-colors flex items-center justify-center gap-2"
       @click="addEducation"
     >
       <span aria-hidden="true">+</span> {{ t('forms.addEducation') }}
     </button>
+    <p v-else class="text-center text-xs text-secondary py-2">
+      {{ t('forms.limitReached', { n: String(CV_LIMITS.education.maxItems) }) }}
+    </p>
 
     <!-- Layout option: keep Education full-width, or pull it into the compact
          bottom row beside Certifications & Languages (meta.educationInColumns). -->
