@@ -95,6 +95,8 @@
               :default-open="false"
               :completed="!!(clData.opening && clData.closing)"
               :step-index="2"
+              :ai-label="t('builder.aiBadge.label')"
+              :ai-hint="t('ai.coverLetter.badgeHint')"
             >
               <ContentForm />
             </FormSection>

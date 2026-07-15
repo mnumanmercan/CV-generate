@@ -36,6 +36,16 @@ enum FeedbackVote {
   DOWN
 }
 
+// The four analyzable prose parts of a cover letter. Mirrors the shared
+// COVER_LETTER_PARTS wire keys (opening/bodyWhy/bodyBring/closing) — the
+// feedback service maps between the two.
+enum CoverLetterPart {
+  OPENING
+  BODY_WHY
+  BODY_BRING
+  CLOSING
+}
+
 // ─── User ─────────────────────────────────────────────────────────────────────
 
 model User {
@@ -56,6 +66,9 @@ model User {
   waitlistEntry   WaitlistEntry?
   summaryAnalyses SummaryAnalysis[]
   summaryFeedback SummaryFeedback[]
+
+  coverLetterAnalyses CoverLetterAnalysis[]
+  coverLetterFeedback CoverLetterFeedback[]
 
   @@index([email])
 }
@@ -230,6 +243,59 @@ model SummaryFeedback {
   analysis SummaryAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([vote])
+}
+
+// ─── CoverLetterAnalysis ──────────────────────────────────────────────────────
+// One persisted AI cover-letter analysis (/ai/analyze-cover-letter). Same
+// telemetry/evals contract as SummaryAnalysis: input/output JSONB snapshots
+// (letter text is PII, Cascade on user delete), model + promptVersion for
+// attribution, token/latency for cost. Output holds four nullable per-part
+// results plus a coherence verdict; feedback rows are per part.
+
+model CoverLetterAnalysis {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @db.Uuid
+  input           Json // AnalyzeCoverLetterInput snapshot (parts + context)
+  output          Json // { opening|bodyWhy|bodyBring|closing: {feedback,suggestion}|null, coherence }
+  model           String // e.g. "claude-haiku-4-5"
+  promptVersion   String // e.g. "1.0.0"
+  plan            Plan
+  inputTokens     Int? // response.usage.input_tokens
+  outputTokens    Int? // response.usage.output_tokens
+  cacheReadTokens Int? // response.usage.cache_read_input_tokens
+  latencyMs       Int? // wall-clock of the Anthropic call
+  createdAt       DateTime @default(now())
+
+  user     User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedback CoverLetterFeedback[]
+
+  @@index([userId])
+  @@index([promptVersion])
+  @@index([createdAt])
+}
+
+// ─── CoverLetterFeedback ──────────────────────────────────────────────────────
+// A user's up/down vote on ONE PART of a CoverLetterAnalysis. The compound
+// unique (analysisId, part) allows one flippable vote per part — four separate
+// votable suggestions per analysis. `reasons` holds codes from the shared
+// COVER_LETTER_FEEDBACK_REASONS taxonomy (downvotes only).
+
+model CoverLetterFeedback {
+  id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  analysisId String          @db.Uuid
+  userId     String          @db.Uuid
+  part       CoverLetterPart
+  vote       FeedbackVote
+  reasons    String[] // reason codes on a downvote; empty for an upvote
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  analysis CoverLetterAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([analysisId, part])
   @@index([userId])
   @@index([vote])
 }

@@ -41,5 +41,15 @@
       type="textarea"
       placeholder="123 Main Street&#10;New York, NY 10001"
     />
+
+    <FormField
+      id="cl-targetJobDescription"
+      v-model="clData.targetJobDescription"
+      :label="t('coverLetter.targetJobDescription')"
+      type="textarea"
+      :placeholder="t('coverLetter.targetJobDescriptionPlaceholder')"
+      :hint="t('coverLetter.targetJobDescriptionHint')"
+      :maxlength="5000"
+    />
   </div>
 </template>

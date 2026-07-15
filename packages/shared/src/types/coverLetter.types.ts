@@ -15,6 +15,7 @@ export interface CoverLetterData {
   bodyWhy: string
   bodyBring: string
   closing: string
+  targetJobDescription: string
   signature: string
   meta: {
     createdAt: string

@@ -52,6 +52,7 @@ export interface Translations {
         NOT_RELEVANT: string
         WRONG_TONE: string
         BAD_LANGUAGE: string
+        REPETITIVE: string
         OTHER: string
       }
     }
@@ -60,7 +61,26 @@ export interface Translations {
       tooManyRequests: string
       serviceUnavailable: string
       invalidInput: string
+      coverLetterInvalidInput: string
       unexpected: string
+    }
+    coverLetter: {
+      analyzeButton: string
+      analyzing: string
+      minParts: string
+      badgeHint: string
+      appliedLabel: string
+      parts: {
+        opening: string
+        bodyWhy: string
+        bodyBring: string
+        closing: string
+      }
+      coherence: {
+        label: string
+        consistent: string
+        issuesFound: string
+      }
     }
   }
   home: {
@@ -307,6 +327,9 @@ export interface Translations {
     recipientTitle: string
     recipientCompany: string
     recipientAddress: string
+    targetJobDescription: string
+    targetJobDescriptionPlaceholder: string
+    targetJobDescriptionHint: string
     contentOpening: string
     contentOpeningHint: string
     contentBodyWhy: string

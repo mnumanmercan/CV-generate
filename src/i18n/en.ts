@@ -39,6 +39,7 @@ const en: Translations = {
         NOT_RELEVANT: 'Not relevant to my role',
         WRONG_TONE: 'Wrong tone',
         BAD_LANGUAGE: 'Awkward language',
+        REPETITIVE: 'Repeats another section',
         OTHER: 'Something else',
       },
     },
@@ -47,7 +48,27 @@ const en: Translations = {
       tooManyRequests: 'Too many requests. Please wait a moment before trying again.',
       serviceUnavailable: 'AI service is currently unavailable. Please try again later.',
       invalidInput: 'Summary is too short or too long. Please write between 50–500 characters.',
+      coverLetterInvalidInput:
+        'Fill at least two letter sections (40+ characters each) before analyzing.',
       unexpected: 'An unexpected error occurred. Please try again.',
+    },
+    coverLetter: {
+      analyzeButton: 'Analyze letter with AI',
+      analyzing: 'Reviewing your letter...',
+      minParts: 'Fill at least {n} sections ({chars}+ characters each) to unlock AI review',
+      badgeHint: 'Four HR-expert reviews — one per section — plus a whole-letter coherence check.',
+      appliedLabel: 'Applied',
+      parts: {
+        opening: 'Opening Paragraph',
+        bodyWhy: 'Why This Company / Role',
+        bodyBring: 'What You Bring',
+        closing: 'Closing Paragraph',
+      },
+      coherence: {
+        label: 'Letter coherence',
+        consistent: 'Your letter reads as one coherent story from opening to sign-off.',
+        issuesFound: 'A few things break the flow between sections:',
+      },
     },
   },
   home: {
@@ -353,6 +374,10 @@ const en: Translations = {
     recipientTitle: 'Recipient Title',
     recipientCompany: 'Company Name',
     recipientAddress: 'Company Address',
+    targetJobDescription: 'Target Job Posting (optional)',
+    targetJobDescriptionPlaceholder: 'Paste the job posting or its key requirements here…',
+    targetJobDescriptionHint:
+      'The AI review uses this to tailor its feedback to the actual role — nothing is sent anywhere until you run the analysis',
     contentOpening: 'Opening Paragraph',
     contentOpeningHint: "Introduce yourself and the role you're applying for (2–4 sentences)",
     contentBodyWhy: 'Why This Company / Role',

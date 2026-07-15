@@ -66,6 +66,13 @@ export class TimeoutError extends Error {
 interface RequestOptions extends RequestInit {
   /** Internal flag — prevents a retry from triggering another refresh attempt. */
   _retried?: boolean
+  /**
+   * Per-request override of REQUEST_TIMEOUT_MS. For endpoints whose happy path
+   * is legitimately slow (AI cover-letter analysis runs 15–30s of LLM
+   * generation) — the default would abort a request the server is still
+   * successfully serving.
+   */
+  timeoutMs?: number
 }
 
 async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
@@ -79,10 +86,10 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
   }
   if (_accessToken) headers.set('Authorization', `Bearer ${_accessToken}`)
 
-  // Abort the request after REQUEST_TIMEOUT_MS so a hung server doesn't
-  // leave the app in a permanent loading state.
+  // Abort the request after the timeout so a hung server doesn't leave the
+  // app in a permanent loading state.
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  const timeoutId = setTimeout(() => controller.abort(), init.timeoutMs ?? REQUEST_TIMEOUT_MS)
 
   let res: Response
   try {
@@ -196,8 +203,8 @@ export { tryRefresh as refreshAccessToken }
 
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  post: <T>(path: string, body?: unknown, opts?: { timeoutMs?: number }) =>
+    request<T>(path, { method: 'POST', body: JSON.stringify(body), timeoutMs: opts?.timeoutMs }),
   put: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
   patch: <T>(path: string, body?: unknown) =>
