@@ -41,19 +41,35 @@ export {
   AnalyzeSummaryDataSchema,
   AnalyzeSummaryResponseSchema,
   SubmitFeedbackSchema,
+  AnalyzeCoverLetterSchema,
+  CoverLetterPartResultSchema,
+  CoverLetterAnalysisResultSchema,
+  AnalyzeCoverLetterDataSchema,
+  AnalyzeCoverLetterResponseSchema,
+  SubmitCoverLetterFeedbackSchema,
   type AnalyzeSummaryInput,
   type SummaryAnalysisResult,
   type AnalyzeSummaryData,
   type AnalyzeSummaryResponse,
   type SubmitFeedbackInput,
+  type AnalyzeCoverLetterInput,
+  type CoverLetterPartResult,
+  type CoverLetterAnalysisResult,
+  type AnalyzeCoverLetterData,
+  type AnalyzeCoverLetterResponse,
+  type SubmitCoverLetterFeedbackInput,
 } from './schemas/ai.schema.js'
 
 // AI Feedback taxonomy
 export {
   FEEDBACK_VOTES,
   SUMMARY_FEEDBACK_REASONS,
+  COVER_LETTER_PARTS,
+  COVER_LETTER_FEEDBACK_REASONS,
   type FeedbackVoteValue,
   type SummaryFeedbackReason,
+  type CoverLetterPartKey,
+  type CoverLetterFeedbackReason,
 } from './constants/aiFeedback.js'
 
 // Constants

@@ -21,6 +21,10 @@ export const CoverLetterDataSchema = z.object({
   bodyWhy: z.string().max(2000),
   bodyBring: z.string().max(2000),
   closing: z.string().max(500),
+  // Optional pasted job posting used by the AI analyzer to tailor feedback.
+  // .default('') keeps payloads from older clients (and older stored blobs)
+  // parsing — without it, validate() would 400 every save from a stale client.
+  targetJobDescription: z.string().max(5000).default(''),
   signature: z.string().max(100),
   meta: CoverLetterMetaSchema,
 })

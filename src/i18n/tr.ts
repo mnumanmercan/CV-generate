@@ -39,6 +39,7 @@ const tr: Translations = {
         NOT_RELEVANT: 'Rolümle alakası yok',
         WRONG_TONE: 'Üslubu yanlış',
         BAD_LANGUAGE: 'Dili doğal değil',
+        REPETITIVE: 'Başka bölümü tekrar ediyor',
         OTHER: 'Başka bir sebep',
       },
     },
@@ -47,7 +48,28 @@ const tr: Translations = {
       tooManyRequests: 'Çok hızlı gidiyorsun, biraz sonra tekrar dene.',
       serviceUnavailable: 'AI servisine şu an ulaşılamıyor. Birazdan tekrar dene.',
       invalidInput: 'Özetin 50–500 karakter arasında olmalı.',
+      coverLetterInvalidInput:
+        'Analiz için en az iki bölümü doldurmalısın (her biri en az 40 karakter).',
       unexpected: 'Beklenmedik bir sorun oldu. Tekrar dener misin?',
+    },
+    coverLetter: {
+      analyzeButton: 'Mektubu AI ile İncelet',
+      analyzing: 'Mektubun inceleniyor...',
+      minParts: 'AI incelemesi için en az {n} bölümü doldur (her biri en az {chars} karakter)',
+      badgeHint:
+        'Her bölümü ayrı bir İK uzmanı gözüyle inceler, mektubun bütünlüğünü de ayrıca kontrol eder.',
+      appliedLabel: 'Uygulandı',
+      parts: {
+        opening: 'Giriş Paragrafı',
+        bodyWhy: 'Neden Bu Şirket / Rol',
+        bodyBring: 'Ne Katarsın',
+        closing: 'Kapanış Paragrafı',
+      },
+      coherence: {
+        label: 'Mektup bütünlüğü',
+        consistent: 'Mektubun girişten imzaya tek bir bütün olarak akıyor.',
+        issuesFound: 'Bölümler arasındaki akışı bozan birkaç nokta var:',
+      },
     },
   },
   home: {
@@ -352,6 +374,10 @@ const tr: Translations = {
     recipientTitle: 'Alıcı Unvanı',
     recipientCompany: 'Şirket Adı',
     recipientAddress: 'Şirket Adresi',
+    targetJobDescription: 'Hedef İş İlanı (isteğe bağlı)',
+    targetJobDescriptionPlaceholder: 'İş ilanını veya öne çıkan gereksinimlerini buraya yapıştır…',
+    targetJobDescriptionHint:
+      'AI incelemesi geri bildirimini bu ilana göre kişiselleştirir — analizi çalıştırana kadar hiçbir yere gönderilmez',
     contentOpening: 'Açılış',
     contentOpeningHint: 'Kendini ve başvurduğun pozisyonu tanıt (2–4 cümle)',
     contentBodyWhy: 'Neden bu şirket?',

@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { watch, nextTick } from 'vue'
-import { type CoverLetterData, createEmptyCoverLetterData } from '@/types/coverLetter.types'
+import {
+  type CoverLetterData,
+  createEmptyCoverLetterData,
+  migrateCoverLetterData,
+} from '@/types/coverLetter.types'
 import type { PersonalInfo } from '@/types/cv.types'
 import { coverLetterStorageService } from '@/services/coverLetterStorageService'
 import { AUTOSAVE_DEBOUNCE_MS, SAVE_INDICATOR_MS } from '@/constants/timing'
@@ -34,7 +38,7 @@ export const useCoverLetterStore = defineStore('coverLetter', () => {
     loadingData.value = true
     const stored = await coverLetterStorageService.load()
     if (stored) {
-      clData.value = stored
+      clData.value = migrateCoverLetterData(stored)
     } else {
       clData.value = createEmptyCoverLetterData()
     }
