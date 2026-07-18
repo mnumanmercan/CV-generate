@@ -50,7 +50,7 @@
     <!-- ── Personal Info ─────────────────────────────────────────── -->
     <header
       :class="['cv-header', isPulsed('personal') ? 'section-pulse' : '']"
-      style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb"
+      style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 0 solid #e5e7eb"
     >
       <h1
         :style="{
@@ -121,6 +121,7 @@
           line-height: 1.6;
           white-space: pre-wrap;
           margin: 0;
+          text-align: justify;
         "
       >
         {{ cvData.summary }}
