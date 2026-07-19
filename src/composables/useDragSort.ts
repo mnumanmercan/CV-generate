@@ -10,7 +10,7 @@ export function useDragSort<T extends { id: string }>(items: { readonly value: T
   }
 
   function onDragOver(id: string): void {
-    if (draggedId.value === id) return
+    if (!draggedId.value || draggedId.value === id) return
     dragOverId.value = id
   }
 

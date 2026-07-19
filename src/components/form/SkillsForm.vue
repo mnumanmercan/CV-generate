@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
+  import { ref, computed, nextTick } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useCVStore } from '@/stores/cvStore'
   import { useDragSort } from '@/composables/useDragSort'
+  import { useTagDragSort } from '@/composables/useTagDragSort'
   import FormField from './FormField.vue'
   import { createSkill } from '@/types/cv.types'
   import { useI18n } from '@/composables/useI18n'
@@ -13,6 +14,9 @@
   const { cvData } = storeToRefs(cvStore)
 
   const drag = useDragSort(computed(() => cvData.value.skills))
+  const tagDrag = useTagDragSort(
+    (skillId) => cvData.value.skills.find((s) => s.id === skillId)?.items,
+  )
 
   const tagInputs = ref<Record<string, string>>({})
   const duplicateWarnings = ref(new Set<string>())
@@ -64,6 +68,38 @@
       event.preventDefault()
       addTag(skillId, index)
     }
+  }
+
+  // Chip drag events must not bubble to the category card, which is itself
+  // draggable — but only while a chip drag is active, so card drags that pass
+  // over a chip still reach the card's own handlers.
+  function onChipDragStart(event: DragEvent, skillId: string, tag: string): void {
+    event.stopPropagation()
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+    tagDrag.onDragStart(skillId, tag)
+  }
+
+  function onChipDragOver(event: DragEvent, skillId: string, tag: string): void {
+    if (!tagDrag.hasActiveDrag(skillId)) return
+    event.preventDefault()
+    event.stopPropagation()
+    tagDrag.onDragOver(skillId, tag)
+  }
+
+  function onChipDrop(event: DragEvent, skillId: string, tag: string): void {
+    if (!tagDrag.hasActiveDrag(skillId)) return
+    event.stopPropagation()
+    tagDrag.onDrop(skillId, tag)
+  }
+
+  function onChipKeydown(event: KeyboardEvent, skillId: string, tag: string): void {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+    event.preventDefault()
+    // Moving a focused element in the DOM drops focus in most browsers;
+    // refocus the same node so repeated arrow presses keep working.
+    const chip = event.currentTarget as HTMLElement
+    tagDrag.move(skillId, tag, event.key === 'ArrowLeft' ? -1 : 1)
+    void nextTick(() => chip.focus())
   }
 </script>
 
@@ -118,12 +154,37 @@
           Skills <span class="normal-case font-sans">({{ t('forms.skillsHint') }})</span>
         </p>
 
-        <div class="flex flex-wrap gap-1.5 mb-2" :aria-label="`Skills in ${skill.category}`">
+        <TransitionGroup
+          tag="div"
+          name="chip"
+          enter-active-class="animate-chip-in"
+          class="flex flex-wrap gap-1.5 mb-2"
+          role="list"
+          :aria-label="`Skills in ${skill.category}`"
+        >
           <span
             v-for="(tag, tIdx) in skill.items"
-            :key="tIdx"
-            class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/20 text-accent text-xs font-medium animate-chip-in"
+            :key="tag"
+            role="listitem"
+            tabindex="0"
+            draggable="true"
+            :aria-label="t('forms.skillTagLabel', { tag })"
+            :class="[
+              'skill-chip relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/20 text-accent text-xs font-medium cursor-grab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              tagDrag.isDragging(skill.id, tag) ? 'dragging' : '',
+              tagDrag.isDragOver(skill.id, tag) ? 'tag-drag-over' : '',
+            ]"
+            @dragstart="onChipDragStart($event, skill.id, tag)"
+            @dragover="onChipDragOver($event, skill.id, tag)"
+            @drop="onChipDrop($event, skill.id, tag)"
+            @dragend.stop="tagDrag.onDragEnd"
+            @keydown="onChipKeydown($event, skill.id, tag)"
           >
+            <span class="skill-tooltip" aria-hidden="true">
+              {{ t('forms.skillTagTooltip') }}
+              <kbd>←</kbd>
+              <kbd>→</kbd>
+            </span>
             {{ tag }}
             <button
               type="button"
@@ -134,7 +195,7 @@
               ×
             </button>
           </span>
-        </div>
+        </TransitionGroup>
 
         <div v-if="!tagLimitReached(index)" class="flex gap-2">
           <input
@@ -196,3 +257,88 @@
     </p>
   </div>
 </template>
+
+<style scoped>
+  /* Drop-target indicator sized for chips — the global .drag-over dashed
+     border shifts layout on these small rounded elements */
+  .tag-drag-over {
+    box-shadow: 0 0 0 2px var(--accent);
+    opacity: 0.6;
+  }
+
+  /* Reorder hint popup above each chip */
+  .skill-tooltip {
+    position: absolute;
+    bottom: calc(100% + 7px);
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.65rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(3px);
+    transition:
+      opacity 0.15s ease,
+      transform 0.15s ease;
+    z-index: 20;
+  }
+  .skill-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: var(--ink);
+  }
+  .skill-tooltip kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 2px;
+    border: 1px solid color-mix(in oklab, var(--paper) 40%, transparent);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    line-height: 1;
+  }
+  /* Delayed on hover so it doesn't flash while scanning the list;
+     immediate on keyboard focus */
+  .skill-chip:hover > .skill-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    transition-delay: 0.45s;
+  }
+  .skill-chip:focus-visible > .skill-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  /* Hide before the browser captures the drag ghost (mousedown precedes
+     dragstart) and while a drag is in flight */
+  .skill-chip:active > .skill-tooltip,
+  .skill-chip.dragging > .skill-tooltip {
+    opacity: 0;
+    transition: none;
+  }
+
+  /* FLIP transitions for the chip TransitionGroup */
+  .chip-move {
+    transition: transform 0.2s ease;
+  }
+  .chip-leave-active {
+    position: absolute;
+    transition: opacity 0.12s ease;
+  }
+  .chip-leave-to {
+    opacity: 0;
+  }
+</style>
