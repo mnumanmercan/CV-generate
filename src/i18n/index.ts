@@ -398,8 +398,10 @@ export interface Translations {
     eduEntryLabel: string
     skillCategory: string
     skillsHint: string
+    skillTagTooltip: string
     addSkillPlaceholder: string
     skillCatEntryLabel: string
+    skillTagLabel: string
     addSkillCategory: string
     duplicateSkill: string
     limitReached: string
