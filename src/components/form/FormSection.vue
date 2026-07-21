@@ -89,7 +89,7 @@
       :aria-controls="`section-content-${title.replace(/\s+/g, '-').toLowerCase()}`"
       @click="toggle"
     >
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 min-w-0 flex-1">
         <!-- Drag handle — only for draggable sections -->
         <span
           v-if="draggable"
@@ -141,32 +141,39 @@
           >{{ icon }}</span
         >
 
-        <!-- Title -->
-        <span
-          :class="[
-            'text-[14px] font-medium transition-colors',
-            isOpen ? 'text-ink' : 'text-muted group-hover:text-ink',
-          ]"
-        >
-          {{ title }}
-        </span>
-
         <!--
-          AI-assist chip: sienna pill with a breathing dot that emits a slow
-          halo ring — signals a live assistant inside without adding a second
-          colour or fighting the step indicator for attention.
+          Title + AI chip wrap together as a unit so that on narrow (mobile)
+          viewports the chip drops onto its own line instead of running off the
+          right edge — the leading indicators above stay fixed on the first row.
         -->
-        <span
-          v-if="aiLabel"
-          ref="aiChipEl"
-          class="ai-badge shrink-0"
-          @mouseenter="showAiTip"
-          @mouseleave="hideAiTip"
-        >
-          <span class="ai-badge-dot" aria-hidden="true" />
-          {{ aiLabel }}
-          <span v-if="aiHint" class="sr-only">— {{ aiHint }}</span>
-        </span>
+        <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 min-w-0">
+          <!-- Title -->
+          <span
+            :class="[
+              'text-[14px] font-medium transition-colors',
+              isOpen ? 'text-ink' : 'text-muted group-hover:text-ink',
+            ]"
+          >
+            {{ title }}
+          </span>
+
+          <!--
+            AI-assist chip: sienna pill with a breathing dot that emits a slow
+            halo ring — signals a live assistant inside without adding a second
+            colour or fighting the step indicator for attention.
+          -->
+          <span
+            v-if="aiLabel"
+            ref="aiChipEl"
+            class="ai-badge shrink-0"
+            @mouseenter="showAiTip"
+            @mouseleave="hideAiTip"
+          >
+            <span class="ai-badge-dot" aria-hidden="true" />
+            {{ aiLabel }}
+            <span v-if="aiHint" class="sr-only">— {{ aiHint }}</span>
+          </span>
+        </div>
       </div>
 
       <!-- Chevron -->
