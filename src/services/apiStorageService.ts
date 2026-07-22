@@ -85,17 +85,17 @@ export class ApiCVStorageService implements StorageService {
 
   async load(): Promise<CVData | null> {
     try {
-      // Resolve the id with a single slim list read (or the cached id, free).
-      // Then fetch the full document with a targeted GET so the dashboard
-      // doesn't pay for every row's payload. A re-load with a cached id costs
-      // one read (detail only) instead of two.
-      const id = await this.resolveCvId()
-      if (!id) return null
-      const detail = await apiClient.get<{
+      // ONE round-trip: the most-recently-updated CV with its content. Replaces
+      // the old slim GET /cv (resolve id) + GET /cv/:id (content) pair. Memoize
+      // the resolved id so subsequent saves reuse it (get-or-create in save(),
+      // and the share panel via getActiveId()) without a second lookup.
+      const res = await apiClient.get<{
         success: boolean
-        data: { id: string; content: CVData }
-      }>(`/cv/${id}`)
-      return detail.data.content
+        data: { id: string; content: CVData } | null
+      }>('/cv/latest')
+      if (!res.data) return null
+      this.cvId = res.data.id
+      return res.data.content
     } catch (err) {
       const storageErr = classifyError(err)
       // not_found is normal (new user with no CV yet) — treat as null.

@@ -44,6 +44,20 @@ const prismaMock = {
       Object.assign(row, data)
       return row
     }),
+    findFirst: vi.fn(
+      async ({
+        where,
+        orderBy,
+      }: {
+        where: { userId: string }
+        orderBy?: { updatedAt: 'asc' | 'desc' }
+      }) => {
+        const rows = [...db.cvs.values()].filter((c) => c.userId === where.userId)
+        rows.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+        if (orderBy?.updatedAt === 'asc') rows.reverse()
+        return rows[0] ?? null
+      },
+    ),
   },
 }
 
@@ -130,5 +144,24 @@ describe('cvService share', () => {
     await expect(cvService.getPublicBySlug('does-not-exist')).rejects.toMatchObject({
       statusCode: 404,
     })
+  })
+})
+
+describe('cvService getLatest', () => {
+  it('returns the most-recently-updated CV with its content', async () => {
+    seedCV({ title: 'Older', updatedAt: new Date('2026-01-01') })
+    const newer = seedCV({ title: 'Newer', updatedAt: new Date('2026-06-01') })
+    const latest = await cvService.getLatest(OWNER)
+    expect(latest?.id).toBe(newer.id)
+    expect(latest?.content).toEqual(newer.content)
+  })
+
+  it('returns null when the user has no CV', async () => {
+    expect(await cvService.getLatest(OWNER)).toBeNull()
+  })
+
+  it('never returns another user’s CV', async () => {
+    seedCV({ userId: OTHER, title: 'Not mine' })
+    expect(await cvService.getLatest(OWNER)).toBeNull()
   })
 })

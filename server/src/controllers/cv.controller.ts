@@ -19,6 +19,11 @@ export const getCV = asyncHandler(async (req: Request, res: Response) => {
   res.json({ success: true, data: cv })
 })
 
+export const getLatestCV = asyncHandler(async (req: Request, res: Response) => {
+  const cv = await cvService.getLatest(req.user!.sub)
+  res.json({ success: true, data: cv })
+})
+
 export const updateCV = asyncHandler(async (req: Request, res: Response) => {
   const { content, title } = req.body as { content: CVData; title?: string }
   const cv = await cvService.update(

@@ -50,6 +50,22 @@ export const useUserStore = defineStore('user', () => {
   // repeat callers and the router guard share the single in-flight run.
   let sessionRestorePromise: Promise<void> | null = null
 
+  // Resolves as soon as the ACTIVE storage backend is known (local for guests,
+  // cloud for logged-in users). That decision is made by the refresh probe
+  // ALONE — before the slower GET /user/me — so cvStore.loadFromStorage awaits
+  // THIS (not the full session probe) and the CV read runs in parallel with
+  // /user/me instead of serially after it. Resolved exactly once.
+  const isStorageBackendResolved = ref(false)
+  let resolveStorageBackend: (() => void) | null = null
+  const storageBackendPromise = new Promise<void>((resolve) => {
+    resolveStorageBackend = resolve
+  })
+  function markStorageBackendResolved(): void {
+    if (isStorageBackendResolved.value) return
+    isStorageBackendResolved.value = true
+    resolveStorageBackend?.()
+  }
+
   const showUpgradeModal = ref(false)
   const upgradeModalTrigger = ref<string>('')
 
@@ -157,7 +173,7 @@ export const useUserStore = defineStore('user', () => {
 
   function restoreSession(): Promise<void> {
     // Memoize so the boot call (main.ts) and any awaiter (cvStore via
-    // ensureSessionRestored, the router guard) share ONE probe.
+    // ensureStorageBackendResolved, the router guard) share ONE probe.
     if (sessionRestorePromise) return sessionRestorePromise
     sessionRestorePromise = (async () => {
       try {
@@ -168,20 +184,30 @@ export const useUserStore = defineStore('user', () => {
         // expired token — normal for guests — and never dispatches
         // resumark:session-expired, so guests aren't redirected to /login.
         const ok = await refreshAccessToken()
-        if (!ok) return // no valid session — silently remain as guest
-        const me = await apiClient.get<{ data: MeResponse }>('/user/me')
-        _applyUser(me.data)
+        if (ok) {
+          // A valid refresh token means we're logged in. Swap to cloud storage
+          // and kick the CV read NOW — it only needs the access token (already
+          // set), not the /user/me profile — so it runs IN PARALLEL with the
+          // fetch below instead of waiting for it. isLoggedIn is set here (not
+          // in _applyUser) so the delegate and login state are consistent the
+          // moment the backend is resolved.
+          isLoggedIn.value = true
+          _switchToCloudStorage()
+          markStorageBackendResolved()
+          _reloadActiveCV()
+          const me = await apiClient.get<{ data: MeResponse }>('/user/me')
+          _applyUser(me.data)
+        }
       } catch {
-        // Network error or server down — remain as guest
+        // Network error or server down. If the refresh already succeeded we keep
+        // the cloud session (the CV read has a valid token); only the /user/me
+        // profile details are deferred to the next successful call.
       } finally {
-        // Flip regardless of outcome so router guards unblock.
+        // Resolve both gates regardless of outcome so a guest (refresh failed →
+        // backend stays local) and the router guards never block indefinitely.
+        markStorageBackendResolved()
         isSessionRestored.value = true
       }
-      // Reload the active CV from the now-correct backend. Deliberately AFTER
-      // the finally above flipped isSessionRestored — so the loadFromStorage
-      // this kicks off finds ensureSessionRestored() already resolved and can't
-      // deadlock awaiting this very probe.
-      if (isLoggedIn.value) _reloadActiveCV()
     })()
     return sessionRestorePromise
   }
@@ -197,6 +223,18 @@ export const useUserStore = defineStore('user', () => {
   async function ensureSessionRestored(): Promise<void> {
     if (isSessionRestored.value) return
     if (sessionRestorePromise) await sessionRestorePromise
+  }
+
+  /**
+   * Resolve once the ACTIVE storage backend is known — which happens right after
+   * the refresh probe, BEFORE GET /user/me. cvStore.loadFromStorage awaits this
+   * (not ensureSessionRestored) so a cold CV read runs in parallel with the
+   * profile fetch instead of after it, while still reading from the correct
+   * cloud-vs-local backend. No-op once resolved, or if no probe is in flight.
+   */
+  async function ensureStorageBackendResolved(): Promise<void> {
+    if (isStorageBackendResolved.value) return
+    if (sessionRestorePromise) await storageBackendPromise
   }
 
   // ── Logout ────────────────────────────────────────────────────────────────
@@ -252,6 +290,7 @@ export const useUserStore = defineStore('user', () => {
     isAuthenticating,
     authError,
     isSessionRestored,
+    isStorageBackendResolved,
     showUpgradeModal,
     upgradeModalTrigger,
     canUploadPhoto,
@@ -262,6 +301,7 @@ export const useUserStore = defineStore('user', () => {
     clearLocalSession,
     restoreSession,
     ensureSessionRestored,
+    ensureStorageBackendResolved,
     openUpgradeModal,
     closeUpgradeModal,
   }

@@ -131,7 +131,7 @@ describe('ApiCVStorageService.save (get-or-create)', () => {
     )
   })
 
-  it('single-flights concurrent id resolution onto one GET /cv', async () => {
+  it('single-flights concurrent save id resolution onto one GET /cv', async () => {
     let resolveList: (v: unknown) => void = () => {}
     get.mockReturnValueOnce(
       new Promise((res) => {
@@ -140,17 +140,40 @@ describe('ApiCVStorageService.save (get-or-create)', () => {
     )
 
     const svc = new ApiCVStorageService()
-    // Fire a save and a load before the list request settles.
+    // Two saves fired before the list request settles must SHARE one GET /cv.
     const p1 = svc.save(fakeCV)
-    const p2 = svc.load()
+    const p2 = svc.save(fakeCV)
     resolveList({ success: true, data: [{ id: 'cv-1', title: 'x', updatedAt: 'z' }] })
-    // load() then fetches the detail document.
-    get.mockResolvedValueOnce({ success: true, data: { id: 'cv-1', content: fakeCV } })
     await Promise.all([p1, p2])
 
-    // One list read shared by both callers, plus load()'s single detail read.
+    expect(get).toHaveBeenCalledTimes(1)
     expect(get).toHaveBeenCalledWith('/cv')
-    expect(get).toHaveBeenCalledWith('/cv/cv-1')
-    expect(get).toHaveBeenCalledTimes(2)
+    expect(put).toHaveBeenCalledTimes(2)
+    expect(put).toHaveBeenLastCalledWith('/cv/cv-1', { content: fakeCV })
+  })
+})
+
+describe('ApiCVStorageService.load (single round-trip)', () => {
+  it('fetches the latest CV with content in ONE GET /cv/latest', async () => {
+    get.mockResolvedValueOnce({ success: true, data: { id: 'cv-1', content: fakeCV } })
+
+    const svc = new ApiCVStorageService()
+    const result = await svc.load()
+
+    expect(result).toBe(fakeCV)
+    expect(get).toHaveBeenCalledTimes(1)
+    expect(get).toHaveBeenCalledWith('/cv/latest')
+
+    // The id is memoized, so a subsequent save reuses it with ZERO extra reads.
+    await svc.save(fakeCV)
+    expect(get).toHaveBeenCalledTimes(1)
+    expect(put).toHaveBeenCalledWith('/cv/cv-1', { content: fakeCV })
+  })
+
+  it('returns null when the user has no CV yet', async () => {
+    get.mockResolvedValueOnce({ success: true, data: null })
+    const svc = new ApiCVStorageService()
+    expect(await svc.load()).toBeNull()
+    expect(get).toHaveBeenCalledWith('/cv/latest')
   })
 })
