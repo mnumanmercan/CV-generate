@@ -7,7 +7,7 @@ import {
   CURRENT_VERSION,
   migrateCVData,
 } from '@/types/cv.types'
-import { localStorageService } from '@/services/storageService'
+import { localStorageService, readLocalCVSync } from '@/services/storageService'
 import { StorageError, isTerminalReason, type StorageErrorReason } from '@/services/storageErrors'
 import { useUserStore } from '@/stores/userStore'
 import { SAVE_INDICATOR_MS, SECTION_HIGHLIGHT_MS } from '@/constants/timing'
@@ -17,8 +17,26 @@ import { SAVE_INDICATOR_MS, SECTION_HIGHLIGHT_MS } from '@/constants/timing'
 // consecutive failures. Terminal reasons (too_large, quota…) surface at once.
 const TRANSIENT_FAILURES_BEFORE_ALERT = 2
 
+/**
+ * Seed the store from localStorage synchronously so the preview renders the
+ * user's real CV on first paint instead of flashing the empty default. This is
+ * a first-paint optimisation only — `loadFromStorage()` still runs on view
+ * mount to reconcile against the active backend (identical local data for
+ * guests → no visible change; the cloud copy for logged-in users). Migration
+ * is guarded so a corrupt/legacy blob can never break app boot.
+ */
+function seedInitialCVData(): CVData {
+  const stored = readLocalCVSync()
+  if (!stored) return createEmptyCVData()
+  try {
+    return migrateCVData(stored)
+  } catch {
+    return createEmptyCVData()
+  }
+}
+
 export const useCVStore = defineStore('cv', () => {
-  const cvData = ref<CVData>(createEmptyCVData())
+  const cvData = ref<CVData>(seedInitialCVData())
   const activeSection = ref<SectionKey | null>(null)
   const highlightedSection = ref<SectionKey | null>(null)
   const isSaving = ref(false)
@@ -70,12 +88,14 @@ export const useCVStore = defineStore('cv', () => {
   async function loadFromStorage(): Promise<void> {
     loadingData.value = true
     try {
-      // Wait for an in-flight boot session probe to settle BEFORE reading, so a
-      // cold load on a public route (/, /builder) reads from the correct backend
-      // (cloud once logged in) rather than racing the local→cloud delegate swap.
-      // No-op once the probe has resolved. Set loadingData first so any cvData
-      // replacement during the wait still suppresses auto-save.
-      await useUserStore().ensureSessionRestored()
+      // Wait only until the active storage backend is known (decided by the
+      // refresh probe, before the slower GET /user/me) so a cold load on a
+      // public route (/, /builder) reads from the correct backend (cloud once
+      // logged in) rather than racing the local→cloud delegate swap. This runs
+      // the CV read in parallel with /user/me. No-op once resolved. Set
+      // loadingData first so any cvData replacement during the wait still
+      // suppresses auto-save.
+      await useUserStore().ensureStorageBackendResolved()
       const stored = await localStorageService.load()
       if (stored) {
         // Run all pending migrations while loadingData is still true so

@@ -113,16 +113,14 @@
   })
 
   /**
-   * Per-page document title + lazy CV-data load. Loading the store on Home
-   * mount means the LiveCV preview renders the user's saved data even
-   * before they click into /builder — giving the hero a personal feel for
-   * returning visitors.
+   * Per-page document title only. The hero preview is a fixed "Maya" mockup and
+   * the mini-demo binds directly to the store (seeded synchronously from
+   * localStorage), so Home no longer triggers a CV load — that reconciliation
+   * happens on /builder. This removes the default→real preview swap on the
+   * homepage entirely.
    */
-  onMounted(async () => {
+  onMounted(() => {
     document.title = 'Resumark — Build a Professional Résumé Free'
-    if (!cvStore.isLoaded) {
-      await cvStore.loadFromStorage()
-    }
   })
 </script>
 

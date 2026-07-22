@@ -8,6 +8,7 @@ import {
   listCVs,
   createCV,
   getCV,
+  getLatestCV,
   updateCV,
   patchCV,
   deleteCV,
@@ -24,6 +25,9 @@ router.use(authenticate)
 
 router.get('/', apiReadLimiter, listCVs)
 router.post('/', apiWriteLimiter, validate(CreateCVSchema), createCV)
+// `/latest` MUST precede the `/:id` param route below, otherwise Express matches
+// "latest" as an :id and the request falls through to the not-found path.
+router.get('/latest', apiReadLimiter, getLatestCV)
 router.get('/:id', apiReadLimiter, getCV)
 router.put('/:id', apiWriteLimiter, validate(UpdateCVSchema), updateCV)
 router.patch('/:id', apiWriteLimiter, validate(PatchCVSchema), patchCV)

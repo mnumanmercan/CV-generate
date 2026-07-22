@@ -82,6 +82,17 @@ export const cvService = {
     return cv
   },
 
+  // Most-recently-updated CV *with* its content, in a single query. The editor's
+  // cold load uses this instead of a slim `list()` (to resolve the id) followed
+  // by `get()` (to fetch the content) — halving the load to one round-trip.
+  // Returns null when the user has no CV yet (a new account).
+  async getLatest(userId: string) {
+    return prisma.cV.findFirst({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+    })
+  },
+
   async update(userId: string, id: string, plan: Plan, content: CVData, title?: string) {
     const cv = await prisma.cV.findUnique({ where: { id } })
     if (!cv || cv.userId !== userId) {

@@ -15,20 +15,17 @@
   })
 
   /**
-   * Static "Maya" sample shown when the visitor hasn't entered anything
-   * yet. The preview operates in three clearly-separated modes:
+   * Static "Maya" sample — the homepage hero is a fixed marketing mockup and
+   * never renders the visitor's stored CV wholesale (that lives in /builder).
+   * The preview operates in two clearly-separated modes:
    *
-   *   1. Empty cvData (first visit, empty localStorage)
+   *   1. Empty cvData (nothing typed in the mini-demo)
    *       → Render this sample verbatim. Every section filled, full mockup.
    *
-   *   2. Mini-demo edits only (homepage form has been touched, /builder hasn't)
+   *   2. Mini-demo edits (homepage form has been touched)
    *       → Overlay the touched mini-demo fields (fullName, role, company,
    *         started, highlight) onto this sample, keeping the rest of the
    *         persona intact so the preview stays visually complete.
-   *
-   *   3. Builder-territory edits exist (email, education, skills, etc. set)
-   *       → Show cvStore.cvData verbatim — the visitor has a real CV in
-   *         progress and we shouldn't dilute it with sample data.
    */
   const sample = {
     personal: {
@@ -76,35 +73,6 @@
   }
 
   /**
-   * "Has Builder data" — the visitor has filled in CV slots OUTSIDE the
-   * homepage mini-demo's reach (almost certainly via /builder). The mini
-   * demo only writes:
-   *   • personal.fullName
-   *   • experience[0].{position, company, startDate, bullets[0]}
-   * If any other slot is populated, we treat that as a real-CV-in-progress
-   * signal and render cvData wholesale instead of overlaying it onto Maya.
-   */
-  const hasBuilderData = computed(() => {
-    const d = cvStore.cvData
-    return !!(
-      d.personal.email?.trim() ||
-      d.personal.phone?.trim() ||
-      d.personal.location?.trim() ||
-      d.personal.jobTitle?.trim() ||
-      d.summary?.trim() ||
-      d.experience.length > 1 ||
-      (d.experience[0]?.bullets?.length ?? 0) > 1 ||
-      d.experience[0]?.location?.trim() ||
-      d.experience[0]?.endDate?.trim() ||
-      d.education.length > 0 ||
-      d.skills.length > 0 ||
-      d.projects.length > 0 ||
-      d.certifications.length > 0 ||
-      d.languages.length > 0
-    )
-  })
-
-  /**
    * Has the mini-demo been touched at all? This guards the "fully empty →
    * return sample verbatim" short-circuit below, so the initial first-visit
    * render is GUARANTEED to be the full mockup with zero overlay logic.
@@ -121,45 +89,19 @@
   })
 
   /**
-   * Compose the rendered data along the three modes called out at the top:
+   * Compose the rendered data along the two modes called out at the top:
    *
-   *   1. hasBuilderData      → smart overlay: user fields where non-empty,
-   *                            sample data where the user hasn't filled a section yet.
-   *                            This prevents sparse previews when the user has only
-   *                            touched some sections (e.g. certifications) but left
-   *                            experience/education/skills empty.
-   *   2. hasMiniDemoData     → sample with mini-demo fields overlaid
-   *   3. (everything empty)  → sample verbatim — the initial mockup state
+   *   1. (nothing typed)  → sample verbatim — the initial mockup state
+   *   2. hasMiniDemoData  → sample with mini-demo header fields overlaid
    *
-   * Splitting modes 2 and 3 keeps the empty-localStorage path obvious and
-   * unconditional: no spreads, no `||` chains, just the sample as-is.
+   * Rendering is synchronous off the store (seeded from localStorage on first
+   * paint), so the hero is stable — there is no default→real swap.
    */
   const data = computed(() => {
-    // Mode 3: empty everything → render the sample untouched (the default mockup).
-    if (!hasMiniDemoData.value && !hasBuilderData.value) return sample
+    // Mode 1: nothing typed → render the sample untouched (the default mockup).
+    if (!hasMiniDemoData.value) return sample
 
-    // Mode 1: real-CV territory → smart overlay so sections the user hasn't
-    // filled yet still show the sample data instead of disappearing.
-    if (hasBuilderData.value) {
-      const d = cvStore.cvData
-      return {
-        personal: {
-          fullName: d.personal.fullName?.trim() || sample.personal.fullName,
-          jobTitle:
-            d.personal.jobTitle?.trim() ||
-            d.experience[0]?.position?.trim() ||
-            sample.personal.jobTitle,
-          email: d.personal.email?.trim() || sample.personal.email,
-          phone: d.personal.phone?.trim() || sample.personal.phone,
-          location: d.personal.location?.trim() || sample.personal.location,
-        },
-        experience: d.experience.length > 0 ? d.experience : sample.experience,
-        education: d.education.length > 0 ? d.education : sample.education,
-        skills: d.skills.length > 0 ? d.skills : sample.skills,
-      }
-    }
-
-    // Mode 2: per-field overlay. Only here do we mix mini-demo fields with sample.
+    // Mode 2: per-field overlay — mix the mini-demo header fields with sample.
     const exp0 = cvStore.cvData.experience[0]
     const userFullName = cvStore.cvData.personal.fullName?.trim()
     return {
@@ -207,8 +149,7 @@
 
   /**
    * Header name shown in the preview. Three cases:
-   *   • Builder-territory data exists, or the user has typed a name
-   *     here → show their data (truncated).
+   *   • The visitor has typed a name in the mini-demo → show it (truncated).
    *   • Animation is mid-cycle (incl. pause between words) → show
    *     animatedName verbatim, even if it's "" during the inter-word
    *     pause. Falling back to a sample here would flash the canonical
@@ -217,7 +158,7 @@
    *     typed word, falling back to the canonical sample if absent.
    */
   const headerName = computed(() => {
-    if (hasBuilderData.value || userTypedName.value) {
+    if (userTypedName.value) {
       return trunc(data.value.personal.fullName, 34)
     }
     if (isNameAnimating.value) return animatedName.value
@@ -225,7 +166,7 @@
   })
 
   const headerRole = computed(() => {
-    if (hasBuilderData.value || userTypedRole.value) {
+    if (userTypedRole.value) {
       return trunc(data.value.personal.jobTitle, 42)
     }
     if (isRoleAnimating.value) return animatedRole.value
@@ -265,10 +206,7 @@
         "
       >
         <span>{{ headerName }}</span>
-        <span
-          v-if="!userTypedName && !hasBuilderData && isNameAnimating"
-          class="typewriter-cursor"
-          aria-hidden="true"
+        <span v-if="!userTypedName && isNameAnimating" class="typewriter-cursor" aria-hidden="true"
           >|</span
         >
       </div>
@@ -283,10 +221,7 @@
         }"
       >
         <span>{{ headerRole }}</span>
-        <span
-          v-if="!userTypedRole && !hasBuilderData && isRoleAnimating"
-          class="typewriter-cursor"
-          aria-hidden="true"
+        <span v-if="!userTypedRole && isRoleAnimating" class="typewriter-cursor" aria-hidden="true"
           >|</span
         >
       </div>

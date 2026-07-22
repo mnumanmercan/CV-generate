@@ -72,6 +72,28 @@ class LocalStorageService implements StorageService {
   }
 }
 
+/**
+ * Synchronous localStorage read for the initial store value.
+ *
+ * `localStorage.getItem` is synchronous, so the store can hydrate its first
+ * value from the last-saved CV *before first paint* — returning visitors (and
+ * every guest) see their real data immediately instead of the empty default
+ * that flashes while the async `load()` round-trip is still in flight.
+ *
+ * Returns the raw parsed blob (unmigrated — the caller runs `migrateCVData`)
+ * or null when storage is empty, unavailable (private mode), or corrupt. Never
+ * throws: a bad read must not brick app boot.
+ */
+export function readLocalCVSync(): CVData | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as CVData
+  } catch {
+    return null
+  }
+}
+
 // ─── Delegating proxy ────────────────────────────────────────────────────────
 // Wraps the active implementation so that cvStore.ts requires zero changes.
 // Call setDelegate(new ApiCVStorageService()) on login to switch to cloud sync.

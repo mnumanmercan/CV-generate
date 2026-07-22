@@ -24,11 +24,14 @@
   import CertificationsForm from '@/components/form/CertificationsForm.vue'
   import LanguagesForm from '@/components/form/LanguagesForm.vue'
   import CVPreview from '@/components/preview/CVPreview.vue'
+  import PreviewSkeleton from '@/components/preview/PreviewSkeleton.vue'
   import { VueDraggable } from 'vue-draggable-plus'
   import { type SectionKey, DRAGGABLE_SECTION_KEYS } from '@/types/cv.types'
   import { useI18n } from '@/composables/useI18n'
+  import { useUserStore } from '@/stores/userStore'
 
   const cvStore = useCVStore()
+  const userStore = useUserStore()
   const { t, t_obj } = useI18n()
 
   function sectionTitle(key: string): string {
@@ -58,6 +61,29 @@
 
   // Start auto-save watcher
   useAutoSave()
+
+  // The store is seeded synchronously from localStorage, so returning users
+  // (and guests with saved data) already have their CV on first paint. The one
+  // remaining empty→real swap is a logged-in user with no local copy (new
+  // device / cleared storage) whose cloud CV is still loading. Show a skeleton
+  // for exactly that window — an empty CV while a load is in flight OR before
+  // the boot session probe has resolved (data may still be inbound).
+  const isCvEmpty = computed(() => {
+    const d = cvData.value
+    return (
+      !d.personal.fullName?.trim() &&
+      !d.summary?.trim() &&
+      d.experience.length === 0 &&
+      d.education.length === 0 &&
+      d.skills.length === 0 &&
+      d.projects.length === 0 &&
+      d.certifications.length === 0 &&
+      d.languages.length === 0
+    )
+  })
+  const showPreviewSkeleton = computed(
+    () => isCvEmpty.value && (cvStore.loadingData || !userStore.isSessionRestored),
+  )
 
   onMounted(() => {
     document.title = 'CV Builder — Resumark'
@@ -383,12 +409,22 @@
                 }"
               >
                 <div
+                  class="relative"
                   :style="{
                     transform: `scale(${previewScale})`,
                     transformOrigin: 'top left',
                   }"
                 >
+                  <!--
+                    CVPreview stays mounted at all times so #cv-preview exists
+                    for useCVOverflow's observer. During a logged-in cold load
+                    (empty store, cloud CV still inbound) the skeleton simply
+                    overlays the empty template instead of replacing it, so the
+                    swap to real data is invisible and overflow tracking keeps
+                    working the moment the data lands.
+                  -->
                   <CVPreview />
+                  <PreviewSkeleton v-if="showPreviewSkeleton" class="absolute top-0 left-0" />
                 </div>
 
                 <div
