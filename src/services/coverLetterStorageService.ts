@@ -50,6 +50,26 @@ class LocalCoverLetterStorageService implements CoverLetterStorageService {
   }
 }
 
+/**
+ * Synchronous localStorage read for the store's initial value — the cover-letter
+ * counterpart of `readLocalCVSync`. Lets the preview render the last-saved letter
+ * on first paint instead of flashing the empty default while the async `load()`
+ * (localStorage, or a cloud round-trip when logged in) is still in flight.
+ *
+ * Returns the raw parsed blob (unmigrated — the caller runs
+ * `migrateCoverLetterData`) or null when storage is empty, unavailable, or
+ * corrupt. Never throws: a bad read must not brick app boot.
+ */
+export function readLocalCoverLetterSync(): CoverLetterData | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as CoverLetterData
+  } catch {
+    return null
+  }
+}
+
 // ─── Delegating proxy ────────────────────────────────────────────────────────
 // Same pattern as DelegatingStorageService — coverLetterStore.ts requires zero changes.
 export class DelegatingCoverLetterStorageService implements CoverLetterStorageService {
