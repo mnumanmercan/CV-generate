@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted } from 'vue'
+  import { computed, onMounted } from 'vue'
   import { storeToRefs } from 'pinia'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import BuilderToolSwitcher from '@/components/ui/BuilderToolSwitcher.vue'
@@ -10,8 +10,10 @@
   import RecipientForm from '@/components/cover-letter/forms/RecipientForm.vue'
   import ContentForm from '@/components/cover-letter/forms/ContentForm.vue'
   import CoverLetterPreview from '@/components/cover-letter/CoverLetterPreview.vue'
+  import CoverLetterSkeleton from '@/components/cover-letter/CoverLetterSkeleton.vue'
   import { useCoverLetterStore } from '@/stores/coverLetterStore'
   import { useCVStore } from '@/stores/cvStore'
+  import { useUserStore } from '@/stores/userStore'
   import { usePDFExport } from '@/composables/usePDFExport'
   import { usePreviewZoom } from '@/composables/usePreviewZoom'
   import { useI18n } from '@/composables/useI18n'
@@ -19,7 +21,29 @@
   const coverLetterStore = useCoverLetterStore()
   const { t } = useI18n()
   const cvStore = useCVStore()
+  const userStore = useUserStore()
   const { clData, saveIndicatorVisible: showSaved } = storeToRefs(coverLetterStore)
+
+  // Skeleton until the letter arrives — mirrors the Builder preview. The store
+  // is seeded synchronously from localStorage, so this only shows for a
+  // logged-in user with no local copy (new device / cleared storage) whose
+  // cloud letter is still loading, or before the boot session probe resolves.
+  const isClEmpty = computed(() => {
+    const d = clData.value
+    return !(
+      d.fullName?.trim() ||
+      d.email?.trim() ||
+      d.companyName?.trim() ||
+      d.recipientName?.trim() ||
+      d.opening?.trim() ||
+      d.bodyWhy?.trim() ||
+      d.bodyBring?.trim() ||
+      d.closing?.trim()
+    )
+  })
+  const showPreviewSkeleton = computed(
+    () => isClEmpty.value && (coverLetterStore.loadingData || !userStore.isSessionRestored),
+  )
   const { status: pdfStatus, errorMessage: pdfError, exportPDF } = usePDFExport()
   const { previewScale, previewScrollEl, ZOOM_MIN, ZOOM_MAX, zoomIn, zoomOut, fitToPanel } =
     usePreviewZoom()
@@ -136,6 +160,7 @@
               style="background: var(--paper2)"
             >
               <div
+                class="relative"
                 :style="{
                   transform: `scale(${previewScale})`,
                   transformOrigin: 'top left',
@@ -144,7 +169,14 @@
                   flexShrink: '0',
                 }"
               >
+                <!--
+                  CoverLetterPreview stays mounted so #cover-letter-preview is
+                  always present for the PDF export. During a logged-in cold
+                  load the skeleton simply overlays the empty letter instead of
+                  replacing it, so the swap to real data is invisible.
+                -->
                 <CoverLetterPreview :cl-data="clData" />
+                <CoverLetterSkeleton v-if="showPreviewSkeleton" class="absolute top-0 left-0" />
               </div>
             </div>
 

@@ -7,11 +7,32 @@ import {
   migrateCoverLetterData,
 } from '@/types/coverLetter.types'
 import type { PersonalInfo } from '@/types/cv.types'
-import { coverLetterStorageService } from '@/services/coverLetterStorageService'
+import {
+  coverLetterStorageService,
+  readLocalCoverLetterSync,
+} from '@/services/coverLetterStorageService'
+import { useUserStore } from '@/stores/userStore'
 import { AUTOSAVE_DEBOUNCE_MS, SAVE_INDICATOR_MS } from '@/constants/timing'
 
+/**
+ * Seed the store from localStorage synchronously so the preview renders the
+ * last-saved letter on first paint instead of flashing the empty default.
+ * A first-paint optimisation only — `loadFromStorage()` still reconciles
+ * against the active backend on mount. Migration is guarded so a corrupt/legacy
+ * blob can never break app boot.
+ */
+function seedInitialCoverLetterData(): CoverLetterData {
+  const stored = readLocalCoverLetterSync()
+  if (!stored) return createEmptyCoverLetterData()
+  try {
+    return migrateCoverLetterData(stored)
+  } catch {
+    return createEmptyCoverLetterData()
+  }
+}
+
 export const useCoverLetterStore = defineStore('coverLetter', () => {
-  const clData = ref<CoverLetterData>(createEmptyCoverLetterData())
+  const clData = ref<CoverLetterData>(seedInitialCoverLetterData())
   const loadingData = ref(false)
   const isSaving = ref(false)
   const saveIndicatorVisible = ref(false)
@@ -36,14 +57,25 @@ export const useCoverLetterStore = defineStore('coverLetter', () => {
   /* ── Load ───────────────────────────────────────────────────── */
   async function loadFromStorage(): Promise<void> {
     loadingData.value = true
-    const stored = await coverLetterStorageService.load()
-    if (stored) {
-      clData.value = migrateCoverLetterData(stored)
-    } else {
-      clData.value = createEmptyCoverLetterData()
+    try {
+      // Wait only until the active storage backend is known (decided by the
+      // refresh probe, before the slower GET /user/me) so a cold load reads
+      // from the correct backend (cloud once logged in) rather than racing the
+      // local→cloud delegate swap. This runs the cover-letter read in parallel
+      // with /user/me. No-op once resolved.
+      await useUserStore().ensureStorageBackendResolved()
+      const stored = await coverLetterStorageService.load()
+      if (stored) {
+        clData.value = migrateCoverLetterData(stored)
+      } else {
+        clData.value = createEmptyCoverLetterData()
+      }
+      await nextTick()
+    } finally {
+      // Always clear — a failed cloud load must not leave loadingData stuck true,
+      // which would silently disable auto-save for the rest of the session.
+      loadingData.value = false
     }
-    await nextTick()
-    loadingData.value = false
   }
 
   /* ── Save ───────────────────────────────────────────────────── */
