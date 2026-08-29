@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, onMounted } from 'vue'
+  import { computed } from 'vue'
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import AppFooter from '@/components/ui/AppFooter.vue'
@@ -112,16 +112,12 @@
     },
   })
 
-  /**
-   * Per-page document title only. The hero preview is a fixed "Maya" mockup and
-   * the mini-demo binds directly to the store (seeded synchronously from
-   * localStorage), so Home no longer triggers a CV load — that reconciliation
-   * happens on /builder. This removes the default→real preview swap on the
-   * homepage entirely.
+  /*
+   * Home deliberately triggers no CV load. The hero preview is a fixed "Maya"
+   * mockup and the mini-demo binds directly to the store (seeded synchronously
+   * from localStorage), so the default→real preview swap never happens here —
+   * that reconciliation belongs to /builder.
    */
-  onMounted(() => {
-    document.title = 'Resumark — Build a Professional Résumé Free'
-  })
 </script>
 
 <template>

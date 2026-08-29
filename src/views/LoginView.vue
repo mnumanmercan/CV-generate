@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
   import { apiClient } from '@/services/apiClient'
@@ -95,10 +95,6 @@
       isLoading.value = false
     }
   }
-
-  onMounted(() => {
-    document.title = 'Sign in — Resumark'
-  })
 </script>
 
 <template>

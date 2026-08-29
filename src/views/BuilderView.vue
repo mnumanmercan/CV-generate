@@ -86,7 +86,6 @@
   )
 
   onMounted(() => {
-    document.title = 'CV Builder — Resumark'
     // Guard with isLoaded (matching HomeView) so navigating back into /builder
     // doesn't re-issue the CV read(s) every visit — the store is already
     // hydrated and re-loading only burns the read rate-limit budget.

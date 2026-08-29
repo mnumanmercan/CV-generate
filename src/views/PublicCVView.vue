@@ -7,6 +7,7 @@
   import { usePDFExport, willOverflow } from '@/composables/usePDFExport'
   import { useI18n } from '@/composables/useI18n'
   import { A4_WIDTH_PX, A4_HEIGHT_PX } from '@/constants/layout'
+  import { setPageTitle } from '@/composables/useDocumentTitle'
   import { fetchPublicCV } from '@/services/cvShareService'
   import { ApiError } from '@/services/apiClient'
   import type { CVData } from '@/types/cv.types'
@@ -70,6 +71,11 @@
       const data = await fetchPublicCV(slug)
       cv.value = data.content
       state.value = 'ready'
+      // Name the tab after whose CV this is — a visitor opening several shared
+      // links otherwise gets a row of identical "Shared CV" tabs. Cleared for
+      // us on navigation, so it can't outlive this page.
+      const owner = data.content.personal.fullName.trim()
+      if (owner) setPageTitle(owner)
       await nextTick()
       fit()
       if (typeof ResizeObserver !== 'undefined' && rootEl.value) {

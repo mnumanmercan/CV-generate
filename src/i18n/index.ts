@@ -14,6 +14,24 @@ export interface Step {
 }
 
 export interface Translations {
+  /**
+   * Browser-tab titles. These are page labels, not full titles — the brand is
+   * appended by formatPageTitle(). Keep them as short as the matching nav
+   * item, and worded the same, so a tab reads like the link that opened it.
+   */
+  pageTitle: {
+    /** Home is brand-first, so this is the descriptor that follows it. */
+    home: string
+    builder: string
+    pricing: string
+    login: string
+    register: string
+    dashboard: string
+    coverLetter: string
+    teams: string
+    /** Fallback until a shared CV loads and we can use the person's name. */
+    sharedCV: string
+  }
   nav: {
     builder: string
     pricing: string
