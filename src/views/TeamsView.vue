@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, onMounted } from 'vue'
+  import { computed } from 'vue'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import AppFooter from '@/components/ui/AppFooter.vue'
   import { useI18n } from '@/composables/useI18n'
@@ -8,10 +8,6 @@
   const teamsHeading = computed(() =>
     t_obj<{ prefix: string; accent: string; suffix: string }>('teams.heading'),
   )
-
-  onMounted(() => {
-    document.title = 'Teams — Resumark'
-  })
 </script>
 
 <template>

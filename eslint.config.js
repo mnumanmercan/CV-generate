@@ -98,6 +98,14 @@ export default [
   },
 
   {
+    // Build-time tooling — runs in Node, never bundled.
+    files: ['scripts/**/*.{js,mjs,ts}'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.es2022 },
+    },
+  },
+
+  {
     files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'src/**/__tests__/**'],
     languageOptions: {
       globals: { ...globals.node, ...globals.jest, vi: 'readonly' },

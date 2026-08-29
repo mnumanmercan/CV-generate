@@ -1,9 +1,10 @@
 <script setup lang="ts">
-  import { ref, computed, onMounted, nextTick } from 'vue'
+  import { ref, computed, nextTick } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
   import { useUserStore } from '@/stores/userStore'
   import { apiClient } from '@/services/apiClient'
   import { useI18n } from '@/composables/useI18n'
+  import BrandLogo from '@/components/ui/BrandLogo.vue'
 
   const router = useRouter()
   const userStore = useUserStore()
@@ -121,24 +122,13 @@
       isLoading.value = false
     }
   }
-
-  onMounted(() => {
-    document.title = 'Create account — Resumark'
-  })
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col" style="background: var(--paper)">
     <!-- ── Header ─────────────────────────────────────────────── -->
     <header class="flex items-center justify-between px-6 py-5 border-b border-overlay/8">
-      <RouterLink to="/" class="flex items-center gap-2.5 group" aria-label="Resumark home">
-        <span
-          class="w-2 h-2 rounded-full transition-transform duration-200 group-hover:scale-110"
-          :style="{ background: 'var(--accent)' }"
-          aria-hidden="true"
-        />
-        <span class="font-display text-[24px] leading-none text-ink">Resumark</span>
-      </RouterLink>
+      <BrandLogo size="lg" />
       <p class="text-[13.5px] text-muted">
         {{ t('auth.register.alreadyHaveAccount') }}
         <RouterLink

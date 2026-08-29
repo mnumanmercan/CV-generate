@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed } from 'vue'
   import { RouterLink } from 'vue-router'
   import AppHeader from '@/components/ui/AppHeader.vue'
   import AppFooter from '@/components/ui/AppFooter.vue'
@@ -8,11 +8,6 @@
   import { useScrollReveal } from '@/composables/useScrollReveal'
   import { PLANS, type SubscriptionTier } from '@/composables/useSubscription'
   import { useI18n } from '@/composables/useI18n'
-
-  onMounted(() => {
-    document.title = 'Pricing — Resumark'
-  })
-
   const { t, t_obj } = useI18n()
   const { vReveal } = useScrollReveal()
   const userStore = useUserStore()

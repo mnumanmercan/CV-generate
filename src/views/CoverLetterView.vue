@@ -52,9 +52,8 @@
   // noUnusedLocals with an explicit read.
   void previewScrollEl
 
-  /* ── Per-page title + lazy data load ─────────────────────────────────── */
+  /* ── Lazy data load ──────────────────────────────────────────────────── */
   onMounted(async () => {
-    document.title = 'Cover Letter — Resumark'
     // Load both stores in parallel — user may navigate directly to /cover-letter
     // without visiting /builder first, so cvStore may not have loaded yet.
     await Promise.all([coverLetterStore.loadFromStorage(), cvStore.loadFromStorage()])

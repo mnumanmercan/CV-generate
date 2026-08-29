@@ -1,6 +1,17 @@
 import type { Translations } from './index'
 
 const tr: Translations = {
+  pageTitle: {
+    home: 'ATS Uyumlu CV Oluşturucu',
+    builder: 'Oluşturucu',
+    pricing: 'Fiyatlandırma',
+    login: 'Giriş Yap',
+    register: 'Kayıt Ol',
+    dashboard: 'Panelim',
+    coverLetter: 'Ön Yazı',
+    teams: 'Ekipler',
+    sharedCV: 'Paylaşılan CV',
+  },
   nav: {
     builder: 'Oluşturucu',
     pricing: 'Fiyatlandırma',

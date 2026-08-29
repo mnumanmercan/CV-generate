@@ -1,6 +1,17 @@
 import type { Translations } from './index'
 
 const en: Translations = {
+  pageTitle: {
+    home: 'ATS-Friendly CV Builder',
+    builder: 'Builder',
+    pricing: 'Pricing',
+    login: 'Log in',
+    register: 'Register',
+    dashboard: 'Dashboard',
+    coverLetter: 'Cover Letter',
+    teams: 'Teams',
+    sharedCV: 'Shared CV',
+  },
   nav: {
     builder: 'Builder',
     pricing: 'Pricing',

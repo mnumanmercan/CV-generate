@@ -37,7 +37,6 @@
   const shareUrl = computed(() => (shareSlug.value ? buildShareUrl(shareSlug.value) : ''))
 
   onMounted(async () => {
-    document.title = 'Dashboard — Resumark'
     // Hydrate the store from the active backend so the cards and the preview
     // reflect the user's real, current CV (a direct refresh into /dashboard
     // would otherwise show empty in-memory defaults).

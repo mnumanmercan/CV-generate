@@ -1,60 +1,72 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
 
+declare module 'vue-router' {
+  interface RouteMeta {
+    /** i18n key for the tab title's page label — see useDocumentTitle. */
+    titleKey?: string
+    /** Put the brand before the page label. Home only. */
+    brandFirst?: boolean
+    requiresAuth?: boolean
+    requiresPremium?: boolean
+    guestOnly?: boolean
+  }
+}
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
     component: () => import('@/views/HomeView.vue'),
-    meta: { title: 'Resumark — ATS-Friendly Resume Builder' },
+    meta: { titleKey: 'pageTitle.home', brandFirst: true },
   },
   {
     path: '/builder',
     name: 'builder',
     component: () => import('@/views/BuilderView.vue'),
-    meta: { title: 'CV Builder — Resumark' },
+    meta: { titleKey: 'pageTitle.builder' },
   },
   {
     path: '/pricing',
     name: 'pricing',
     component: () => import('@/views/PricingView.vue'),
-    meta: { title: 'Pricing — Resumark' },
+    meta: { titleKey: 'pageTitle.pricing' },
   },
   {
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
-    meta: { title: 'Sign In — Resumark', guestOnly: true },
+    meta: { titleKey: 'pageTitle.login', guestOnly: true },
   },
   {
     path: '/register',
     name: 'register',
     component: () => import('@/views/RegisterView.vue'),
-    meta: { title: 'Create Account — Resumark', guestOnly: true },
+    meta: { titleKey: 'pageTitle.register', guestOnly: true },
   },
   {
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
-    meta: { title: 'Dashboard — Resumark', requiresAuth: true },
+    meta: { titleKey: 'pageTitle.dashboard', requiresAuth: true },
   },
   {
     path: '/cover-letter',
     name: 'cover-letter',
     component: () => import('@/views/CoverLetterView.vue'),
-    meta: { title: 'Cover Letter — Resumark', requiresAuth: true },
+    meta: { titleKey: 'pageTitle.coverLetter', requiresAuth: true },
   },
   {
     path: '/teams',
     name: 'teams',
     component: () => import('@/views/TeamsView.vue'),
-    meta: { title: 'Teams — Resumark' },
+    meta: { titleKey: 'pageTitle.teams' },
   },
   {
     path: '/p/:slug',
     name: 'public-cv',
     component: () => import('@/views/PublicCVView.vue'),
-    meta: { title: 'Shared CV — Resumark' },
+    meta: { titleKey: 'pageTitle.sharedCV' },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -110,10 +122,6 @@ router.beforeEach(async (to) => {
 
   if (to.meta.requiresPremium && !userStore.isPremium) {
     return { name: 'pricing' }
-  }
-
-  if (to.meta.title && typeof to.meta.title === 'string') {
-    document.title = to.meta.title
   }
 
   return true
