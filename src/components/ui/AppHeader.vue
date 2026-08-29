@@ -7,6 +7,7 @@
   import { useLocaleStore } from '@/stores/localeStore'
   import { useI18n } from '@/composables/useI18n'
   import AppDrawer from '@/components/ui/AppDrawer.vue'
+  import BrandLogo from '@/components/ui/BrandLogo.vue'
 
   const route = useRoute()
   const router = useRouter()
@@ -51,22 +52,7 @@
     "
   >
     <!-- ── Logo ──────────────────────────────────────────────── -->
-    <RouterLink
-      to="/"
-      class="flex items-center gap-2.5 group w-fit"
-      :aria-label="t('aria.resumeHome')"
-    >
-      <span
-        class="w-2 h-2 rounded-full shrink-0 transition-transform duration-300 group-hover:scale-125"
-        :style="{ background: 'var(--accent)' }"
-        aria-hidden="true"
-      />
-      <span
-        class="font-display text-[20px] md:text-[26px] leading-none tracking-editorial text-ink"
-      >
-        Resumark
-      </span>
-    </RouterLink>
+    <BrandLogo size="md" />
 
     <!-- ── Nav (centered via grid, desktop only) ──────────────── -->
     <nav class="hidden md:flex items-center gap-5" :aria-label="t('aria.mainNav')">

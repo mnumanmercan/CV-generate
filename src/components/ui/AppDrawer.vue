@@ -6,6 +6,7 @@
   import { useCoverLetterStore } from '@/stores/coverLetterStore'
   import { useLocaleStore } from '@/stores/localeStore'
   import { useI18n } from '@/composables/useI18n'
+  import BrandLogo from '@/components/ui/BrandLogo.vue'
 
   const props = defineProps<{ visible: boolean }>()
   const emit = defineEmits<{ close: [] }>()
@@ -92,16 +93,7 @@
       >
         <!-- Drawer header: logo + close -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-overlay/8">
-          <div class="flex items-center gap-2">
-            <span
-              class="w-2 h-2 rounded-full"
-              :style="{ background: 'var(--accent)' }"
-              aria-hidden="true"
-            />
-            <span class="font-display text-[22px] leading-none tracking-editorial text-ink"
-              >Resumark</span
-            >
-          </div>
+          <BrandLogo size="lg" :animated="false" @click="emit('close')" />
           <button
             type="button"
             class="w-10 h-10 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-overlay/5 transition-colors"

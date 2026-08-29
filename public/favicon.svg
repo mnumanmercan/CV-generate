@@ -1,26 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <defs>
-    <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#06B6D4"/>
-      <stop offset="50%" stop-color="#0891B2"/>
-      <stop offset="100%" stop-color="#0D9488"/>
-    </linearGradient>
-    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="rgba(255,255,255,0.20)"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-    </linearGradient>
-  </defs>
-  <!-- Gem body (brilliant-cut pentagon) -->
-  <path d="M8 4 H24 L30 14 L16 30 L2 14 Z" fill="url(#gem)"/>
-  <!-- Sheen on crown (top half) -->
-  <path d="M8 4 H24 L30 14 H2 Z" fill="url(#sheen)"/>
-  <!-- Crown facet lines -->
-  <path d="M8 4 L16 14" stroke="rgba(255,255,255,0.18)" stroke-width="0.75" fill="none"/>
-  <path d="M24 4 L16 14" stroke="rgba(255,255,255,0.18)" stroke-width="0.75" fill="none"/>
-  <!-- Girdle line -->
-  <line x1="2" y1="14" x2="30" y2="14" stroke="rgba(255,255,255,0.12)" stroke-width="0.5"/>
-  <!-- Pavilion center line -->
-  <line x1="16" y1="14" x2="16" y2="30" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
-  <!-- Sparkle -->
-  <circle cx="21" cy="8" r="1.8" fill="white" opacity="0.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="#B8532A">
+  <style>
+    @media (prefers-color-scheme: dark) { .m { fill: #D97E4F; } }
+  </style>
+  <circle class="m" cx="6" cy="7" r="5"/>
+  <rect class="m" x="14.5" y="4" width="15.5" height="6" rx="3" opacity="0.9"/>
+  <rect class="m" x="1" y="17.5" width="30" height="4.6" rx="2.3" opacity="0.6"/>
+  <rect class="m" x="1" y="25.2" width="20" height="4.6" rx="2.3" opacity="0.6"/>
 </svg>

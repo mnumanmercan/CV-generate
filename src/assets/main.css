@@ -14,74 +14,74 @@
 /* ─── Light theme (default) ──────────────────────────────────────────── */
 :root {
   /* Paper + card + ink */
-  --paper:       #F6F2EA;  /* page background (warm cream)               */
-  --paper-2:     #EFEADF;  /* subtle section tint                        */
-  --card:        #FCF8F0;  /* surface / card bg                          */
-  --ink:         #12110F;  /* near-black primary text                    */
-  --ink-2:       #2A2824;  /* secondary headings                         */
-  --muted:       #6B645A;  /* body copy / supporting text                */
-  --rule:        rgba(0, 0, 0, 0.10);   /* hairline dividers + borders   */
+  --paper: #f6f2ea; /* page background (warm cream)               */
+  --paper-2: #efeadf; /* subtle section tint                        */
+  --card: #fcf8f0; /* surface / card bg                          */
+  --ink: #12110f; /* near-black primary text                    */
+  --ink-2: #2a2824; /* secondary headings                         */
+  --muted: #6b645a; /* body copy / supporting text                */
+  --rule: rgba(0, 0, 0, 0.1); /* hairline dividers + borders   */
   --rule-strong: rgba(0, 0, 0, 0.22);
 
   /* Single accent: sienna */
-  --accent:       #B8532A;
-  --accent-hover: #A2461F;
-  --accent-soft:  #F3D9C4;  /* tint wash (pricing column, pill bg, etc.) */
+  --accent: #b8532a;
+  --accent-hover: #a2461f;
+  --accent-soft: #f3d9c4; /* tint wash (pricing column, pill bg, etc.) */
 
   /* Legacy aliases — existing components reference these. Point them at
      the new semantic tokens so progressive migration just works. */
-  --bg-shell:        var(--paper);
-  --bg-surface:      var(--card);
-  --text-primary:    var(--ink);
-  --text-secondary:  var(--muted);
-  --header-bg:       rgba(246, 242, 234, 0.88);
-  --preview-bg:      var(--paper-2);
-  --mockup-bg:       var(--card);
-  --mockup-chrome:   var(--paper-2);
-  --input-bg:        var(--card);
-  --input-border:    var(--rule);
-  --scrollbar-thumb: #C9C0AD;
-  --dot-color:       rgba(18, 17, 15, 0.07);
-  --drag-handle-bg:  rgba(0, 0, 0, 0.035);
-  --drag-center-line:rgba(0, 0, 0, 0.10);
-  --overlay-rgb:     18 17 15;          /* ink-tinted overlays in light */
+  --bg-shell: var(--paper);
+  --bg-surface: var(--card);
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted);
+  --header-bg: rgba(246, 242, 234, 0.88);
+  --preview-bg: var(--paper-2);
+  --mockup-bg: var(--card);
+  --mockup-chrome: var(--paper-2);
+  --input-bg: var(--card);
+  --input-border: var(--rule);
+  --scrollbar-thumb: #c9c0ad;
+  --dot-color: rgba(18, 17, 15, 0.07);
+  --drag-handle-bg: rgba(0, 0, 0, 0.035);
+  --drag-center-line: rgba(0, 0, 0, 0.1);
+  --overlay-rgb: 18 17 15; /* ink-tinted overlays in light */
 
   /* CV document + A4 dimensions (always paper-white) */
-  --cv-bg:      #FFFFFF;
-  --a4-width:   794px;
-  --a4-height:  1122px;
+  --cv-bg: #ffffff;
+  --a4-width: 794px;
+  --a4-height: 1122px;
 }
 
 /* ─── Dark theme ─────────────────────────────────────────────────────── */
 .dark {
-  --paper:       #12110F;
-  --paper-2:     #1A1917;
-  --card:        #1C1B17;
-  --ink:         #F5EFE2;
-  --ink-2:       #DCD6C7;
-  --muted:       #A69F92;
-  --rule:        rgba(255, 255, 255, 0.10);
+  --paper: #12110f;
+  --paper-2: #1a1917;
+  --card: #1c1b17;
+  --ink: #f5efe2;
+  --ink-2: #dcd6c7;
+  --muted: #a69f92;
+  --rule: rgba(255, 255, 255, 0.1);
   --rule-strong: rgba(255, 255, 255, 0.22);
 
-  --accent:       #D97E4F;              /* warmer sienna — better contrast */
-  --accent-hover: #E19066;
-  --accent-soft:  rgba(217, 126, 79, 0.18);
+  --accent: #d97e4f; /* warmer sienna — better contrast */
+  --accent-hover: #e19066;
+  --accent-soft: rgba(217, 126, 79, 0.18);
 
-  --bg-shell:        var(--paper);
-  --bg-surface:      var(--card);
-  --text-primary:    var(--ink);
-  --text-secondary:  var(--muted);
-  --header-bg:       rgba(18, 17, 15, 0.88);
-  --preview-bg:      var(--paper-2);
-  --mockup-bg:       var(--card);
-  --mockup-chrome:   var(--paper-2);
-  --input-bg:        var(--card);
-  --input-border:    var(--rule);
-  --scrollbar-thumb: #3A3632;
-  --dot-color:       rgba(245, 239, 226, 0.06);
-  --drag-handle-bg:  rgba(255, 255, 255, 0.03);
-  --drag-center-line:rgba(255, 255, 255, 0.09);
-  --overlay-rgb:     245 239 226;
+  --bg-shell: var(--paper);
+  --bg-surface: var(--card);
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted);
+  --header-bg: rgba(18, 17, 15, 0.88);
+  --preview-bg: var(--paper-2);
+  --mockup-bg: var(--card);
+  --mockup-chrome: var(--paper-2);
+  --input-bg: var(--card);
+  --input-border: var(--rule);
+  --scrollbar-thumb: #3a3632;
+  --dot-color: rgba(245, 239, 226, 0.06);
+  --drag-handle-bg: rgba(255, 255, 255, 0.03);
+  --drag-center-line: rgba(255, 255, 255, 0.09);
+  --overlay-rgb: 245 239 226;
 }
 
 /* ─── Theme transition (only active during toggle) ───────────────────── */
@@ -91,15 +91,19 @@ html.theme-transitioning *::before,
 html.theme-transitioning *::after {
   transition:
     background-color 0.3s ease,
-    border-color     0.3s ease,
-    color            0.3s ease,
-    box-shadow       0.3s ease,
-    opacity          0.3s ease !important;
+    border-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease,
+    opacity 0.3s ease !important;
   transition-delay: 0s !important;
 }
 
 /* ─── Base reset ─────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 html {
   /* Base rem unit. Slightly reduced from 16px so the rem-based UI
@@ -121,13 +125,25 @@ body {
   min-height: 100vh;
 }
 
-#app { min-height: 100vh; }
+#app {
+  min-height: 100vh;
+}
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────── */
-::-webkit-scrollbar         { width: 6px; height: 6px; }
-::-webkit-scrollbar-track   { background: var(--paper); }
-::-webkit-scrollbar-thumb   { background: var(--scrollbar-thumb); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--paper);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
 
 /* ─── Focus ring ─────────────────────────────────────────────────────── */
 :focus-visible {
@@ -150,7 +166,9 @@ select {
   border-color: var(--input-border) !important;
   color: var(--ink) !important;
   border-radius: 8px !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease !important;
 }
 
 [type='text']:focus,
@@ -219,7 +237,9 @@ select:focus {
   border-radius: 10px;
   font-weight: 500;
   letter-spacing: -0.005em;
-  transition: background 0.18s ease, transform 0.18s ease;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 .btn-primary:hover {
   background: var(--ink-2);
@@ -243,10 +263,12 @@ select:focus {
   gap: 0.5rem;
   padding: 0.65rem 1.1rem;
   background: var(--accent);
-  color: #FFFFFF;
+  color: #ffffff;
   border-radius: 10px;
   font-weight: 500;
-  transition: background 0.18s ease, transform 0.18s ease;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 .btn-accent:hover {
   background: var(--accent-hover);
@@ -288,7 +310,10 @@ select:focus {
   box-shadow: 0 0 0 2px var(--accent);
   border-radius: 12px;
   /* Transitions box-shadow so it fades out smoothly on drop */
-  transition: opacity 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
   will-change: transform, opacity;
 }
 
@@ -309,10 +334,18 @@ select:focus {
 }
 
 @keyframes pulseBg {
-  0%   { background-color: transparent; }
-  30%  { background-color: rgba(184, 83, 42, 0.14); }
-  30%  { background-color: color-mix(in oklab, var(--accent) 14%, transparent); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: transparent;
+  }
+  30% {
+    background-color: rgba(184, 83, 42, 0.14);
+  }
+  30% {
+    background-color: color-mix(in oklab, var(--accent) 14%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 /* ─── Stagger reveal (hero + builder) ────────────────────────────────── */
@@ -320,18 +353,40 @@ select:focus {
   opacity: 0;
   animation: slideUp 0.45s ease forwards;
 }
-.stagger-item:nth-child(1)  { animation-delay:   0ms; }
-.stagger-item:nth-child(2)  { animation-delay:  55ms; }
-.stagger-item:nth-child(3)  { animation-delay: 110ms; }
-.stagger-item:nth-child(4)  { animation-delay: 165ms; }
-.stagger-item:nth-child(5)  { animation-delay: 220ms; }
-.stagger-item:nth-child(6)  { animation-delay: 275ms; }
-.stagger-item:nth-child(7)  { animation-delay: 330ms; }
-.stagger-item:nth-child(8)  { animation-delay: 385ms; }
+.stagger-item:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-item:nth-child(2) {
+  animation-delay: 55ms;
+}
+.stagger-item:nth-child(3) {
+  animation-delay: 110ms;
+}
+.stagger-item:nth-child(4) {
+  animation-delay: 165ms;
+}
+.stagger-item:nth-child(5) {
+  animation-delay: 220ms;
+}
+.stagger-item:nth-child(6) {
+  animation-delay: 275ms;
+}
+.stagger-item:nth-child(7) {
+  animation-delay: 330ms;
+}
+.stagger-item:nth-child(8) {
+  animation-delay: 385ms;
+}
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Scroll-triggered reveal (IntersectionObserver gates .section-visible) ─ */
@@ -343,14 +398,30 @@ select:focus {
   animation: slideUp 0.5s ease forwards;
 }
 
-.section-visible .reveal-item:nth-child(1)  { animation-delay:   0ms; }
-.section-visible .reveal-item:nth-child(2)  { animation-delay:  70ms; }
-.section-visible .reveal-item:nth-child(3)  { animation-delay: 140ms; }
-.section-visible .reveal-item:nth-child(4)  { animation-delay: 210ms; }
-.section-visible .reveal-item:nth-child(5)  { animation-delay: 280ms; }
-.section-visible .reveal-item:nth-child(6)  { animation-delay: 350ms; }
-.section-visible .reveal-item:nth-child(7)  { animation-delay: 420ms; }
-.section-visible .reveal-item:nth-child(8)  { animation-delay: 490ms; }
+.section-visible .reveal-item:nth-child(1) {
+  animation-delay: 0ms;
+}
+.section-visible .reveal-item:nth-child(2) {
+  animation-delay: 70ms;
+}
+.section-visible .reveal-item:nth-child(3) {
+  animation-delay: 140ms;
+}
+.section-visible .reveal-item:nth-child(4) {
+  animation-delay: 210ms;
+}
+.section-visible .reveal-item:nth-child(5) {
+  animation-delay: 280ms;
+}
+.section-visible .reveal-item:nth-child(6) {
+  animation-delay: 350ms;
+}
+.section-visible .reveal-item:nth-child(7) {
+  animation-delay: 420ms;
+}
+.section-visible .reveal-item:nth-child(8) {
+  animation-delay: 490ms;
+}
 
 /* ─── AI-assist chip (FormSection header) ────────────────────────────── */
 /* Pill matches the saved-indicator grammar (dot + mono micro-label); the
@@ -399,13 +470,27 @@ select:focus {
 }
 
 @keyframes aiBreathe {
-  0%, 100% { transform: scale(0.85); opacity: 0.75; }
-  40%      { transform: scale(1.1);  opacity: 1;    }
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.75;
+  }
+  40% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 @keyframes aiHalo {
-  0%        { transform: scale(1);   opacity: 0.55; }
-  55%, 100% { transform: scale(3.4); opacity: 0;    }
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  55%,
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
+  }
 }
 
 /* Hover tooltip for the AI chip — translucent paper + blur so the content
@@ -424,7 +509,7 @@ select:focus {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.1),
     0 2px 6px rgba(0, 0, 0, 0.06);
   font-family: 'DM Sans', ui-sans-serif, sans-serif;
   font-size: 12px;
@@ -433,17 +518,152 @@ select:focus {
   pointer-events: none;
 }
 
+/* ─── Brand mark ─────────────────────────────────────────────────────── */
+/* The wordmark's sienna dot, promoted into a résumé: at rest only the dot is
+   painted — pixel-identical to the bare dot this replaced — and on hover the
+   heading rule and body rows write themselves in while the wordmark slides
+   right to make room. Geometry and its rationale live in
+   src/components/ui/brandMark.geometry.ts.
+
+   Transitions, not keyframes: pulling the cursor away mid-reveal has to rewind
+   cleanly, which a keyframe animation can't do. The enter timing (with its
+   stagger) lives in the revealed rules; the base rules are the faster,
+   undelayed exit. */
+
+.brand-mark {
+  --bm-rule-opacity: 0.9;
+  --bm-body-opacity: 0.38;
+  color: var(--accent);
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* Dark paper is nearly black, so the body rows go muddy at the light-theme
+   opacity — lift them enough to stay legible without flattening the hierarchy
+   against the heading. */
+.dark .brand-mark {
+  --bm-body-opacity: 0.52;
+}
+
+.brand-mark .bm-rule {
+  opacity: var(--bm-rule-opacity);
+}
+.brand-mark .bm-line {
+  opacity: var(--bm-body-opacity);
+}
+
+/* Rows unroll from their own left edge. */
+.brand-mark--animated .bm-rule,
+.brand-mark--animated .bm-line {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+}
+
+/* Resting state: dot dropped to the wordmark's centre line, rows withdrawn.
+   The 10px matches MARK_DOT_REST_OFFSET (viewBox height / 2 − dot cy). */
+.brand-mark--animated .bm-dot {
+  transform: translateY(10px);
+}
+.brand-mark--animated .bm-rule,
+.brand-mark--animated .bm-line {
+  transform: scaleX(0);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .brand-mark--animated .bm-dot {
+    transition: transform 150ms cubic-bezier(0.2, 0.6, 0.4, 1);
+  }
+  .brand-mark--animated .bm-rule,
+  .brand-mark--animated .bm-line {
+    transition:
+      transform 150ms cubic-bezier(0.2, 0.6, 0.4, 1),
+      opacity 120ms linear;
+  }
+  .brand-logo .brand-wordmark {
+    transition: transform 180ms cubic-bezier(0.2, 0.6, 0.4, 1);
+  }
+}
+
+/* Revealed state — hover/focus on pointer devices, plus the one-shot intro
+   BrandLogo plays on touch, where hover can never be discovered. */
+:is(.brand-logo:hover, .brand-logo:focus-visible, .brand-logo--intro)
+  .brand-mark--animated
+  .bm-dot {
+  transform: translateY(0);
+  transition-duration: 200ms;
+}
+:is(.brand-logo:hover, .brand-logo:focus-visible, .brand-logo--intro)
+  .brand-mark--animated
+  .bm-rule {
+  transform: scaleX(1);
+  opacity: var(--bm-rule-opacity);
+  transition-duration: 190ms, 150ms;
+  transition-delay: 70ms;
+}
+:is(.brand-logo:hover, .brand-logo:focus-visible, .brand-logo--intro)
+  .brand-mark--animated
+  .bm-line {
+  transform: scaleX(1);
+  opacity: var(--bm-body-opacity);
+  transition-duration: 190ms, 150ms;
+}
+:is(.brand-logo:hover, .brand-logo:focus-visible, .brand-logo--intro) .bm-line--1 {
+  transition-delay: 120ms;
+}
+:is(.brand-logo:hover, .brand-logo:focus-visible, .brand-logo--intro) .bm-line--2 {
+  transition-delay: 165ms;
+}
+:is(.brand-logo:hover, .brand-logo:focus-visible, .brand-logo--intro) .bm-line--3 {
+  transition-delay: 210ms;
+}
+
+/* Wordmark steps aside. Transform only — a sticky, blurred header can't afford
+   a reflow here. --bm-shift is set per size by BrandLogo. */
+:is(.brand-logo:hover, .brand-logo:focus-visible, .brand-logo--intro) .brand-wordmark {
+  transform: translateX(var(--bm-shift, 0px));
+  transition-duration: 260ms;
+}
+
+/* Reduced motion: no reveal at all — draw the mark whole and still, and give
+   the rows real layout space instead of overhanging into the wordmark.
+   Deliberately not folded into the blanket kill-switch below: that block
+   forces `transform: none`, which would strand the dot mid-lockup. */
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark--animated {
+    margin-right: 0 !important;
+  }
+  .brand-mark--animated .bm-dot {
+    transform: none;
+  }
+  .brand-mark--animated .bm-rule {
+    transform: none;
+    opacity: var(--bm-rule-opacity);
+  }
+  .brand-mark--animated .bm-line {
+    transform: none;
+    opacity: var(--bm-body-opacity);
+  }
+  .brand-logo .brand-wordmark {
+    transform: none !important;
+  }
+}
+
 /* ─── Hero Mini Demo float ───────────────────────────────────────────── */
 
 @keyframes floatCard {
-  from { transform: translateY(0px); }
-  to   { transform: translateY(-7px); }
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-7px);
+  }
 }
 
 .demo-float {
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.10),
-    0 2px  6px rgba(0, 0, 0, 0.06);
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 @media (prefers-reduced-motion: no-preference) {
