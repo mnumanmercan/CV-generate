@@ -1,6 +1,10 @@
+// How many CVs (variants) each plan may store. PRO is a finite cap so the
+// server actually enforces it — `cvService.create` skips its `count` query
+// whenever `isFinite(limit)` is false, so Infinity meant "no enforcement".
+// Keep in step with CV_VARIANT_LIMIT in constants/variants.ts.
 export const CV_LIMIT: Record<string, number> = {
   FREE: 1,
-  PRO: Infinity,
+  PRO: 5,
   ENTERPRISE: Infinity,
 }
 

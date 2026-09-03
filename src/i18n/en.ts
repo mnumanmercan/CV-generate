@@ -177,13 +177,36 @@ const en: Translations = {
       quota: 'Not saved — browser storage is full',
       unavailable: 'Not saved — browser storage is disabled',
       network: 'Not saved — connection problem, retrying',
+      planLimit: 'Not saved — you have reached your plan’s CV limit',
       toast: 'Your changes are not being saved.',
     },
     clearTitle: 'Clear all CV data?',
     clearMessage:
       'This will permanently remove all your CV information. This action cannot be undone.',
     clearConfirm: 'Clear data',
+    clearVariantMessage:
+      'This clears the summary, experience, skills and projects of this version only. Your name, contact details, education, certifications and languages stay — they are shared with your other versions.',
     proRequired: '{name} (Pro plan required)',
+    variants: {
+      eyebrow: 'Versions',
+      groupLabel: 'CV versions',
+      addLabel: 'New version',
+      addTitle: 'Name this version',
+      addPlaceholder: 'e.g. Acme — Backend',
+      addConfirm: 'Create',
+      addCancel: 'Cancel',
+      defaultName: 'Version {n}',
+      renameLabel: 'Rename version',
+      deleteLabel: 'Delete version',
+      deleteTitle: 'Delete “{name}”?',
+      deleteMessage:
+        'This version and everything tailored in it is permanently removed. Your other versions are not affected.',
+      deleteConfirm: 'Delete version',
+      syncedBadge: 'Shared',
+      syncedHint: 'Edit once — this section stays the same in every version.',
+      limitReached: 'You can keep up to {n} versions.',
+      proHint: 'Tailor a separate CV for each job posting with Pro.',
+    },
   },
 
   dashboard: {

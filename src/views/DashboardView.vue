@@ -5,6 +5,8 @@
   import AppHeader from '@/components/ui/AppHeader.vue'
   import UpgradePrompt from '@/components/ui/UpgradePrompt.vue'
   import CVPreviewModal from '@/components/preview/CVPreviewModal.vue'
+  import ConfirmModal from '@/components/ui/ConfirmModal.vue'
+  import { CV_VARIANT_LIMIT } from '@resumark/shared'
   import { useUserStore } from '@/stores/userStore'
   import { useCVStore } from '@/stores/cvStore'
   import { useI18n } from '@/composables/useI18n'
@@ -22,10 +24,55 @@
 
   const userStore = useUserStore()
   const cvStore = useCVStore()
-  const { cvData } = storeToRefs(cvStore)
+  const { cvData, variants, activeVariantId } = storeToRefs(cvStore)
 
   // Read-only CV preview popup.
   const showPreview = ref(false)
+
+  /* ── CV versions (Pro) ────────────────────────────────────── */
+
+  /**
+   * Open a version in the read-only preview. CVPreviewModal renders the
+   * store's active document, so switching first is what makes the modal show
+   * the row the user clicked — and it leaves them on that version, which is
+   * the one "Edit" then opens.
+   */
+  async function viewVariant(id: string): Promise<void> {
+    if (id !== activeVariantId.value) {
+      await cvStore.switchVariant(id)
+    }
+    showPreview.value = true
+  }
+
+  /** Which row's share panel is expanded. Null = none. */
+  const sharePanelFor = ref<string | null>(null)
+
+  const pendingDeleteId = ref<string | null>(null)
+  const pendingDeleteName = computed(
+    () => variants.value.find((v) => v.id === pendingDeleteId.value)?.title ?? '',
+  )
+
+  async function confirmDeleteVariant(): Promise<void> {
+    const id = pendingDeleteId.value
+    pendingDeleteId.value = null
+    if (!id) return
+    if (sharePanelFor.value === id) sharePanelFor.value = null
+    try {
+      await cvStore.deleteVariant(id)
+    } catch {
+      /* non-fatal */
+    }
+  }
+
+  function relativeTime(iso: string | undefined): string {
+    if (!iso) return t('dashboard.lastSavedNever')
+    const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
+    if (mins < 1) return t('dashboard.lastSavedJustNow')
+    if (mins < 60) return t('dashboard.lastSavedMins', { n: String(mins) })
+    const hrs = Math.floor(mins / 60)
+    if (hrs < 24) return t('dashboard.lastSavedHours', { n: String(hrs) })
+    return t('dashboard.lastSavedDays', { n: String(Math.floor(hrs / 24)) })
+  }
 
   /* ── Public share link (Pro) ──────────────────────────────── */
   const shareCvId = ref<string | null>(null)
@@ -35,6 +82,30 @@
   const justCopied = ref(false)
 
   const shareUrl = computed(() => (shareSlug.value ? buildShareUrl(shareSlug.value) : ''))
+
+  /**
+   * Expand (or collapse) one row's share panel and load that row's link state.
+   *
+   * Share state is per-row now that a user holds several CV versions — each row
+   * has its own `shareSlug`, so the panel is bound to whichever row is open
+   * rather than to "the" CV.
+   */
+  async function openSharePanel(id: string): Promise<void> {
+    // Collapse when the same row is clicked again.
+    if (sharePanelFor.value === id) {
+      sharePanelFor.value = null
+      return
+    }
+    sharePanelFor.value = id
+    shareCvId.value = id
+    shareSlug.value = null
+    shareError.value = false
+    try {
+      shareSlug.value = (await getShareStatus(id)).slug
+    } catch {
+      // Non-fatal — the panel falls back to its "create link" state.
+    }
+  }
 
   onMounted(async () => {
     // Hydrate the store from the active backend so the cards and the preview
@@ -48,19 +119,12 @@
       // must not let the rejection surface as an uncaught promise error.
     }
 
-    // Load existing share state so the panel reflects reality on refresh.
-    if (!userStore.isPremium) return
-    // Best effort — reuse the id the load above already resolved to show the
-    // current link state. If it's not available yet (e.g. the load was
-    // rate-limited), the button still works: the id is resolved lazily on click.
-    const id = shareCvId.value ?? localStorageService.getActiveId()
-    if (!id) return
-    shareCvId.value = id
-    try {
-      shareSlug.value = (await getShareStatus(id)).slug
-    } catch {
-      // Non-fatal — the panel falls back to its "create link" state.
-    }
+    // Populate the version list — a slim id/title/updatedAt read, no content.
+    await cvStore.loadVariants()
+
+    // Share state is NOT fetched here any more. No panel is open on mount, and
+    // with one share link per version there is no single link to preload —
+    // openSharePanel() fetches the state for the row the user actually opens.
   })
 
   // Resolve the active CV id on demand. Prefers the id the storage layer already
@@ -360,63 +424,185 @@
 
       <!-- ══════════════ PRO PLAN ══════════════ -->
       <template v-else>
-        <!-- Two main cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10 stagger-item">
-          <!-- CV card -->
-          <div class="paper-card p-6">
-            <div class="flex items-start justify-between mb-4">
-              <span
-                class="font-display text-[26px] leading-none"
-                :style="{ color: 'var(--accent)' }"
-                aria-hidden="true"
-                >◉</span
-              >
-              <span class="mono-eyebrow text-[10.5px]">{{ lastSavedLabel }}</span>
-            </div>
-            <h2 class="font-display text-[22px] leading-[1.15] tracking-editorial text-ink mb-1">
-              {{ cvData.personal.fullName || t('dashboard.yourCv') }}
-            </h2>
-            <p class="mono-eyebrow text-[10.5px] mb-5">
-              {{ templateLabel }} ·
-              {{ t('dashboard.sectionsLabel', { n: String(completedSections) }) }}
-            </p>
-            <div class="h-[3px] rounded-full mb-6" style="background: rgba(0, 0, 0, 0.08)">
-              <div
-                class="h-full rounded-full transition-all duration-500"
-                :style="{
-                  width: `${Math.round((completedSections / 8) * 100)}%`,
-                  background: 'var(--accent)',
-                }"
-              />
-            </div>
-            <div class="flex items-center gap-2">
-              <button
-                type="button"
-                class="btn-ghost flex-1 justify-center text-[13px]"
-                @click="showPreview = true"
-              >
-                {{ t('dashboard.viewCv') }}
-              </button>
-              <RouterLink to="/builder" class="btn-primary flex-1 justify-center text-[13px]">
-                {{ t('dashboard.editCv') }}
-                <svg
-                  class="w-3.5 h-3.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </RouterLink>
-            </div>
+        <!--
+          CV versions — one row per tailored CV. Each row is a complete,
+          independently shareable document, so share state is per-row rather
+          than one panel for "the" CV.
+        -->
+        <div class="mb-10 stagger-item">
+          <div class="flex items-baseline justify-between gap-3 mb-4">
+            <p class="mono-eyebrow">{{ t('builder.variants.eyebrow') }}</p>
+            <span class="mono-eyebrow text-[10px] text-muted">
+              {{ variants.length }} / {{ CV_VARIANT_LIMIT }}
+            </span>
           </div>
 
+          <div class="flex flex-col gap-3">
+            <!--
+              Fallback when the version list is unavailable (offline, or the
+              slim GET /cv was rate-limited). Without it a Pro user would land
+              on a dashboard with no CV card at all — worse than the single
+              card this replaced.
+            -->
+            <div v-if="variants.length === 0" class="paper-card p-5">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <span
+                  class="font-display text-[24px] leading-none shrink-0"
+                  :style="{ color: 'var(--accent)' }"
+                  aria-hidden="true"
+                  >◉</span
+                >
+                <div class="flex-1 min-w-0">
+                  <h2
+                    class="font-display text-[19px] leading-[1.15] tracking-editorial text-ink truncate"
+                  >
+                    {{ cvData.personal.fullName || t('dashboard.yourCv') }}
+                  </h2>
+                  <p class="mono-eyebrow text-[10.5px]">{{ lastSavedLabel }}</p>
+                </div>
+                <RouterLink to="/builder" class="btn-primary text-[12.5px] shrink-0">
+                  {{ t('dashboard.editCv') }}
+                </RouterLink>
+              </div>
+            </div>
+
+            <div v-for="variant in variants" :key="variant.id" class="paper-card p-5">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <span
+                  class="font-display text-[24px] leading-none shrink-0"
+                  :style="{
+                    color: variant.id === activeVariantId ? 'var(--accent)' : 'var(--muted)',
+                  }"
+                  aria-hidden="true"
+                  >◉</span
+                >
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-baseline gap-2 mb-0.5">
+                    <h2
+                      class="font-display text-[19px] leading-[1.15] tracking-editorial text-ink truncate"
+                    >
+                      {{ variant.title || t('dashboard.yourCv') }}
+                    </h2>
+                    <span
+                      v-if="variant.id === activeVariantId"
+                      class="mono-eyebrow text-[9px] px-1.5 py-px rounded-full text-white leading-none shrink-0"
+                      :style="{ background: 'var(--accent)' }"
+                      >●</span
+                    >
+                  </div>
+                  <p class="mono-eyebrow text-[10.5px]">{{ relativeTime(variant.updatedAt) }}</p>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                  <button
+                    type="button"
+                    class="btn-ghost text-[12.5px]"
+                    @click="viewVariant(variant.id)"
+                  >
+                    {{ t('dashboard.viewCv') }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-ghost text-[12.5px]"
+                    :aria-expanded="sharePanelFor === variant.id"
+                    @click="openSharePanel(variant.id)"
+                  >
+                    {{ t('share.panelTitle') }}
+                  </button>
+                  <button
+                    v-if="variants.length > 1"
+                    type="button"
+                    class="btn-ghost text-[12.5px]"
+                    :aria-label="t('builder.variants.deleteLabel')"
+                    @click="pendingDeleteId = variant.id"
+                  >
+                    ✕
+                  </button>
+                  <RouterLink :to="`/builder/${variant.id}`" class="btn-primary text-[12.5px]">
+                    {{ t('dashboard.editCv') }}
+                    <svg
+                      class="w-3.5 h-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </RouterLink>
+                </div>
+              </div>
+
+              <!-- Per-row share link panel -->
+              <div v-if="sharePanelFor === variant.id" class="mt-4 pt-4 border-t border-overlay/10">
+                <p class="text-[12.5px] text-muted leading-[1.55] mb-3">
+                  {{ t('share.panelDesc') }}
+                </p>
+
+                <button
+                  v-if="!shareSlug"
+                  type="button"
+                  class="btn-primary text-[12.5px]"
+                  :disabled="shareBusy"
+                  @click="onCreateShare"
+                >
+                  {{ shareBusy ? t('share.creating') : t('share.create') }}
+                </button>
+
+                <div v-else class="flex flex-col gap-2.5">
+                  <label class="mono-eyebrow text-[10.5px]">{{ t('share.linkLabel') }}</label>
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      readonly
+                      :value="shareUrl"
+                      class="flex-1 min-w-0 rounded-lg px-3 py-2 text-[13px] text-ink border border-overlay/15 bg-[var(--paper)] focus:outline-none focus:border-[var(--accent)]"
+                      @focus="($event.target as HTMLInputElement).select()"
+                    />
+                    <button
+                      type="button"
+                      class="btn-primary text-[13px] justify-center shrink-0"
+                      @click="copyShareUrl"
+                    >
+                      {{ justCopied ? t('share.copied') : t('share.copy') }}
+                    </button>
+                  </div>
+                  <p class="text-[12px] text-muted leading-[1.5]">{{ t('share.activeHint') }}</p>
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      class="btn-ghost text-[12.5px]"
+                      :disabled="shareBusy"
+                      @click="onRegenerateShare"
+                    >
+                      {{ t('share.regenerate') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-ghost text-[12.5px]"
+                      :disabled="shareBusy"
+                      @click="onTurnOffShare"
+                    >
+                      {{ t('share.turnOff') }}
+                    </button>
+                  </div>
+                </div>
+
+                <p v-if="shareError" class="text-[12.5px] mt-3" style="color: var(--accent)">
+                  {{ t('share.error') }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-10 stagger-item">
           <!-- Cover Letter card -->
           <div class="paper-card p-6 flex flex-col justify-between">
             <div>
@@ -456,86 +642,13 @@
           </div>
         </div>
 
-        <!-- Share link panel -->
-        <div class="paper-card p-6 mb-10 stagger-item">
-          <div class="flex items-start gap-4 mb-5">
-            <span
-              class="font-display text-[26px] leading-none shrink-0"
-              :style="{ color: 'var(--accent)' }"
-              aria-hidden="true"
-              >⇪</span
-            >
-            <div class="flex-1 min-w-0">
-              <h2 class="font-display text-[20px] leading-[1.15] tracking-editorial text-ink mb-1">
-                {{ t('share.panelTitle') }}
-              </h2>
-              <p class="text-[13.5px] text-muted leading-[1.55]">{{ t('share.panelDesc') }}</p>
-            </div>
-          </div>
-
-          <!-- No active link yet -->
-          <button
-            v-if="!shareSlug"
-            type="button"
-            class="btn-primary text-[13px]"
-            :disabled="shareBusy"
-            @click="onCreateShare"
-          >
-            {{ shareBusy ? t('share.creating') : t('share.create') }}
-          </button>
-
-          <!-- Active link -->
-          <div v-else class="flex flex-col gap-3">
-            <label class="mono-eyebrow text-[10.5px]">{{ t('share.linkLabel') }}</label>
-            <div class="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                readonly
-                :value="shareUrl"
-                class="flex-1 min-w-0 rounded-lg px-3 py-2 text-[13px] text-ink border border-overlay/15 bg-[var(--paper)] focus:outline-none focus:border-[var(--accent)]"
-                @focus="($event.target as HTMLInputElement).select()"
-              />
-              <button
-                type="button"
-                class="btn-primary text-[13px] justify-center shrink-0"
-                @click="copyShareUrl"
-              >
-                {{ justCopied ? t('share.copied') : t('share.copy') }}
-              </button>
-            </div>
-            <p class="text-[12px] text-muted leading-[1.5]">{{ t('share.activeHint') }}</p>
-            <div class="flex items-center gap-2">
-              <button
-                type="button"
-                class="btn-ghost text-[12.5px]"
-                :disabled="shareBusy"
-                @click="onRegenerateShare"
-              >
-                {{ t('share.regenerate') }}
-              </button>
-              <button
-                type="button"
-                class="btn-ghost text-[12.5px]"
-                :disabled="shareBusy"
-                @click="onTurnOffShare"
-              >
-                {{ t('share.turnOff') }}
-              </button>
-            </div>
-          </div>
-
-          <p v-if="shareError" class="text-[12.5px] mt-3" style="color: var(--accent)">
-            {{ t('share.error') }}
-          </p>
-        </div>
-
         <!-- Stats row -->
         <div class="stagger-item">
           <p class="mono-eyebrow mb-4">{{ t('dashboard.statsEyebrow') }}</p>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div
               v-for="stat in [
-                { label: t('dashboard.statsCvsCreated'), value: '1' },
+                { label: t('dashboard.statsCvsCreated'), value: String(variants.length || 1) },
                 { label: t('dashboard.statsCoverLetters'), value: '—' },
                 { label: t('dashboard.statsPdfDownloads'), value: '—' },
               ]"
@@ -553,6 +666,15 @@
     </main>
 
     <CVPreviewModal :visible="showPreview" @close="showPreview = false" />
+
+    <ConfirmModal
+      :visible="pendingDeleteId !== null"
+      :title="t('builder.variants.deleteTitle', { name: pendingDeleteName })"
+      :message="t('builder.variants.deleteMessage')"
+      :confirm-label="t('builder.variants.deleteConfirm')"
+      @confirm="confirmDeleteVariant"
+      @cancel="pendingDeleteId = null"
+    />
 
     <UpgradePrompt />
   </div>

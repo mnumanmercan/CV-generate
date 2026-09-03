@@ -15,6 +15,14 @@
     aiLabel?: string
     /** Tooltip + screen-reader description for the AI chip. */
     aiHint?: string
+    /**
+     * When set, renders a quiet chip marking this section as shared across
+     * every CV version — so it's clear before typing that the edit lands in
+     * all of them, not just the active tab.
+     */
+    sharedLabel?: string
+    /** Tooltip + screen-reader description for the shared chip. */
+    sharedHint?: string
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -172,6 +180,21 @@
             <span class="ai-badge-dot" aria-hidden="true" />
             {{ aiLabel }}
             <span v-if="aiHint" class="sr-only">— {{ aiHint }}</span>
+          </span>
+
+          <!--
+            Shared-section marker. Outline rather than filled so it reads as a
+            property of the section, not a call to action competing with the
+            AI chip.
+          -->
+          <span
+            v-if="sharedLabel"
+            class="mono-eyebrow text-[9.5px] px-1.5 py-[3px] rounded shrink-0 border"
+            :style="{ color: 'var(--muted)', borderColor: 'rgba(0,0,0,0.14)' }"
+            :title="sharedHint"
+          >
+            {{ sharedLabel }}
+            <span v-if="sharedHint" class="sr-only">— {{ sharedHint }}</span>
           </span>
         </div>
       </div>

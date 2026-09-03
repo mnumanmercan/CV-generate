@@ -58,6 +58,25 @@ const prismaMock = {
         return rows[0] ?? null
       },
     ),
+    count: vi.fn(async ({ where }: { where: { userId: string } }) => {
+      return [...db.cvs.values()].filter((c) => c.userId === where.userId).length
+    }),
+    // Typed as exactly what cvService.create() passes, so the spread below
+    // can't silently clobber the row defaults.
+    create: vi.fn(
+      async ({ data }: { data: { userId: string; content: unknown; title: string } }) => {
+        const id = `cv-${db.cvs.size + 1}`
+        const row: CVRow = {
+          id,
+          shareSlug: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          ...data,
+        }
+        db.cvs.set(id, row)
+        return row
+      },
+    ),
   },
 }
 
@@ -163,5 +182,68 @@ describe('cvService getLatest', () => {
   it('never returns another user’s CV', async () => {
     seedCV({ userId: OTHER, title: 'Not mine' })
     expect(await cvService.getLatest(OWNER)).toBeNull()
+  })
+})
+
+describe('cvService.create — plan limits', () => {
+  const proCV = {
+    personal: { fullName: 'Ada Lovelace' },
+    meta: { templateId: 'classic' },
+  } as never
+
+  it('allows a FREE user exactly one CV, then 402s', async () => {
+    await cvService.create(OWNER, 'FREE', proCV)
+    await expect(cvService.create(OWNER, 'FREE', proCV)).rejects.toMatchObject({
+      statusCode: 402,
+      code: 'PLAN_LIMIT_EXCEEDED',
+    })
+  })
+
+  it('allows a PRO user five CVs, then 402s on the sixth', async () => {
+    // CV_LIMIT.PRO is finite precisely so this check runs — it used to be
+    // Infinity, which made `isFinite(limit)` false and skipped enforcement
+    // entirely.
+    for (let i = 0; i < 5; i++) {
+      await cvService.create(OWNER, 'PRO', proCV)
+    }
+    expect(db.cvs.size).toBe(5)
+
+    await expect(cvService.create(OWNER, 'PRO', proCV)).rejects.toMatchObject({
+      statusCode: 402,
+      code: 'PLAN_LIMIT_EXCEEDED',
+    })
+  })
+
+  it("counts only the caller's own CVs against the limit", async () => {
+    seedCV({ userId: OTHER })
+    seedCV({ userId: OTHER })
+    // The other user's rows must not consume this user's single FREE slot.
+    await expect(cvService.create(OWNER, 'FREE', proCV)).resolves.toBeTruthy()
+  })
+
+  it('falls back to "My CV" when fullName is an empty string', async () => {
+    // Regression: `title ?? content.personal.fullName ?? 'My CV'` let the empty
+    // string through, because `??` only falls through on null/undefined. An
+    // empty title renders as a blank variant tab.
+    const created = await cvService.create(OWNER, 'FREE', {
+      personal: { fullName: '' },
+      meta: { templateId: 'classic' },
+    } as never)
+
+    expect(created.title).toBe('My CV')
+  })
+
+  it('prefers an explicitly supplied title over the fullName fallback', async () => {
+    const created = await cvService.create(OWNER, 'PRO', proCV, 'Acme — Backend')
+    expect(created.title).toBe('Acme — Backend')
+  })
+
+  it('rejects a Pro-only template for a FREE user', async () => {
+    await expect(
+      cvService.create(OWNER, 'FREE', {
+        personal: { fullName: 'Ada' },
+        meta: { templateId: 'modern' },
+      } as never),
+    ).rejects.toMatchObject({ statusCode: 403, code: 'TEMPLATE_NOT_ALLOWED' })
   })
 })

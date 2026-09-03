@@ -15,6 +15,7 @@ const get = vi.fn()
 const post = vi.fn()
 const put = vi.fn()
 const del = vi.fn()
+const patch = vi.fn()
 
 vi.mock('@/services/apiClient', () => ({
   apiClient: {
@@ -22,6 +23,7 @@ vi.mock('@/services/apiClient', () => ({
     post: (...a: unknown[]) => post(...a),
     put: (...a: unknown[]) => put(...a),
     delete: (...a: unknown[]) => del(...a),
+    patch: (...a: unknown[]) => patch(...a),
   },
   ApiError: class ApiError extends Error {
     status: number
@@ -46,6 +48,7 @@ beforeEach(() => {
   post.mockReset()
   put.mockReset()
   del.mockReset()
+  patch.mockReset()
 })
 
 describe('ApiCVStorageService.save (get-or-create)', () => {
@@ -69,7 +72,9 @@ describe('ApiCVStorageService.save (get-or-create)', () => {
     const svc = new ApiCVStorageService()
     await svc.save(fakeCV)
 
-    expect(post).toHaveBeenCalledWith('/cv', { content: fakeCV })
+    // A title is sent on create so the row never lands with the empty title
+    // the server's `??` fallback used to produce — variant tabs render it.
+    expect(post).toHaveBeenCalledWith('/cv', { content: fakeCV, title: 'My CV' })
   })
 
   it('resolves the CV id with a single slim list read — not a full detail fetch', async () => {
@@ -175,5 +180,140 @@ describe('ApiCVStorageService.load (single round-trip)', () => {
     const svc = new ApiCVStorageService()
     expect(await svc.load()).toBeNull()
     expect(get).toHaveBeenCalledWith('/cv/latest')
+  })
+})
+
+// ─── Multi-document (CV variants) ─────────────────────────────────────────────
+
+describe('ApiCVStorageService — variants', () => {
+  it('declares multi-document support so the store can gate on it', () => {
+    expect(new ApiCVStorageService().supportsMultiple).toBe(true)
+  })
+
+  it('lists every CV, not just the most recent one', async () => {
+    // The old resolveCvId() took data[0] and discarded the rest — that
+    // narrowing is exactly what the tab strip needed removed.
+    get.mockResolvedValueOnce({
+      success: true,
+      data: [
+        { id: 'cv-1', title: 'Acme', updatedAt: 'z' },
+        { id: 'cv-2', title: 'Startup', updatedAt: 'y' },
+        { id: 'cv-3', title: 'Bank', updatedAt: 'x' },
+      ],
+    })
+
+    const svc = new ApiCVStorageService()
+    await expect(svc.list()).resolves.toHaveLength(3)
+    expect(get).toHaveBeenCalledWith('/cv')
+  })
+
+  it('loads a specific CV by id', async () => {
+    get.mockResolvedValueOnce({ success: true, data: { id: 'cv-2', content: fakeCV } })
+
+    const svc = new ApiCVStorageService()
+    await expect(svc.loadById('cv-2')).resolves.toEqual(fakeCV)
+    expect(get).toHaveBeenCalledWith('/cv/cv-2')
+  })
+
+  it('treats a 404 from loadById as null rather than an error', async () => {
+    get.mockRejectedValueOnce(new ApiError(404, 'NOT_FOUND', 'CV not found.'))
+
+    const svc = new ApiCVStorageService()
+    await expect(svc.loadById('gone')).resolves.toBeNull()
+  })
+
+  it('saveById targets the given row and leaves the active pointer alone', async () => {
+    put.mockResolvedValueOnce({ success: true })
+    const svc = new ApiCVStorageService()
+    svc.setActiveId('cv-1')
+
+    await svc.saveById('cv-2', fakeCV)
+
+    expect(put).toHaveBeenCalledWith('/cv/cv-2', { content: fakeCV })
+    expect(svc.getActiveId()).toBe('cv-1')
+  })
+
+  it('saveById only sends a title when one was passed', async () => {
+    put.mockResolvedValue({ success: true })
+    const svc = new ApiCVStorageService()
+
+    await svc.saveById('cv-2', fakeCV)
+    expect(put).toHaveBeenLastCalledWith('/cv/cv-2', { content: fakeCV })
+
+    await svc.saveById('cv-2', fakeCV, 'Renamed')
+    expect(put).toHaveBeenLastCalledWith('/cv/cv-2', { content: fakeCV, title: 'Renamed' })
+  })
+
+  it('never re-sends a title on the ordinary save path', async () => {
+    // Auto-save must not rename "Acme — Backend" back to the person's own name.
+    get.mockResolvedValueOnce({ success: true, data: [{ id: 'cv-1', title: 'x', updatedAt: 'z' }] })
+    put.mockResolvedValueOnce({ success: true })
+
+    const svc = new ApiCVStorageService()
+    await svc.save(fakeCV)
+
+    expect(put).toHaveBeenCalledWith('/cv/cv-1', { content: fakeCV })
+  })
+
+  it('creates a CV with the given title', async () => {
+    post.mockResolvedValueOnce({
+      success: true,
+      data: { id: 'cv-9', title: 'Acme — Backend', updatedAt: 'now' },
+    })
+
+    const svc = new ApiCVStorageService()
+    const created = await svc.create(fakeCV, 'Acme — Backend')
+
+    expect(post).toHaveBeenCalledWith('/cv', { content: fakeCV, title: 'Acme — Backend' })
+    expect(created.id).toBe('cv-9')
+  })
+
+  it('maps a 402 to plan_limit so the caller can show the upgrade prompt', async () => {
+    post.mockRejectedValueOnce(
+      new ApiError(402, 'PLAN_LIMIT_EXCEEDED', 'Free plan allows a maximum of 1 CV.'),
+    )
+
+    const svc = new ApiCVStorageService()
+    await expect(svc.create(fakeCV, 'Sixth')).rejects.toMatchObject({ reason: 'plan_limit' })
+  })
+
+  it('renames through PATCH — the endpoint that already existed but was never called', async () => {
+    patch.mockResolvedValueOnce({ success: true })
+
+    const svc = new ApiCVStorageService()
+    await svc.rename('cv-2', 'Bank — Data')
+
+    expect(patch).toHaveBeenCalledWith('/cv/cv-2', { title: 'Bank — Data' })
+  })
+
+  it('clears the active pointer only when the active row is the one removed', async () => {
+    del.mockResolvedValue({ success: true })
+    const svc = new ApiCVStorageService()
+    svc.setActiveId('cv-1')
+
+    await svc.remove('cv-2')
+    expect(svc.getActiveId()).toBe('cv-1')
+
+    await svc.remove('cv-1')
+    expect(svc.getActiveId()).toBeNull()
+  })
+
+  it('setActiveId redirects subsequent saves without a list lookup', async () => {
+    put.mockResolvedValueOnce({ success: true })
+    const svc = new ApiCVStorageService()
+    svc.setActiveId('cv-7')
+
+    await svc.save(fakeCV)
+
+    expect(get).not.toHaveBeenCalled()
+    expect(put).toHaveBeenCalledWith('/cv/cv-7', { content: fakeCV })
+  })
+})
+
+describe('StorageError export surface', () => {
+  it('exposes plan_limit as a terminal reason', async () => {
+    const { isTerminalReason } = await import('./storageErrors')
+    expect(isTerminalReason('plan_limit')).toBe(true)
+    expect(StorageError).toBeDefined()
   })
 })
