@@ -14,6 +14,8 @@ export type StorageErrorReason =
   | 'too_large'
   /** HTTP 422 — the server's Zod validation rejected the document. */
   | 'invalid'
+  /** HTTP 402 — the plan's CV limit is already reached; creating another needs an upgrade. */
+  | 'plan_limit'
   /** localStorage quota exceeded (guest users). */
   | 'quota_exceeded'
   /** localStorage disabled entirely (private mode, browser settings). */
@@ -45,6 +47,7 @@ export function isTerminalReason(reason: StorageErrorReason): boolean {
   return (
     reason === 'too_large' ||
     reason === 'invalid' ||
+    reason === 'plan_limit' ||
     reason === 'quota_exceeded' ||
     reason === 'unavailable'
   )

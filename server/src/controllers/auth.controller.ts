@@ -19,7 +19,7 @@ import {
   REFRESH_COOKIE_CLEAR_OPTIONS,
 } from '../services/auth.service.js'
 import { emailService } from '../services/email.service.js'
-import { CVDataSchema, CoverLetterDataSchema } from '@resumark/shared'
+import { CVDataSchema, CoverLetterDataSchema, CV_LIMIT } from '@resumark/shared'
 
 // POST /auth/register
 export const registerHandler = asyncHandler(async (req: Request, res: Response) => {
@@ -190,10 +190,10 @@ export const migrateLocalDataHandler = asyncHandler(async (req: Request, res: Re
     if (!parsed.success) {
       results.cv = 'skipped_invalid'
     } else {
-      const existing = await prisma.cV.findFirst({
-        where: { userId },
-        orderBy: { updatedAt: 'desc' },
-      })
+      const [existing, cvCount] = await Promise.all([
+        prisma.cV.findFirst({ where: { userId }, orderBy: { updatedAt: 'desc' } }),
+        prisma.cV.count({ where: { userId } }),
+      ])
 
       if (!existing) {
         await prisma.cV.create({
@@ -204,6 +204,25 @@ export const migrateLocalDataHandler = asyncHandler(async (req: Request, res: Re
           },
         })
         results.cv = 'imported'
+      } else if (cvCount > 1) {
+        // The account holds CV variants. Last-write-wins would silently
+        // overwrite whichever variant happened to be edited most recently —
+        // destroying a CV the user tailored for a specific job. Import the
+        // guest document as its own variant instead, or keep the cloud copy
+        // untouched when the plan cap leaves no room.
+        const limit = CV_LIMIT[req.user!.plan] ?? 1
+        if (cvCount < limit) {
+          await prisma.cV.create({
+            data: {
+              userId,
+              content: toPrismaJson(parsed.data),
+              title: parsed.data.personal.fullName || 'Imported CV',
+            },
+          })
+          results.cv = 'imported_as_variant'
+        } else {
+          results.cv = 'cloud_kept'
+        }
       } else {
         const cloudUpdatedAt = new Date(existing.updatedAt)
         const localUpdatedAt = new Date(parsed.data.meta.updatedAt)

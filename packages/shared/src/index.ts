@@ -80,3 +80,8 @@ export {
   STRIPE_GRACE_PERIOD_DAYS,
 } from './constants/plans.js'
 export { CV_LIMITS } from './constants/limits.js'
+export {
+  SHARED_SECTION_KEYS,
+  VARIANT_SECTION_KEYS,
+  CV_VARIANT_LIMIT,
+} from './constants/variants.js'

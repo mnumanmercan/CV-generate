@@ -21,7 +21,11 @@ const routes: RouteRecordRaw[] = [
     meta: { titleKey: 'pageTitle.home', brandFirst: true },
   },
   {
-    path: '/builder',
+    // Optional `:id` deep-links a specific CV version. Optional so every
+    // existing `/builder` link keeps working, and so guests — who have exactly
+    // one CV and no server-side id — are unaffected. Deliberately still public:
+    // the builder has always been usable without an account.
+    path: '/builder/:id?',
     name: 'builder',
     component: () => import('@/views/BuilderView.vue'),
     meta: { titleKey: 'pageTitle.builder' },

@@ -55,8 +55,14 @@ export const cvService = {
     if (isFinite(limit)) {
       const count = await prisma.cV.count({ where: { userId } })
       if (count >= limit) {
+        // Plan-aware wording: PRO now has a finite cap too, so the old
+        // hard-coded "Free plan … upgrade to Pro" told Pro users at their
+        // limit to upgrade to the plan they were already on.
+        const noun = limit === 1 ? 'CV' : 'CVs'
         throw new AppError(
-          `Free plan allows a maximum of ${limit} CV. Upgrade to Pro for unlimited CVs.`,
+          plan === 'FREE'
+            ? `The Free plan allows ${limit} ${noun}. Upgrade to Pro to tailor a CV per job posting.`
+            : `You can keep up to ${limit} ${noun}. Delete one to make room for a new version.`,
           402,
           'PLAN_LIMIT_EXCEEDED',
         )
@@ -69,7 +75,11 @@ export const cvService = {
       data: {
         userId,
         content: toPrismaJson(content),
-        title: title ?? content.personal.fullName ?? 'My CV',
+        // `||`, not `??`: an unnamed CV's fullName is an empty string rather
+        // than undefined (auto-save fires within 500 ms of the first keystroke,
+        // long before a name is typed), and `??` let that empty string through
+        // as the title — which renders as a blank variant tab.
+        title: title || content.personal?.fullName || 'My CV',
       },
     })
   },

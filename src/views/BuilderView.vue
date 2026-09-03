@@ -14,6 +14,7 @@
   import UpgradePrompt from '@/components/ui/UpgradePrompt.vue'
   import ConfirmModal from '@/components/ui/ConfirmModal.vue'
   import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+  import VariantTabs from '@/components/builder/VariantTabs.vue'
   import FormSection from '@/components/form/FormSection.vue'
   import PersonalInfoForm from '@/components/form/PersonalInfoForm.vue'
   import SummaryForm from '@/components/form/SummaryForm.vue'
@@ -27,12 +28,31 @@
   import PreviewSkeleton from '@/components/preview/PreviewSkeleton.vue'
   import { VueDraggable } from 'vue-draggable-plus'
   import { type SectionKey, DRAGGABLE_SECTION_KEYS } from '@/types/cv.types'
+  import { SHARED_SECTION_KEYS } from '@resumark/shared'
   import { useI18n } from '@/composables/useI18n'
   import { useUserStore } from '@/stores/userStore'
+  import { useRoute, useRouter } from 'vue-router'
 
   const cvStore = useCVStore()
   const userStore = useUserStore()
+  const route = useRoute()
+  const router = useRouter()
   const { t, t_obj } = useI18n()
+
+  /**
+   * Shared sections carry a marker in the form so it's clear the edit lands in
+   * every version — but only once more than one version exists, otherwise it's
+   * a promise about a feature the user isn't using.
+   */
+  const hasMultipleVariants = computed(() => cvStore.variants.length > 1)
+  function sharedLabelFor(key: SectionKey): string | undefined {
+    if (!hasMultipleVariants.value) return undefined
+    return SHARED_SECTION_KEYS.includes(key) ? t('builder.variants.syncedBadge') : undefined
+  }
+  function sharedHintFor(key: SectionKey): string | undefined {
+    if (!hasMultipleVariants.value) return undefined
+    return SHARED_SECTION_KEYS.includes(key) ? t('builder.variants.syncedHint') : undefined
+  }
 
   function sectionTitle(key: string): string {
     return t(`builder.sections.${key}`)
@@ -85,18 +105,53 @@
     () => isCvEmpty.value && (cvStore.loadingData || !userStore.isSessionRestored),
   )
 
-  onMounted(() => {
+  onMounted(async () => {
+    // Read the deep-link id FIRST. `loadVariants()` below can settle
+    // `activeVariantId`, which fires the URL-sync watcher and rewrites
+    // route.params.id — so reading it afterwards would hand us the id we just
+    // wrote, not the one the user navigated to.
+    const requested = typeof route.params.id === 'string' ? route.params.id : null
+
     // Guard with isLoaded (matching HomeView) so navigating back into /builder
     // doesn't re-issue the CV read(s) every visit — the store is already
     // hydrated and re-loading only burns the read rate-limit budget.
     if (!cvStore.isLoaded) {
-      cvStore.loadFromStorage()
+      await cvStore.loadFromStorage().catch(() => {
+        // Cloud load failed (offline / rate-limited). The builder still works
+        // on whatever is in the store; don't let the rejection go unhandled.
+      })
     } else {
       // Already hydrated from a previous mount — the load watcher won't fire,
       // so re-sync the draggable order from the store directly (no network).
       applySectionOrder(cvData.value.meta.sectionOrder)
     }
+
+    // Populate the version tab strip. Slim list read — no JSONB content — so
+    // this costs one cheap request and siblings stay unloaded until switched to.
+    await cvStore.loadVariants()
+
+    // Deep link: /builder/:id opens that specific version.
+    if (requested && requested !== cvStore.activeVariantId) {
+      if (cvStore.variants.some((v) => v.id === requested)) {
+        await cvStore.switchVariant(requested)
+      } else {
+        // Unknown or foreign id — drop the param rather than 404ing the view.
+        void router.replace({ name: 'builder' })
+      }
+    }
   })
+
+  // Keep the URL pointing at the version on screen so it can be bookmarked and
+  // shared between the dashboard and the builder. `replace` so tab switching
+  // doesn't stack history entries the back button has to walk through.
+  watch(
+    () => cvStore.activeVariantId,
+    (id) => {
+      if (!id || !hasMultipleVariants.value) return
+      if (route.params.id === id) return
+      void router.replace({ name: 'builder', params: { id } })
+    },
+  )
 
   // Watch each section for changes and trigger preview highlight.
   // Guard with cvStore.loadingData so the initial data load does not flash every
@@ -181,6 +236,8 @@
         return t('builder.saveError.quota')
       case 'unavailable':
         return t('builder.saveError.unavailable')
+      case 'plan_limit':
+        return t('builder.saveError.planLimit')
       default:
         return t('builder.saveError.network')
     }
@@ -319,6 +376,9 @@
               }}</span>
             </h2>
 
+            <!-- CV version tabs — each tab is a full, standalone CV -->
+            <VariantTabs />
+
             <!-- Static sections — Personal Info and Professional Summary -->
             <FormSection
               v-for="(section, idx) in staticSections"
@@ -330,6 +390,8 @@
               :completed="section.completed"
               :ai-label="section.hasAI ? t('builder.aiBadge.label') : undefined"
               :ai-hint="section.hasAI ? t('builder.aiBadge.hint') : undefined"
+              :shared-label="sharedLabelFor(section.key)"
+              :shared-hint="sharedHintFor(section.key)"
             >
               <PersonalInfoForm v-if="section.key === 'personal'" />
               <SummaryForm v-else-if="section.key === 'summary'" />
@@ -358,6 +420,8 @@
                 :step-index="staticSections.length + idx"
                 :completed="completionFor[section.key] ?? false"
                 :draggable="true"
+                :shared-label="sharedLabelFor(section.key)"
+                :shared-hint="sharedHintFor(section.key)"
               >
                 <ExperienceForm v-if="section.key === 'experience'" />
                 <EducationForm v-else-if="section.key === 'education'" />
@@ -770,7 +834,7 @@
     <ConfirmModal
       :visible="showClearConfirm"
       :title="t('builder.clearTitle')"
-      :message="t('builder.clearMessage')"
+      :message="hasMultipleVariants ? t('builder.clearVariantMessage') : t('builder.clearMessage')"
       :confirm-label="t('builder.clearConfirm')"
       @confirm="confirmClearData"
       @cancel="showClearConfirm = false"

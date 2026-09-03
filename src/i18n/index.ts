@@ -180,12 +180,37 @@ export interface Translations {
       quota: string
       unavailable: string
       network: string
+      planLimit: string
       toast: string
     }
     clearTitle: string
     clearMessage: string
     clearConfirm: string
+    /** Shown instead of clearMessage when other variants exist — only this version is reset. */
+    clearVariantMessage: string
     proRequired: string
+    variants: {
+      eyebrow: string
+      /** aria-label for the tab strip. */
+      groupLabel: string
+      addLabel: string
+      addTitle: string
+      addPlaceholder: string
+      addConfirm: string
+      addCancel: string
+      /** Default name for a new variant, e.g. "Version 2". */
+      defaultName: string
+      renameLabel: string
+      deleteLabel: string
+      deleteTitle: string
+      deleteMessage: string
+      deleteConfirm: string
+      /** Marker on shared form sections. */
+      syncedBadge: string
+      syncedHint: string
+      limitReached: string
+      proHint: string
+    }
   }
 
   dashboard: {

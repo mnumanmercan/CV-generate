@@ -7,8 +7,14 @@ import {
   CURRENT_VERSION,
   migrateCVData,
 } from '@/types/cv.types'
-import { localStorageService, readLocalCVSync } from '@/services/storageService'
+import { localStorageService, readLocalCVSync, type CVSummary } from '@/services/storageService'
 import { StorageError, isTerminalReason, type StorageErrorReason } from '@/services/storageErrors'
+import {
+  applySharedSections,
+  buildVariantSeed,
+  clearTailoredSections,
+  cloneCV,
+} from '@/services/cvVariants'
 import { useUserStore } from '@/stores/userStore'
 import { SAVE_INDICATOR_MS, SECTION_HIGHLIGHT_MS } from '@/constants/timing'
 
@@ -36,6 +42,11 @@ function seedInitialCVData(): CVData {
 }
 
 export const useCVStore = defineStore('cv', () => {
+  // The ACTIVE variant's document. Deliberately a plain ref, exactly as before
+  // variants existed: every form component binds `v-model="cvData.x.y"` through
+  // storeToRefs, and CVPreview / usePDFExport / useAutoSave all read this one
+  // ref. Siblings live in `variantCache` instead, so none of those consumers
+  // needed to change.
   const cvData = ref<CVData>(seedInitialCVData())
   const activeSection = ref<SectionKey | null>(null)
   const highlightedSection = ref<SectionKey | null>(null)
@@ -47,6 +58,25 @@ export const useCVStore = defineStore('cv', () => {
   /** Set when saves are failing and the user must be told; null while healthy. */
   const lastSaveError = ref<{ reason: StorageErrorReason; message: string } | null>(null)
   let consecutiveTransientFailures = 0
+
+  // ─── CV variants ────────────────────────────────────────────────────────────
+  // A user's variants are simply all of their CVs — the Pro cap makes a
+  // separate grouping column unnecessary, so `variants` is literally GET /cv.
+
+  /** Tab strip source, newest-first. Empty on a single-CV (guest/free) backend. */
+  const variants = ref<CVSummary[]>([])
+  /** Loaded sibling documents, keyed by CV id. Never holds the active variant. */
+  const variantCache = new Map<string, CVData>()
+  /** Siblings whose shared sections were updated in memory and still need a PUT. */
+  const dirtySiblings = new Set<string>()
+  const activeVariantId = ref<string | null>(null)
+  /** True while switchVariant is mid-swap — the tab strip disables during it. */
+  const switchingVariant = ref(false)
+
+  const canUseVariants = computed(() => localStorageService.supportsMultiple)
+  const activeVariant = computed(
+    () => variants.value.find((v) => v.id === activeVariantId.value) ?? null,
+  )
 
   const isPersonalComplete = computed(() => {
     const p = cvData.value.personal
@@ -167,6 +197,187 @@ export const useCVStore = defineStore('cv', () => {
     }
   }
 
+  // ─── Variant actions ────────────────────────────────────────────────────────
+
+  /**
+   * Refresh the tab strip from the backend. Cheap — GET /cv is a slim list
+   * (id/title/updatedAt), never the JSONB content — so siblings stay unloaded
+   * until the user actually switches to one.
+   */
+  async function loadVariants(): Promise<void> {
+    if (!localStorageService.supportsMultiple) {
+      variants.value = []
+      return
+    }
+    try {
+      variants.value = await localStorageService.list()
+      // Adopt whichever row load() already resolved as the active one.
+      if (!activeVariantId.value) {
+        activeVariantId.value = localStorageService.getActiveId() ?? variants.value[0]?.id ?? null
+      }
+    } catch (err) {
+      // Non-fatal: the builder still works on the active CV, the strip just
+      // shows a single tab. Don't surface this as a save error.
+      console.warn('[cvStore] loadVariants failed:', err)
+    }
+  }
+
+  /**
+   * Push the shared sections of `source` into every cached sibling and mark
+   * them for persistence. Variants that have never been loaded aren't in the
+   * cache; they're brought up to date when they're first switched to.
+   */
+  function propagateSharedSections(source: CVData, sourceId: string | null): void {
+    for (const [id, doc] of variantCache) {
+      if (id === sourceId) continue
+      applySharedSections(source, doc)
+      dirtySiblings.add(id)
+    }
+  }
+
+  /** Persist the siblings that propagation touched. Best-effort, backgrounded. */
+  async function flushDirtySiblings(): Promise<void> {
+    if (!localStorageService.supportsMultiple || dirtySiblings.size === 0) return
+    const ids = [...dirtySiblings]
+    dirtySiblings.clear()
+    for (const id of ids) {
+      const doc = id === activeVariantId.value ? cvData.value : variantCache.get(id)
+      if (!doc) continue
+      try {
+        const snapshot = cloneCV(doc)
+        snapshot.meta.updatedAt = new Date().toISOString()
+        snapshot.meta.version = CURRENT_VERSION
+        await localStorageService.saveById(id, snapshot)
+      } catch (err) {
+        // Re-queue so the next switch retries rather than losing the sync.
+        dirtySiblings.add(id)
+        console.warn(`[cvStore] failed to sync shared sections into ${id}:`, err)
+      }
+    }
+  }
+
+  /**
+   * Make `id` the active variant.
+   *
+   * Order matters here. The outgoing document is flushed and cached first, its
+   * shared sections propagate outward (it is by definition the most recently
+   * edited), and only then does `loadingData` go true for the swap — which
+   * suppresses auto-save, stops the preview flashing every section, and is the
+   * one condition under which BuilderView re-syncs its drag-order list.
+   */
+  async function switchVariant(id: string): Promise<void> {
+    if (switchingVariant.value || id === activeVariantId.value) return
+    if (!localStorageService.supportsMultiple) return
+
+    const outgoingId = activeVariantId.value
+    switchingVariant.value = true
+    try {
+      if (outgoingId) {
+        // Flush whatever the debounce hasn't written yet. A failure here is
+        // already surfaced through lastSaveError; don't block the switch on it.
+        try {
+          await saveToStorage()
+        } catch {
+          /* surfaced via lastSaveError */
+        }
+        variantCache.set(outgoingId, cvData.value)
+        propagateSharedSections(cvData.value, outgoingId)
+      }
+
+      loadingData.value = true
+
+      let target = variantCache.get(id) ?? null
+      if (!target) {
+        const fetched = await localStorageService.loadById(id)
+        target = fetched ? migrateCVData(fetched) : createEmptyCVData()
+        // First time this variant has been loaded this session — its shared
+        // sections may predate edits made in another tab. Repair from the
+        // outgoing document and queue the write.
+        if (outgoingId) {
+          applySharedSections(cvData.value, target)
+          dirtySiblings.add(id)
+        }
+      }
+      variantCache.delete(id)
+
+      activeVariantId.value = id
+      localStorageService.setActiveId(id)
+      cvData.value = target
+      // Let every watcher observe loadingData === true before it clears —
+      // same contract loadFromStorage() relies on.
+      await nextTick()
+      isLoaded.value = true
+    } finally {
+      loadingData.value = false
+      switchingVariant.value = false
+    }
+
+    void flushDirtySiblings()
+  }
+
+  /**
+   * Create a new variant seeded from the active one and switch to it.
+   * Returns the new id, or null when the plan cap was hit (the caller turns
+   * that into the upgrade prompt).
+   */
+  async function createVariant(
+    title: string,
+    mode: 'duplicate' | 'blank' = 'duplicate',
+  ): Promise<string | null> {
+    if (!localStorageService.supportsMultiple) return null
+    // Commit the current doc first so the new variant inherits up-to-date
+    // shared sections rather than a stale snapshot.
+    try {
+      await saveToStorage()
+    } catch {
+      /* surfaced via lastSaveError */
+    }
+
+    const seed = buildVariantSeed(cvData.value, mode)
+    let created: CVSummary
+    try {
+      created = await localStorageService.create(seed, title)
+    } catch (err) {
+      if (err instanceof StorageError && err.reason === 'plan_limit') return null
+      throw err
+    }
+
+    variants.value = [created, ...variants.value]
+    variantCache.set(created.id, seed)
+    await switchVariant(created.id)
+    return created.id
+  }
+
+  async function renameVariant(id: string, title: string): Promise<void> {
+    if (!localStorageService.supportsMultiple) return
+    const trimmed = title.trim()
+    if (!trimmed) return
+    await localStorageService.rename(id, trimmed)
+    variants.value = variants.value.map((v) => (v.id === id ? { ...v, title: trimmed } : v))
+  }
+
+  /**
+   * Delete a variant. Refuses to remove the last one — an account with zero
+   * CVs has no document for the builder to edit; "clear" is that action.
+   */
+  async function deleteVariant(id: string): Promise<void> {
+    if (!localStorageService.supportsMultiple) return
+    if (variants.value.length <= 1) return
+
+    await localStorageService.remove(id)
+    variants.value = variants.value.filter((v) => v.id !== id)
+    variantCache.delete(id)
+    dirtySiblings.delete(id)
+
+    if (activeVariantId.value === id) {
+      // Switch to the newest remaining variant. Clear the active pointer first
+      // so switchVariant doesn't early-return on an id equality check.
+      const next = variants.value[0]
+      activeVariantId.value = null
+      if (next) await switchVariant(next.id)
+    }
+  }
+
   function setActiveSection(section: SectionKey | null): void {
     activeSection.value = section
   }
@@ -186,7 +397,24 @@ export const useCVStore = defineStore('cv', () => {
     cvData.value.meta.sectionOrder = order
   }
 
+  /**
+   * Reset the builder.
+   *
+   * With variants, this clears only the TAILORED sections of the active
+   * variant. A full reset would blank the shared sections too, and those
+   * propagate on the next tab switch — so "clear this version" would quietly
+   * become "wipe the name and contact details out of all of them". Deleting a
+   * whole variant is `deleteVariant`.
+   *
+   * On a single-CV backend (guest / free) the original behaviour is kept:
+   * empty the document and drop it from storage entirely.
+   */
   async function clearData(): Promise<void> {
+    if (localStorageService.supportsMultiple && variants.value.length > 1) {
+      clearTailoredSections(cvData.value)
+      await saveToStorage()
+      return
+    }
     isLoaded.value = false
     cvData.value = createEmptyCVData()
     await localStorageService.clear()
@@ -210,6 +438,17 @@ export const useCVStore = defineStore('cv', () => {
     isProjectsComplete,
     isCertificationsComplete,
     isLanguagesComplete,
+    // variants
+    variants,
+    activeVariantId,
+    activeVariant,
+    switchingVariant,
+    canUseVariants,
+    loadVariants,
+    switchVariant,
+    createVariant,
+    renameVariant,
+    deleteVariant,
     loadFromStorage,
     saveToStorage,
     setActiveSection,

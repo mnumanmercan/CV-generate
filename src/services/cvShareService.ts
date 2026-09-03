@@ -17,8 +17,14 @@ export interface PublicCV {
 }
 
 /**
- * Resolve the id of the user's active CV (the most-recently-updated one), the
- * same row the dashboard/store load. Returns null when the user has no CV yet.
+ * Resolve the id of the user's most-recently-updated CV.
+ *
+ * This is a FALLBACK only. Now that a user can hold several CV versions,
+ * callers that know which version they mean must pass its id explicitly
+ * (cvStore.activeVariantId, or the row id on a dashboard card) — "most
+ * recently updated" is not the same as "the one on screen". It remains the
+ * right answer for a cold path with no id in hand, and for accounts that
+ * still have exactly one CV. Returns null when the user has no CV yet.
  */
 export async function resolveActiveCvId(): Promise<string | null> {
   const res = await apiClient.get<{

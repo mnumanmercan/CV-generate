@@ -4,6 +4,14 @@ import { StorageError } from './storageErrors'
 // ─── Abstraction interface ───────────────────────────────────────────────────
 // Phase 2: swap LocalStorageService for MongoDBService without touching
 // any component or store code.
+
+/** Slim CV descriptor — what the variant tab strip and dashboard list need. */
+export interface CVSummary {
+  id: string
+  title: string
+  updatedAt: string
+}
+
 export interface StorageService {
   save(data: CVData): Promise<void>
   load(): Promise<CVData | null>
@@ -15,6 +23,23 @@ export interface StorageService {
    * issuing a second list request.
    */
   getActiveId?(): string | null
+
+  // ─── Multi-document (CV variants) ──────────────────────────────────────────
+  // Optional on purpose: only the API backend can hold more than one CV, so
+  // LocalStorageService (guests — one fixed key) implements none of these and
+  // needs no changes. Callers gate on `supportsMultiple` rather than probing
+  // for individual methods.
+
+  /** True when this backend can hold more than one CV. */
+  supportsMultiple?: boolean
+  list?(): Promise<CVSummary[]>
+  loadById?(id: string): Promise<CVData | null>
+  saveById?(id: string, data: CVData, title?: string): Promise<void>
+  create?(data: CVData, title: string): Promise<CVSummary>
+  rename?(id: string, title: string): Promise<void>
+  remove?(id: string): Promise<void>
+  /** Point subsequent save()/load() calls at a specific CV row. */
+  setActiveId?(id: string): void
 }
 
 // ─── LocalStorage implementation ────────────────────────────────────────────
@@ -116,6 +141,51 @@ export class DelegatingStorageService implements StorageService {
   }
   getActiveId(): string | null {
     return this._impl.getActiveId?.() ?? null
+  }
+
+  // ─── Multi-document passthrough ────────────────────────────────────────────
+  // The local backend implements none of these. Rather than returning silent
+  // no-ops (which would present as "the variant saved" when nothing happened),
+  // the mutating methods throw — callers must check `supportsMultiple` first,
+  // and the variant UI is Pro-gated so they never reach here for a guest.
+
+  get supportsMultiple(): boolean {
+    return this._impl.supportsMultiple ?? false
+  }
+
+  private requireMulti<T>(fn: T | undefined, name: string): T {
+    if (!fn) {
+      throw new StorageError(
+        'unauthorized',
+        `This storage backend holds a single CV — ${name}() needs a signed-in account.`,
+      )
+    }
+    return fn
+  }
+
+  async list(): Promise<CVSummary[]> {
+    // Read-only, so a single-CV backend can answer honestly with an empty list
+    // instead of throwing — the tab strip then simply renders one tab.
+    if (!this._impl.list) return []
+    return this._impl.list()
+  }
+  async loadById(id: string): Promise<CVData | null> {
+    return this.requireMulti(this._impl.loadById, 'loadById').call(this._impl, id)
+  }
+  async saveById(id: string, data: CVData, title?: string): Promise<void> {
+    return this.requireMulti(this._impl.saveById, 'saveById').call(this._impl, id, data, title)
+  }
+  async create(data: CVData, title: string): Promise<CVSummary> {
+    return this.requireMulti(this._impl.create, 'create').call(this._impl, data, title)
+  }
+  async rename(id: string, title: string): Promise<void> {
+    return this.requireMulti(this._impl.rename, 'rename').call(this._impl, id, title)
+  }
+  async remove(id: string): Promise<void> {
+    return this.requireMulti(this._impl.remove, 'remove').call(this._impl, id)
+  }
+  setActiveId(id: string): void {
+    this._impl.setActiveId?.(id)
   }
 }
 
